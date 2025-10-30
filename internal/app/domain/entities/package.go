@@ -16,7 +16,6 @@ type Package struct {
 	UpdatedAt              *time.Time
 	AddressPackageID       uint
 	StatusDeliveryID       uint
-	InformationDeliveryID  *uint
 	ComercialInformationID uint
 	SenderID               uint
 	ReceiverID             uint

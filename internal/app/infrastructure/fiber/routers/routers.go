@@ -25,5 +25,6 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 
 	apiv1 := app.Group("/api/v1")
 	SetUserRouter(apiv1, db)
+	SetPackageRouter(apiv1, db)
 
 }
