@@ -13,6 +13,6 @@ import (
 func SetUserRouter(apiv1 fiber.Router, db *sql.DB) {
 	repoUser := adapters.NewUserRepositoryPostgres(db)
 	createUserUseCase := application.NewCreateUserUseCase(repoUser)
-	createUserHandler := handler.NewCreateUserHandler(createUserUseCase)
-	apiv1.Post("/users", createUserHandler.CreateUserHandler)
+	handlerUser := handler.NewHandlerUser(createUserUseCase)
+	apiv1.Post("/users", handlerUser.CreateUser)
 }

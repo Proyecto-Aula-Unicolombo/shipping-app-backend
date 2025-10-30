@@ -21,15 +21,15 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
-type CreateUserHandler struct {
+type HandlerUser struct {
 	createUserUseCase *users.CreateUserUseCase
 }
 
-func NewCreateUserHandler(createUserUseCase *users.CreateUserUseCase) *CreateUserHandler {
-	return &CreateUserHandler{createUserUseCase: createUserUseCase}
+func NewHandlerUser(createUserUseCase *users.CreateUserUseCase) *HandlerUser {
+	return &HandlerUser{createUserUseCase: createUserUseCase}
 }
 
-func (h *CreateUserHandler) CreateUserHandler(ctx fiber.Ctx) error {
+func (h *HandlerUser) CreateUser(ctx fiber.Ctx) error {
 	var req CreateUserRequest
 	if err := ctx.Bind().Body(&req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
@@ -52,7 +52,7 @@ func (h *CreateUserHandler) CreateUserHandler(ctx fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "user created successfully"})
 }
 
-func (h *CreateUserHandler) handleError(ctx fiber.Ctx, err error) error {
+func (h *HandlerUser) handleError(ctx fiber.Ctx, err error) error {
 	switch {
 	case errors.Is(err, users.ErrInvalidInput):
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
