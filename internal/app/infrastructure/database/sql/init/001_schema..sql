@@ -144,3 +144,7 @@ CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_tracks_timestamp ON tracks(timestamp);
 CREATE INDEX idx_tracks_location ON tracks USING GIST(location);
 CREATE INDEX idx_deliverystops_location ON deliverystops USING GIST(stoplocation);
+CREATE INDEX IF NOT EXISTS idx_addresspackages_route ON addresspackages(origin, destination);
+CREATE INDEX IF NOT EXISTS idx_senders_email ON senders(email);
+CREATE INDEX IF NOT EXISTS idx_senders_document ON senders(document);
+CREATE INDEX IF NOT EXISTS idx_receivers_email ON receivers(email);
