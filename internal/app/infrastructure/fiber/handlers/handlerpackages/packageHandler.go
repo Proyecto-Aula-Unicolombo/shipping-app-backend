@@ -2,15 +2,16 @@ package handlerpackages
 
 import (
 	"errors"
+	"log"
 	usepackages "shipping-app/internal/app/application/UsePackages"
 	"shipping-app/internal/app/application/UsePackages/related"
+	"shipping-app/internal/app/infrastructure/adapters"
 
 	"github.com/gofiber/fiber/v3"
 )
 
 type CreatePackageRequest struct {
 	NumPackage           int64                              `json:"numpackage"`
-	StartStatus          string                             `json:"startstatus"`
 	DescriptionContent   *string                            `json:"descriptioncontent"`
 	Weight               *float64                           `json:"weight"`
 	Dimension            *float64                           `json:"dimension"`
@@ -42,7 +43,6 @@ func (h *PackageHandler) CreatePackage(ctx fiber.Ctx) error {
 
 	input := usepackages.CreatePackageInput{
 		NumPackage:           req.NumPackage,
-		StartStatus:          req.StartStatus,
 		DescriptionContent:   req.DescriptionContent,
 		Weight:               req.Weight,
 		Dimension:            req.Dimension,
@@ -62,12 +62,42 @@ func (h *PackageHandler) CreatePackage(ctx fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message":    "package created successfully",
 		"id":         output.ID,
 		"numpackage": output.NumPackage,
 	})
 }
 
 func (h *PackageHandler) handleError(ctx fiber.Ctx, err error) error {
+	log.Printf("Handling error: %v (type: %T)", err, err)
+
+	// Verificar si es PackageConflictError (duplicate numpackage)
+	var conflictErr *adapters.PackageConflictError
+	if errors.As(err, &conflictErr) {
+		response := fiber.Map{
+			"error":      "package_already_exists",
+			"message":    "A package with this number already exists",
+			"numpackage": conflictErr.NumPackage,
+		}
+
+		if conflictErr.ExistingID > 0 {
+			response["existing_id"] = conflictErr.ExistingID
+		}
+
+		return ctx.Status(fiber.StatusConflict).JSON(response)
+	}
+
+	// verificar si falta algun dato en la request
+	var validationErr *usepackages.ValidationError
+	if errors.As(err, &validationErr) {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   "invalid_input",
+			"message": validationErr.Message,
+			"fields":  validationErr.Fields,
+		})
+	}
+
+	// otros casos de error
 	switch {
 	case errors.Is(err, usepackages.ErrInvalidInput):
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
