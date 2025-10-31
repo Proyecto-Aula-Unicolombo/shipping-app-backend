@@ -2,7 +2,6 @@ package usepackages
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"shipping-app/internal/app/application/UsePackages/related"
 	"shipping-app/internal/app/domain/entities"
@@ -11,16 +10,8 @@ import (
 	"time"
 )
 
-var (
-	ErrInvalidInput               = errors.New("invalid input")
-	ErrRelatedEntityMustProvideID = errors.New("related entities must provide non-zero ID")
-	ErrRelatedEntityNotFound      = errors.New("related entity not found")
-	ErrBusinessRuleViolation      = errors.New("business rule violation")
-)
-
 type CreatePackageInput struct {
 	NumPackage           int64
-	StartStatus          string
 	DescriptionContent   *string
 	Weight               *float64
 	Dimension            *float64
@@ -111,7 +102,7 @@ func (uc *CreatePackageUseCase) Execute(ctx context.Context, input CreatePackage
 	//  Preparar entidad Package y persistir
 	pkg := &entities.Package{
 		NumPackage:             input.NumPackage,
-		StartStatus:            input.StartStatus,
+		StartStatus:            "Pending",
 		DescriptionContent:     input.DescriptionContent,
 		Weight:                 input.Weight,
 		Dimension:              input.Dimension,
