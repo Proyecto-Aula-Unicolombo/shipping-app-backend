@@ -7,7 +7,6 @@ import (
 	"shipping-app/internal/app/domain/entities"
 	"shipping-app/internal/app/domain/ports/repository"
 	services "shipping-app/internal/app/domain/services/package"
-	"time"
 )
 
 type CreatePackageInput struct {
@@ -28,7 +27,6 @@ type CreatePackageInput struct {
 type CreatePackageOutput struct {
 	ID         uint
 	NumPackage int64
-	CreatedAt  time.Time
 }
 
 type CreatePackageUseCase struct {

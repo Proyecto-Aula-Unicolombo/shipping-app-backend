@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 
 	"shipping-app/internal/app/domain/entities"
 )
@@ -59,6 +60,24 @@ func (r *ComercialInformationRepositoryPostgres) Create(ctx context.Context, tx 
 			return fmt.Errorf("comercialinfo create timeout: %w", err)
 		}
 		return fmt.Errorf("comercialinfo create: %w", err)
+	}
+
+	return nil
+}
+
+func (r *ComercialInformationRepositoryPostgres) Delete(ctx context.Context, tx *sql.Tx, id uint) error {
+	query := `DELETE FROM comercialinformations WHERE id = $1`
+
+	var err error
+	if tx != nil {
+		_, err = tx.ExecContext(ctx, query, id)
+	} else {
+		_, err = r.db.ExecContext(ctx, query, id)
+	}
+
+	if err != nil {
+		log.Printf("ERROR executing DELETE comercialinformations: %v", err)
+		return fmt.Errorf("delete comercial information: %w", err)
 	}
 
 	return nil

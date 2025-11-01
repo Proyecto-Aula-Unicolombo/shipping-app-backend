@@ -16,6 +16,7 @@ type AddressPackageRepository interface {
 type ComercialInformationRepository interface {
 	GetByID(ctx context.Context, tx *sql.Tx, id uint) (*entities.ComercialInformation, error)
 	Create(ctx context.Context, tx *sql.Tx, info *entities.ComercialInformation) error
+	Delete(ctx context.Context, tx *sql.Tx, id uint) error
 }
 
 type SenderRepository interface {
@@ -33,6 +34,7 @@ type ReceiverRepository interface {
 type StatusDeliveryRepository interface {
 	GetByID(ctx context.Context, tx *sql.Tx, id uint) (*entities.StatusDelivery, error)
 	Create(ctx context.Context, tx *sql.Tx, s *entities.StatusDelivery) error
+	Delete(ctx context.Context, tx *sql.Tx, id uint) error
 }
 
 type OrderRepository interface {

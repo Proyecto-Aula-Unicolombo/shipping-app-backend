@@ -1,11 +1,9 @@
 package handlerpackages
 
 import (
-	"errors"
-	"log"
 	usepackages "shipping-app/internal/app/application/UsePackages"
 	"shipping-app/internal/app/application/UsePackages/related"
-	"shipping-app/internal/app/infrastructure/adapters"
+	"strconv"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -26,11 +24,12 @@ type CreatePackageRequest struct {
 }
 
 type PackageHandler struct {
-	createUC *usepackages.CreatePackageUseCase
+	createUC   *usepackages.CreatePackageUseCase
+	cancelleUC *usepackages.CancelPackageUseCase
 }
 
-func NewPackageHandler(createUC *usepackages.CreatePackageUseCase) *PackageHandler {
-	return &PackageHandler{createUC: createUC}
+func NewPackageHandler(createUC *usepackages.CreatePackageUseCase, cancelleUC *usepackages.CancelPackageUseCase) *PackageHandler {
+	return &PackageHandler{createUC: createUC, cancelleUC: cancelleUC}
 }
 
 func (h *PackageHandler) CreatePackage(ctx fiber.Ctx) error {
@@ -58,7 +57,7 @@ func (h *PackageHandler) CreatePackage(ctx fiber.Ctx) error {
 
 	output, err := h.createUC.Execute(ctx.Context(), input)
 	if err != nil {
-		return h.handleError(ctx, err)
+		return h.handleErrorCreate(ctx, err)
 	}
 
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
@@ -68,62 +67,20 @@ func (h *PackageHandler) CreatePackage(ctx fiber.Ctx) error {
 	})
 }
 
-func (h *PackageHandler) handleError(ctx fiber.Ctx, err error) error {
-	log.Printf("Handling error: %v (type: %T)", err, err)
+func (h *PackageHandler) DeletePackage(ctx fiber.Ctx) error {
+	numPackageSTR := ctx.Params("numPackage")
 
-	// Verificar si es PackageConflictError (duplicate numpackage)
-	var conflictErr *adapters.PackageConflictError
-	if errors.As(err, &conflictErr) {
-		response := fiber.Map{
-			"error":      "package_already_exists",
-			"message":    "A package with this number already exists",
-			"numpackage": conflictErr.NumPackage,
-		}
-
-		if conflictErr.ExistingID > 0 {
-			response["existing_id"] = conflictErr.ExistingID
-		}
-
-		return ctx.Status(fiber.StatusConflict).JSON(response)
-	}
-
-	// verificar si falta algun dato en la request
-	var validationErr *usepackages.ValidationError
-	if errors.As(err, &validationErr) {
+	numPackage, err := strconv.Atoi(numPackageSTR)
+	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   "invalid_input",
-			"message": validationErr.Message,
-			"fields":  validationErr.Fields,
+			"message": "invalid request",
 		})
 	}
 
-	// otros casos de error
-	switch {
-	case errors.Is(err, usepackages.ErrInvalidInput):
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   "invalid_input",
-			"message": err.Error(),
-		})
-	case errors.Is(err, usepackages.ErrRelatedEntityMustProvideID):
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   "related_entity_id_required",
-			"message": err.Error(),
-		})
-	case errors.Is(err, usepackages.ErrRelatedEntityNotFound):
-		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error":   "related_entity_not_found",
-			"message": err.Error(),
-		})
-	case errors.Is(err, usepackages.ErrBusinessRuleViolation):
-		return ctx.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
-			"error":   "business_rule_violation",
-			"message": err.Error(),
-		})
-	default:
-		// unknown/internal error
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error":   "internal_server_error",
-			"message": "could not create package",
-		})
+	err = h.cancelleUC.Execute(ctx.Context(), int64(numPackage))
+	if err != nil {
+		return h.handleErrorCancel(ctx, err)
 	}
+
+	return ctx.Status(fiber.StatusNoContent).JSON(fiber.Map{})
 }

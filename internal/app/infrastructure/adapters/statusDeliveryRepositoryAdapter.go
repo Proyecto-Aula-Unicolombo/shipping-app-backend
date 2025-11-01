@@ -5,16 +5,16 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 
 	"shipping-app/internal/app/domain/entities"
-	"shipping-app/internal/app/domain/ports/repository"
 )
 
 type StatusDeliveryRepositoryPostgres struct {
 	db *sql.DB
 }
 
-func NewStatusDeliveryRepositoryPostgres(db *sql.DB) repository.StatusDeliveryRepository {
+func NewStatusDeliveryRepositoryPostgres(db *sql.DB) *StatusDeliveryRepositoryPostgres {
 	return &StatusDeliveryRepositoryPostgres{db: db}
 }
 
@@ -68,4 +68,22 @@ func (r *StatusDeliveryRepositoryPostgres) Create(ctx context.Context, tx *sql.T
 	}
 
 	return nil
+}
+
+func (r *StatusDeliveryRepositoryPostgres) Delete(ctx context.Context, tx *sql.Tx, id uint) error {
+	query := `DELETE FROM statusdelivery WHERE id = $1`
+	var err error
+	if tx != nil {
+		_, err = tx.ExecContext(ctx, query, id)
+	} else {
+		_, err = r.db.ExecContext(ctx, query, id)
+	}
+
+	if err != nil {
+		log.Printf("ERROR executing DELETE statusdelivery: %v", err)
+		return fmt.Errorf("delete status delivery: %w", err)
+	}
+
+	return nil
+
 }

@@ -21,8 +21,9 @@ func SetPackageRouter(apiv1 fiber.Router, db *sql.DB) {
 	repoPackage := adapters.NewPackageRepositoryPostgres(db)
 
 	createPackageUseCase := usepackages.NewCreatePackageUseCase(txProviderRepo, repoPackage, addressPackage, comercialInformation, senderRepo, receiverRepo, statusDelivery, domainSvc)
-
-	packageHandler := handlerpackages.NewPackageHandler(createPackageUseCase)
+	cancelPackageUseCase := usepackages.NewCancellPackageUseCase(repoPackage, comercialInformation, statusDelivery, txProviderRepo)
+	packageHandler := handlerpackages.NewPackageHandler(createPackageUseCase, cancelPackageUseCase)
 
 	apiv1.Post("/packages", packageHandler.CreatePackage)
+	apiv1.Delete("/packages/:numPackage", packageHandler.DeletePackage)
 }
