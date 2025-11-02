@@ -7,4 +7,6 @@ type Sender struct {
 	Address     string
 	PhoneNumber string
 	Email       string
+	APIKey      string
+	IsActive    bool
 }

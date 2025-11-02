@@ -160,6 +160,46 @@ func (r *PackageRepositoryPostgres) DeletePackage(ctx context.Context, tx *sql.T
 	return err
 }
 
+func (r *PackageRepositoryPostgres) GetByID(ctx context.Context, tx *sql.Tx, id uint) (*entities.Package, error) {
+	query := `
+		SELECT id, numpackage, startstatus, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
+		       idaddresspackage, idstatusdelivery, idcomercialinformation, idsender, idreceivers, created_at, updated_at
+		FROM packages
+		WHERE id = $1
+	`
+	var pkg entities.Package
+	var scanErr error
+	if tx != nil {
+		scanErr = tx.QueryRowContext(ctx, query, id).Scan(
+			&pkg.ID,
+			&pkg.NumPackage,
+			&pkg.StartStatus,
+			&pkg.DescriptionContent,
+			&pkg.Weight,
+			&pkg.Dimension,
+			&pkg.DeclaredValue,
+			&pkg.TypePackage,
+			&pkg.IsFragile,
+			&pkg.AddressPackageID,
+			&pkg.StatusDeliveryID,
+			&pkg.ComercialInformationID,
+			&pkg.SenderID,
+			&pkg.ReceiverID,
+			&pkg.CreatedAt,
+			&pkg.UpdatedAt,
+		)
+	}
+
+	if scanErr != nil {
+		if errors.Is(scanErr, sql.ErrNoRows) {
+			return nil, repository.ErrPackageNotFound
+		}
+		return nil, fmt.Errorf("get package by id: %w", scanErr)
+	}
+
+	return &pkg, nil
+}
+
 type PackageConflictError struct {
 	NumPackage int64
 	ExistingID uint

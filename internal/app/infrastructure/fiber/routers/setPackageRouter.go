@@ -3,27 +3,23 @@ package routers
 import (
 	"database/sql"
 	usepackages "shipping-app/internal/app/application/UsePackages"
-	services "shipping-app/internal/app/domain/services/package"
 	"shipping-app/internal/app/infrastructure/adapters"
 	"shipping-app/internal/app/infrastructure/fiber/handlers/handlerpackages"
 
 	"github.com/gofiber/fiber/v3"
 )
 
-func SetPackageRouter(apiv1 fiber.Router, db *sql.DB) {
+func SetPackageRouter(api fiber.Router, db *sql.DB) {
 	addressPackage := adapters.NewAddressPackageRepositoryPostgres(db)
 	comercialInformation := adapters.NewComercialInformationRepositoryPostgres(db)
 	senderRepo := adapters.NewSenderRepositoryPostgres(db)
 	receiverRepo := adapters.NewReceiverRepositoryPostgres(db)
 	statusDelivery := adapters.NewStatusDeliveryRepositoryPostgres(db)
 	txProviderRepo := adapters.NewSQLTxProvider(db)
-	domainSvc := services.NewValidatePackageService()
 	repoPackage := adapters.NewPackageRepositoryPostgres(db)
 
-	createPackageUseCase := usepackages.NewCreatePackageUseCase(txProviderRepo, repoPackage, addressPackage, comercialInformation, senderRepo, receiverRepo, statusDelivery, domainSvc)
-	cancelPackageUseCase := usepackages.NewCancellPackageUseCase(repoPackage, comercialInformation, statusDelivery, txProviderRepo)
-	packageHandler := handlerpackages.NewPackageHandler(createPackageUseCase, cancelPackageUseCase)
+	consultPackageUseCase := usepackages.NewConsultPackageUseCase(repoPackage, txProviderRepo, addressPackage, comercialInformation, senderRepo, receiverRepo, statusDelivery)
+	packageHandler := handlerpackages.NewPackageHandler(nil, nil, consultPackageUseCase)
 
-	apiv1.Post("/packages", packageHandler.CreatePackage)
-	apiv1.Delete("/packages/:numPackage", packageHandler.DeletePackage)
+	api.Get("/packages/:id", packageHandler.ConsultPackageByID)
 }
