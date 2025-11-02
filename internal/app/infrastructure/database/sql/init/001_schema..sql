@@ -33,7 +33,9 @@ CREATE TABLE IF NOT EXISTS senders (
     document VARCHAR(50) NOT NULL,
     address TEXT NOT NULL,
     phonenumber VARCHAR(20) NOT NULL,
-    email VARCHAR(100) NOT NULL
+    email VARCHAR(100) NOT NULL UNIQUE,
+    api_key VARCHAR(255) UNIQUE,
+    is_active BOOLEAN DEFAULT true
 );
 
 
@@ -42,7 +44,7 @@ CREATE TABLE IF NOT EXISTS receivers (
     name VARCHAR(100) NOT NULL,
     lastname VARCHAR(100) NOT NULL,
     phonenumber VARCHAR(20) NOT NULL,
-    email VARCHAR(100) NOT NULL
+    email VARCHAR(100) NOT NULL UNIQUE
 );
 
 
@@ -148,3 +150,4 @@ CREATE INDEX IF NOT EXISTS idx_addresspackages_route ON addresspackages(origin, 
 CREATE INDEX IF NOT EXISTS idx_senders_email ON senders(email);
 CREATE INDEX IF NOT EXISTS idx_senders_document ON senders(document);
 CREATE INDEX IF NOT EXISTS idx_receivers_email ON receivers(email);
+CREATE INDEX IF NOT EXISTS idx_senders_api_key ON senders(api_key) WHERE api_key IS NOT NULL;
