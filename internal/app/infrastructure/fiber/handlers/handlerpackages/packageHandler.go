@@ -26,10 +26,11 @@ type CreatePackageRequest struct {
 type PackageHandler struct {
 	createUC   *usepackages.CreatePackageUseCase
 	cancelleUC *usepackages.CancelPackageUseCase
+	consultUC  *usepackages.ConsultPackageUseCase
 }
 
-func NewPackageHandler(createUC *usepackages.CreatePackageUseCase, cancelleUC *usepackages.CancelPackageUseCase) *PackageHandler {
-	return &PackageHandler{createUC: createUC, cancelleUC: cancelleUC}
+func NewPackageHandler(createUC *usepackages.CreatePackageUseCase, cancelleUC *usepackages.CancelPackageUseCase, consultUC *usepackages.ConsultPackageUseCase) *PackageHandler {
+	return &PackageHandler{createUC: createUC, cancelleUC: cancelleUC, consultUC: consultUC}
 }
 
 func (h *PackageHandler) CreatePackage(ctx fiber.Ctx) error {
@@ -83,4 +84,71 @@ func (h *PackageHandler) DeletePackage(ctx fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusNoContent).JSON(fiber.Map{})
+}
+
+func (h *PackageHandler) ConsultPackageByNumPackage(ctx fiber.Ctx) error {
+	numPackageStr := ctx.Params("numPackage")
+	numPackage, err := strconv.ParseInt(numPackageStr, 10, 64)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   "invalid_numpackage",
+			"message": "NumPackage must be a valid number",
+		})
+	}
+
+	// Obtener sender_id del contexto (puesto por el middleware APIKeyAuth)
+	senderID, ok := ctx.Locals("sender_id").(uint)
+	if !ok {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error":   "unauthorized",
+			"message": "Invalid sender authentication",
+		})
+	}
+
+	input := usepackages.ConsultPackageInput{
+		CTX:        ctx.Context(),
+		NumPackage: &numPackage,
+		AuthType:   "api_key",
+		SenderID:   &senderID,
+	}
+
+	response, err := h.consultUC.Execute(input)
+	if err != nil {
+		return h.handleErrorCancel(ctx, err)
+	}
+
+	return ctx.JSON(response)
+}
+
+// Para UI (con JWT)
+func (h *PackageHandler) ConsultPackageByID(ctx fiber.Ctx) error {
+	idStr := ctx.Params("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   "invalid_id",
+			"message": "ID must be a valid number",
+		})
+	}
+
+	packageID := uint(id)
+
+	// Obtener información del usuario del contexto (puesto por JWTAuth)
+	userRole, _ := ctx.Locals("user_role").(string)
+	driverID, _ := ctx.Locals("driver_id").(*uint)
+
+	input := usepackages.ConsultPackageInput{
+		CTX:       ctx.Context(),
+		PackageID: &packageID,
+		AuthType:  "jwt",
+		UserRole:  userRole,
+		DriverID:  driverID,
+	}
+
+	response, err := h.consultUC.Execute(input)
+	if err != nil {
+		return h.handleErrorConsult(ctx, err)
+	}
+
+	return ctx.JSON(response)
 }

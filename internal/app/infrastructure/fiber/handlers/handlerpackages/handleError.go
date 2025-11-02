@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	usepackages "shipping-app/internal/app/application/UsePackages"
+	"shipping-app/internal/app/domain/ports/repository"
 	"shipping-app/internal/app/infrastructure/adapters"
 
 	"github.com/gofiber/fiber/v3"
@@ -92,6 +93,31 @@ func (h *PackageHandler) handleErrorCreate(ctx fiber.Ctx, err error) error {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error":   "internal_server_error",
 			"message": "could not create package",
+		})
+	}
+}
+
+func (h *PackageHandler) handleErrorConsult(c fiber.Ctx, err error) error {
+	switch err {
+	case usepackages.ErrInvalidSearchCriteria:
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   "invalid_search_criteria",
+			"message": err.Error(),
+		})
+	case usepackages.ErrAccessDenied:
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error":   "access_denied",
+			"message": "You don't have permission to access this package",
+		})
+	case repository.ErrPackageNotFound:
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error":   "package_not_found",
+			"message": "Package not found",
+		})
+	default:
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "internal_server_error",
+			"message": "An unexpected error occurred",
 		})
 	}
 }
