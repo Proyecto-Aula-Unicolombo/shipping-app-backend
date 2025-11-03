@@ -1,7 +1,7 @@
 package gateway
 
 import (
-	"shipping-app/internal/gateway/services"
+	"shipping-app/internal/externalServices/services"
 
 	"github.com/gofiber/fiber/v3"
 )

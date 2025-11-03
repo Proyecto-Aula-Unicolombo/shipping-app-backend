@@ -6,21 +6,21 @@ import (
 	usepackages "shipping-app/internal/app/application/UsePackages"
 	services "shipping-app/internal/app/domain/services/package"
 	"shipping-app/internal/app/infrastructure/adapters"
-	handlergateway "shipping-app/internal/app/infrastructure/fiber/handlers/gateway"
+	externalHandler "shipping-app/internal/app/infrastructure/fiber/handlers/externalHandler"
 	"shipping-app/internal/app/infrastructure/fiber/handlers/handlerpackages"
-	gatewayservices "shipping-app/internal/gateway/services"
+	api_key "shipping-app/internal/externalServices/services"
 	"shipping-app/internal/middleware"
 
 	"github.com/gofiber/fiber/v3"
 )
 
-func SetGatewayRouter(gateway fiber.Router, db *sql.DB, apiKeyService *gatewayservices.APIKeyService) {
+func SetExternalRouter(external fiber.Router, db *sql.DB, apiKeyService *api_key.APIKeyService) {
 	// Rutas públicas
-	senderHandler := handlergateway.NewSenderHandler(apiKeyService)
-	gateway.Post("/senders/register", senderHandler.RegisterSender)
+	senderHandler := externalHandler.NewSenderHandler(apiKeyService)
+	external.Post("/senders/register", senderHandler.RegisterSender)
 
 	// Rutas protegidas con API Key
-	api := gateway.Group("/api/v1")
+	api := external.Group("/api/v1")
 	api.Use(middleware.APIKeyAuth(apiKeyService))
 
 	addressPackage := adapters.NewAddressPackageRepositoryPostgres(db)

@@ -3,8 +3,8 @@ package routers
 import (
 	"database/sql"
 	// "os"
-	// "shipping-app/internal/gateway/auth"
-	"shipping-app/internal/gateway/services"
+	// "shipping-app/internal/externalServices/auth"
+	"shipping-app/internal/externalServices/services"
 	// "shipping-app/internal/middleware"
 
 	"github.com/gofiber/fiber/v3"
@@ -30,8 +30,8 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 	// jwtService := auth.NewJWTService(jwtSecret)
 	apiKeyService := services.NewAPIKeyService(db)
 
-	gateway := app.Group("/gateway")
-	SetGatewayRouter(gateway, db, apiKeyService)
+	external := app.Group("/external")
+	SetExternalRouter(external, db, apiKeyService)
 
 	apiv1 := app.Group("/api/v1")
 	// apiv1.Use(middleware.JWTAuth(jwtService))

@@ -3,8 +3,8 @@ package middleware
 import (
 	"strings"
 
-	"shipping-app/internal/gateway/auth"
-	"shipping-app/internal/gateway/services"
+	"shipping-app/internal/externalServices/auth"
+	"shipping-app/internal/externalServices/services"
 
 	"github.com/gofiber/fiber/v3"
 )
