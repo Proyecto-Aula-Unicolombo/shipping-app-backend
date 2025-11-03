@@ -18,15 +18,11 @@ func NewSenderRepositoryPostgres(db *sql.DB) *SenderRepositoryPostgres {
 	return &SenderRepositoryPostgres{db: db}
 }
 
-func (r *SenderRepositoryPostgres) GetByID(ctx context.Context, tx *sql.Tx, id uint) (*entities.Sender, error) {
+func (r *SenderRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entities.Sender, error) {
 	query := `SELECT id, name, document, address, phonenumber, email FROM senders WHERE id = $1`
 	var s entities.Sender
 	var row *sql.Row
-	if tx != nil {
-		row = tx.QueryRowContext(ctx, query, id)
-	} else {
-		row = r.db.QueryRowContext(ctx, query, id)
-	}
+	row = r.db.QueryRowContext(ctx, query, id)
 	if err := row.Scan(&s.ID, &s.Name, &s.Document, &s.Address, &s.PhoneNumber, &s.Email); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -36,7 +32,7 @@ func (r *SenderRepositoryPostgres) GetByID(ctx context.Context, tx *sql.Tx, id u
 	return &s, nil
 }
 
-func (r *SenderRepositoryPostgres) FindByEmailOrDocument(ctx context.Context, tx *sql.Tx, email, document string) (*entities.Sender, error) {
+func (r *SenderRepositoryPostgres) FindByEmailOrDocument(ctx context.Context, email, document string) (*entities.Sender, error) {
 	query := `
 		SELECT id, name, document, address, phonenumber, email
 		FROM senders
@@ -45,27 +41,15 @@ func (r *SenderRepositoryPostgres) FindByEmailOrDocument(ctx context.Context, tx
 	`
 
 	var sender entities.Sender
-	var err error
 
-	if tx != nil {
-		err = tx.QueryRowContext(ctx, query, email, document).Scan(
-			&sender.ID,
-			&sender.Name,
-			&sender.Document,
-			&sender.Address,
-			&sender.PhoneNumber,
-			&sender.Email,
-		)
-	} else {
-		err = r.db.QueryRowContext(ctx, query, email, document).Scan(
-			&sender.ID,
-			&sender.Name,
-			&sender.Document,
-			&sender.Address,
-			&sender.PhoneNumber,
-			&sender.Email,
-		)
-	}
+	err := r.db.QueryRowContext(ctx, query, email, document).Scan(
+		&sender.ID,
+		&sender.Name,
+		&sender.Document,
+		&sender.Address,
+		&sender.PhoneNumber,
+		&sender.Email,
+	)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

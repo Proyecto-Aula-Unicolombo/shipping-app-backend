@@ -17,15 +17,11 @@ func NewAddressPackageRepositoryPostgres(db *sql.DB) *AddressPackageRepositoryPo
 	return &AddressPackageRepositoryPostgres{db: db}
 }
 
-func (r *AddressPackageRepositoryPostgres) GetByID(ctx context.Context, tx *sql.Tx, id uint) (*entities.AddressPackage, error) {
+func (r *AddressPackageRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entities.AddressPackage, error) {
 	query := `SELECT id, origin, destination, delivery_instructions FROM addresspackages WHERE id = $1`
 	var addr entities.AddressPackage
 	var row *sql.Row
-	if tx != nil {
-		row = tx.QueryRowContext(ctx, query, id)
-	} else {
-		row = r.db.QueryRowContext(ctx, query, id)
-	}
+	row = r.db.QueryRowContext(ctx, query, id)
 	if err := row.Scan(&addr.ID, &addr.Origin, &addr.Destination, &addr.DeliveryInstructions); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil // no existe
@@ -34,7 +30,8 @@ func (r *AddressPackageRepositoryPostgres) GetByID(ctx context.Context, tx *sql.
 	}
 	return &addr, nil
 }
-func (r *AddressPackageRepositoryPostgres) FindByRoute(ctx context.Context, tx *sql.Tx, origin, destination string) (*entities.AddressPackage, error) {
+
+func (r *AddressPackageRepositoryPostgres) FindByRoute(ctx context.Context, origin, destination string) (*entities.AddressPackage, error) {
 	query := `
 		SELECT id, origin, destination, delivery_instructions
 		FROM addresspackages
@@ -43,23 +40,13 @@ func (r *AddressPackageRepositoryPostgres) FindByRoute(ctx context.Context, tx *
 	`
 
 	var addr entities.AddressPackage
-	var err error
 
-	if tx != nil {
-		err = tx.QueryRowContext(ctx, query, origin, destination).Scan(
-			&addr.ID,
-			&addr.Origin,
-			&addr.Destination,
-			&addr.DeliveryInstructions,
-		)
-	} else {
-		err = r.db.QueryRowContext(ctx, query, origin, destination).Scan(
-			&addr.ID,
-			&addr.Origin,
-			&addr.Destination,
-			&addr.DeliveryInstructions,
-		)
-	}
+	err := r.db.QueryRowContext(ctx, query, origin, destination).Scan(
+		&addr.ID,
+		&addr.Origin,
+		&addr.Destination,
+		&addr.DeliveryInstructions,
+	)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

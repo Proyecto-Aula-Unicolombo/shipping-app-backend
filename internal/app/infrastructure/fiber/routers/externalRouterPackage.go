@@ -37,7 +37,7 @@ func SetExternalRouter(external fiber.Router, db *sql.DB, apiKeyService *api_key
 		senderRepo, receiverRepo, statusDelivery, domainSvc,
 	)
 	consultPackageUseCase := usepackages.NewConsultPackageUseCase(
-		repoPackage, txProviderRepo, addressPackage, comercialInformation,
+		repoPackage, addressPackage, comercialInformation,
 		senderRepo, receiverRepo, statusDelivery,
 	)
 	cancelPackageUseCase := usepackages.NewCancellPackageUseCase(

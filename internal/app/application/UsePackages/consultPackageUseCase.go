@@ -37,7 +37,6 @@ type ResponsePackage struct {
 }
 type ConsultPackageUseCase struct {
 	packageRepo   repository.PackageRepository
-	txRepo        repository.TxProvider
 	addressRepo   repository.AddressPackageRepository
 	comercialRepo repository.ComercialInformationRepository
 	senderRepo    repository.SenderRepository
@@ -47,7 +46,6 @@ type ConsultPackageUseCase struct {
 
 func NewConsultPackageUseCase(
 	packageRepo repository.PackageRepository,
-	txRepo repository.TxProvider,
 	addressRepo repository.AddressPackageRepository,
 	comercialRepo repository.ComercialInformationRepository,
 	senderRepo repository.SenderRepository,
@@ -56,7 +54,6 @@ func NewConsultPackageUseCase(
 ) *ConsultPackageUseCase {
 	return &ConsultPackageUseCase{
 		packageRepo:   packageRepo,
-		txRepo:        txRepo,
 		addressRepo:   addressRepo,
 		comercialRepo: comercialRepo,
 		senderRepo:    senderRepo,
@@ -83,7 +80,7 @@ func (uc *ConsultPackageUseCase) Execute(input ConsultPackageInput) (*ResponsePa
 	// Buscar paquete según el criterio
 	if input.PackageID != nil {
 		// Búsqueda por ID (típicamente desde UI)
-		pkg, err = uc.packageRepo.GetByID(input.CTX, nil, *input.PackageID)
+		pkg, err = uc.packageRepo.GetByID(input.CTX, *input.PackageID)
 	} else {
 		// Búsqueda por NumPackage (típicamente desde API Key)
 		pkg, err = uc.packageRepo.GetByNumPackage(input.CTX, *input.NumPackage)
@@ -100,7 +97,6 @@ func (uc *ConsultPackageUseCase) Execute(input ConsultPackageInput) (*ResponsePa
 
 	addrEntity, statusEntity, cominfoEntity, senderEntity, receiverEntity, err := GetRelatedEntities(
 		input.CTX,
-		nil,
 		uc.addressRepo,
 		uc.statusRepo,
 		uc.comercialRepo,

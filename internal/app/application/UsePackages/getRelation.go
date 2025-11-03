@@ -2,14 +2,12 @@ package usepackages
 
 import (
 	"context"
-	"database/sql"
 	"shipping-app/internal/app/domain/entities"
 	"shipping-app/internal/app/domain/ports/repository"
 )
 
 func GetRelatedEntities(
 	ctx context.Context,
-	tx *sql.Tx,
 	addressRepo repository.AddressPackageRepository,
 	statusRepo repository.StatusDeliveryRepository,
 	comercialRepo repository.ComercialInformationRepository,
@@ -24,24 +22,24 @@ func GetRelatedEntities(
 	*entities.Receiver,
 	error,
 ) {
-	addrEntity, err := addressRepo.GetByID(ctx, tx, packageEntity.AddressPackageID)
+	addrEntity, err := addressRepo.GetByID(ctx, packageEntity.AddressPackageID)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
-	statusEntity, err := statusRepo.GetByID(ctx, tx, packageEntity.StatusDeliveryID)
+	statusEntity, err := statusRepo.GetByID(ctx, packageEntity.StatusDeliveryID)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
-	cominfoEntity, err := comercialRepo.GetByID(ctx, tx, packageEntity.ComercialInformationID)
+	cominfoEntity, err := comercialRepo.GetByID(ctx, packageEntity.ComercialInformationID)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
 	// puede ser necesario o no, solo es por prueba, ya que el que deberia recibir es el mismo sender.
-	senderEntity, err := senderRepo.GetByID(ctx, tx, packageEntity.SenderID)
+	senderEntity, err := senderRepo.GetByID(ctx, packageEntity.SenderID)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
-	receiverEntity, err := receiverRepo.GetByID(ctx, tx, packageEntity.ReceiverID)
+	receiverEntity, err := receiverRepo.GetByID(ctx, packageEntity.ReceiverID)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}

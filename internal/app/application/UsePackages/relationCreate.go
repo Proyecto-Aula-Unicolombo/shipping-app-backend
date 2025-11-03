@@ -39,7 +39,7 @@ func CreateOrFetchRelatedEntitiesFromDTOs(
 		return nil, nil, nil, nil, nil, fmt.Errorf("%w: addresspackage", ErrMissingRelatedInput)
 	}
 
-	addrEntity, err := addressRepo.FindByRoute(ctx, tx, input.AddressPackage.Origin, input.AddressPackage.Destination)
+	addrEntity, err := addressRepo.FindByRoute(ctx, input.AddressPackage.Origin, input.AddressPackage.Destination)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, nil, nil, nil, nil, fmt.Errorf("find addresspackage: %w", err)
 	}
@@ -77,7 +77,7 @@ func CreateOrFetchRelatedEntitiesFromDTOs(
 		return nil, nil, nil, nil, nil, fmt.Errorf("%w: sender", ErrMissingRelatedInput)
 	}
 
-	senderEntity, err := senderRepo.FindByEmailOrDocument(ctx, tx, input.Sender.Email, input.Sender.Document)
+	senderEntity, err := senderRepo.FindByEmailOrDocument(ctx, input.Sender.Email, input.Sender.Document)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, nil, nil, nil, nil, fmt.Errorf("find sender: %w", err)
 	}
@@ -94,7 +94,7 @@ func CreateOrFetchRelatedEntitiesFromDTOs(
 		return nil, nil, nil, nil, nil, fmt.Errorf("%w: receiver", ErrMissingRelatedInput)
 	}
 
-	receiverEntity, err := receiverRepo.FindByEmail(ctx, tx, input.Receiver.Email)
+	receiverEntity, err := receiverRepo.FindByEmail(ctx, input.Receiver.Email)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, nil, nil, nil, nil, fmt.Errorf("find receiver: %w", err)
 	}

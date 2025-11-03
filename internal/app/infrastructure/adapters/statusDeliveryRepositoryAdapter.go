@@ -18,15 +18,11 @@ func NewStatusDeliveryRepositoryPostgres(db *sql.DB) *StatusDeliveryRepositoryPo
 	return &StatusDeliveryRepositoryPostgres{db: db}
 }
 
-func (r *StatusDeliveryRepositoryPostgres) GetByID(ctx context.Context, tx *sql.Tx, id uint) (*entities.StatusDelivery, error) {
+func (r *StatusDeliveryRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entities.StatusDelivery, error) {
 	query := `SELECT id, status, priority, date_estimated_delivery, date_real_delivery FROM statusdelivery WHERE id = $1`
 	var s entities.StatusDelivery
 	var row *sql.Row
-	if tx != nil {
-		row = tx.QueryRowContext(ctx, query, id)
-	} else {
-		row = r.db.QueryRowContext(ctx, query, id)
-	}
+	row = r.db.QueryRowContext(ctx, query, id)
 	if err := row.Scan(&s.ID, &s.Status, &s.Priority, &s.DateEstimatedDelivery, &s.DateRealDelivery); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil

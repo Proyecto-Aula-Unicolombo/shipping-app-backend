@@ -18,15 +18,11 @@ func NewComercialInformationRepositoryPostgres(db *sql.DB) *ComercialInformation
 	return &ComercialInformationRepositoryPostgres{db: db}
 }
 
-func (r *ComercialInformationRepositoryPostgres) GetByID(ctx context.Context, tx *sql.Tx, id uint) (*entities.ComercialInformation, error) {
+func (r *ComercialInformationRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entities.ComercialInformation, error) {
 	query := `SELECT id, cost_sending, is_paid FROM comercialinformations WHERE id = $1`
 	var ci entities.ComercialInformation
 	var row *sql.Row
-	if tx != nil {
-		row = tx.QueryRowContext(ctx, query, id)
-	} else {
-		row = r.db.QueryRowContext(ctx, query, id)
-	}
+	row = r.db.QueryRowContext(ctx, query, id)
 	if err := row.Scan(&ci.ID, &ci.CostSending, &ci.IsPaid); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
