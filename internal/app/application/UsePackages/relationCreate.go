@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log"
 
-	"shipping-app/internal/app/application/UsePackages/related"
+	related "shipping-app/internal/app/application/UsePackages/related"
 	"shipping-app/internal/app/domain/entities"
 	"shipping-app/internal/app/domain/ports/repository"
 )

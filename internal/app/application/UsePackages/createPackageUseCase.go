@@ -3,7 +3,7 @@ package usepackages
 import (
 	"context"
 	"fmt"
-	"shipping-app/internal/app/application/UsePackages/related"
+	related "shipping-app/internal/app/application/UsePackages/related"
 	"shipping-app/internal/app/domain/entities"
 	"shipping-app/internal/app/domain/ports/repository"
 	services "shipping-app/internal/app/domain/services/package"

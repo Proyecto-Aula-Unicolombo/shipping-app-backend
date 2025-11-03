@@ -1,24 +1,11 @@
 package usepackages
 
 import (
-	"context"
 	"errors"
-	"shipping-app/internal/app/application/UsePackages/related"
+	related "shipping-app/internal/app/application/UsePackages/related"
 	"shipping-app/internal/app/domain/entities"
 	"shipping-app/internal/app/domain/ports/repository"
 )
-
-type ConsultPackageInput struct {
-	CTX context.Context
-
-	PackageID  *uint  `json:"package_id,omitempty"`  // Para UI (interno)
-	NumPackage *int64 `json:"num_package,omitempty"` // Para API Key (externo)
-
-	AuthType string `json:"-"` // "jwt" o "api_key"
-	UserRole string `json:"-"` // "coordinator", "driver"
-	DriverID *uint  `json:"-"` // ID del conductor (para filtrar)
-	SenderID *uint  `json:"-"` // ID del sender (para filtrar)
-}
 
 type ResponsePackage struct {
 	ID                   uint
@@ -29,6 +16,7 @@ type ResponsePackage struct {
 	Dimension            *float64
 	DeclaredValue        *float64
 	TypePackage          *string
+	IsFragile            bool
 	AddressPackage       *related.AdressPackageResponse
 	StatusDelivery       *related.StatusDeliveryResponse
 	ComercialInformation *related.ComercialInformationResponse
@@ -68,7 +56,7 @@ var (
 	ErrAccessDenied          = errors.New("access denied to this package")
 )
 
-func (uc *ConsultPackageUseCase) Execute(input ConsultPackageInput) (*ResponsePackage, error) {
+func (uc *ConsultPackageUseCase) Execute(input InputCheckAccess) (*ResponsePackage, error) {
 
 	if input.PackageID == nil && input.NumPackage == nil {
 		return nil, ErrInvalidSearchCriteria
@@ -80,10 +68,10 @@ func (uc *ConsultPackageUseCase) Execute(input ConsultPackageInput) (*ResponsePa
 	// Buscar paquete según el criterio
 	if input.PackageID != nil {
 		// Búsqueda por ID (típicamente desde UI)
-		pkg, err = uc.packageRepo.GetByID(input.CTX, *input.PackageID)
+		pkg, err = uc.packageRepo.GetByID(input.Ctx, *input.PackageID)
 	} else {
 		// Búsqueda por NumPackage (típicamente desde API Key)
-		pkg, err = uc.packageRepo.GetByNumPackage(input.CTX, *input.NumPackage)
+		pkg, err = uc.packageRepo.GetByNumPackage(input.Ctx, *input.NumPackage)
 	}
 
 	if err != nil {
@@ -91,12 +79,12 @@ func (uc *ConsultPackageUseCase) Execute(input ConsultPackageInput) (*ResponsePa
 	}
 
 	// Verificar permisos de acceso
-	if err := uc.checkAccess(pkg, input); err != nil {
+	if err := CheckAccess(pkg, input); err != nil {
 		return nil, err
 	}
 
 	addrEntity, statusEntity, cominfoEntity, senderEntity, receiverEntity, err := GetRelatedEntities(
-		input.CTX,
+		input.Ctx,
 		uc.addressRepo,
 		uc.statusRepo,
 		uc.comercialRepo,
@@ -118,6 +106,7 @@ func (uc *ConsultPackageUseCase) Execute(input ConsultPackageInput) (*ResponsePa
 		Dimension:          pkg.Dimension,
 		DeclaredValue:      pkg.DeclaredValue,
 		TypePackage:        pkg.TypePackage,
+		IsFragile:          pkg.IsFragile,
 		AddressPackage: &related.AdressPackageResponse{
 			Origin:               addrEntity.Origin,
 			Destination:          addrEntity.Destination,
@@ -148,27 +137,4 @@ func (uc *ConsultPackageUseCase) Execute(input ConsultPackageInput) (*ResponsePa
 	}
 
 	return response, nil
-}
-
-// checkAccess verifica si el usuario/sender tiene acceso al paquete
-func (uc *ConsultPackageUseCase) checkAccess(pkg *entities.Package, input ConsultPackageInput) error {
-	switch input.AuthType {
-	case "api_key":
-		if input.SenderID != nil && pkg.SenderID != *input.SenderID {
-			return ErrAccessDenied
-		}
-
-	case "jwt":
-		switch input.UserRole {
-		case "coordinator":
-			return nil
-
-		case "driver":
-			return nil
-		default:
-			return ErrAccessDenied
-		}
-	}
-
-	return nil
 }

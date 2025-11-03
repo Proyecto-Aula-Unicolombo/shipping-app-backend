@@ -2,7 +2,7 @@ package handlerpackages
 
 import (
 	usepackages "shipping-app/internal/app/application/UsePackages"
-	"shipping-app/internal/app/application/UsePackages/related"
+	related "shipping-app/internal/app/application/UsePackages/related"
 	"strconv"
 
 	"github.com/gofiber/fiber/v3"
@@ -105,8 +105,8 @@ func (h *PackageHandler) ConsultPackageByNumPackage(ctx fiber.Ctx) error {
 		})
 	}
 
-	input := usepackages.ConsultPackageInput{
-		CTX:        ctx.Context(),
+	input := usepackages.InputCheckAccess{
+		Ctx:        ctx.Context(),
 		NumPackage: &numPackage,
 		AuthType:   "api_key",
 		SenderID:   &senderID,
@@ -137,8 +137,8 @@ func (h *PackageHandler) ConsultPackageByID(ctx fiber.Ctx) error {
 	userRole, _ := ctx.Locals("user_role").(string)
 	driverID, _ := ctx.Locals("driver_id").(*uint)
 
-	input := usepackages.ConsultPackageInput{
-		CTX:       ctx.Context(),
+	input := usepackages.InputCheckAccess{
+		Ctx:       ctx.Context(),
 		PackageID: &packageID,
 		AuthType:  "jwt",
 		UserRole:  userRole,

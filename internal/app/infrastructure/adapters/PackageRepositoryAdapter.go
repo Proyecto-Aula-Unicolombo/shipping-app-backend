@@ -160,7 +160,7 @@ func (r *PackageRepositoryPostgres) DeletePackage(ctx context.Context, tx *sql.T
 	return err
 }
 
-func (r *PackageRepositoryPostgres) GetByID(ctx context.Context, tx *sql.Tx, id uint) (*entities.Package, error) {
+func (r *PackageRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entities.Package, error) {
 	query := `
 		SELECT id, numpackage, startstatus, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
 		       idaddresspackage, idstatusdelivery, idcomercialinformation, idsender, idreceivers, created_at, updated_at
@@ -169,8 +169,53 @@ func (r *PackageRepositoryPostgres) GetByID(ctx context.Context, tx *sql.Tx, id 
 	`
 	var pkg entities.Package
 	var scanErr error
-	if tx != nil {
-		scanErr = tx.QueryRowContext(ctx, query, id).Scan(
+	scanErr = r.db.QueryRowContext(ctx, query, id).Scan(
+		&pkg.ID,
+		&pkg.NumPackage,
+		&pkg.StartStatus,
+		&pkg.DescriptionContent,
+		&pkg.Weight,
+		&pkg.Dimension,
+		&pkg.DeclaredValue,
+		&pkg.TypePackage,
+		&pkg.IsFragile,
+		&pkg.AddressPackageID,
+		&pkg.StatusDeliveryID,
+		&pkg.ComercialInformationID,
+		&pkg.SenderID,
+		&pkg.ReceiverID,
+		&pkg.CreatedAt,
+		&pkg.UpdatedAt,
+	)
+
+	if scanErr != nil {
+		if errors.Is(scanErr, sql.ErrNoRows) {
+			return nil, repository.ErrPackageNotFound
+		}
+		return nil, fmt.Errorf("get package by id: %w", scanErr)
+	}
+
+	return &pkg, nil
+}
+
+func (r *PackageRepositoryPostgres) ListPackages(ctx context.Context, limit, offset int) ([]*entities.Package, error) {
+	query := `
+		SELECT id, numpackage, startstatus, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
+		       idaddresspackage, idstatusdelivery, idcomercialinformation, idsender, idreceivers, created_at
+		FROM packages
+		ORDER BY created_at DESC
+		LIMIT $1 OFFSET $2
+	`
+	rows, err := r.db.QueryContext(ctx, query, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("list packages: %w", err)
+	}
+	defer rows.Close()
+
+	var packages []*entities.Package
+	for rows.Next() {
+		var pkg entities.Package
+		if err := rows.Scan(
 			&pkg.ID,
 			&pkg.NumPackage,
 			&pkg.StartStatus,
@@ -186,18 +231,15 @@ func (r *PackageRepositoryPostgres) GetByID(ctx context.Context, tx *sql.Tx, id 
 			&pkg.SenderID,
 			&pkg.ReceiverID,
 			&pkg.CreatedAt,
-			&pkg.UpdatedAt,
-		)
-	}
-
-	if scanErr != nil {
-		if errors.Is(scanErr, sql.ErrNoRows) {
-			return nil, repository.ErrPackageNotFound
+		); err != nil {
+			return nil, fmt.Errorf("list packages: %w", err)
 		}
-		return nil, fmt.Errorf("get package by id: %w", scanErr)
+		packages = append(packages, &pkg)
 	}
-
-	return &pkg, nil
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list packages: %w", err)
+	}
+	return packages, nil
 }
 
 type PackageConflictError struct {
