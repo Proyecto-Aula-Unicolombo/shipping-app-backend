@@ -198,6 +198,51 @@ func (r *PackageRepositoryPostgres) GetByID(ctx context.Context, id uint) (*enti
 	return &pkg, nil
 }
 
+func (r *PackageRepositoryPostgres) ListPackagesBySenderID(ctx context.Context, senderID uint, limit, offset int) ([]*entities.Package, error) {
+	query := `
+		SELECT id, numpackage, startstatus, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
+		       idaddresspackage, idstatusdelivery, idcomercialinformation, idsender, idreceivers, created_at
+		FROM packages
+		WHERE idsender = $1
+		ORDER BY created_at DESC
+		LIMIT $2 OFFSET $3
+	`
+	rows, err := r.db.QueryContext(ctx, query, senderID, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("list packages: %w", err)
+	}
+	defer rows.Close()
+
+	var packages []*entities.Package
+	for rows.Next() {
+		var pkg entities.Package
+		if err := rows.Scan(
+			&pkg.ID,
+			&pkg.NumPackage,
+			&pkg.StartStatus,
+			&pkg.DescriptionContent,
+			&pkg.Weight,
+			&pkg.Dimension,
+			&pkg.DeclaredValue,
+			&pkg.TypePackage,
+			&pkg.IsFragile,
+			&pkg.AddressPackageID,
+			&pkg.StatusDeliveryID,
+			&pkg.ComercialInformationID,
+			&pkg.SenderID,
+			&pkg.ReceiverID,
+			&pkg.CreatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("list packages: %w", err)
+		}
+		packages = append(packages, &pkg)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list packages: %w", err)
+	}
+	return packages, nil
+}
+
 func (r *PackageRepositoryPostgres) ListPackages(ctx context.Context, limit, offset int) ([]*entities.Package, error) {
 	query := `
 		SELECT id, numpackage, startstatus, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,

@@ -17,6 +17,7 @@ type PackageRepository interface {
 	GetByNumPackage(ctx context.Context, numPackage int64) (*entities.Package, error)
 	GetByID(ctx context.Context, id uint) (*entities.Package, error)
 	GetStatusPackageToCancel(ctx context.Context, id uint) (*entities.Package, error)
+	ListPackagesBySenderID(ctx context.Context, senderID uint, limit, offset int) ([]*entities.Package, error)
 	ListPackages(ctx context.Context, limit, offset int) ([]*entities.Package, error)
 	DeletePackage(ctx context.Context, tx *sql.Tx, id uint) error
 }

@@ -6,6 +6,7 @@ import (
 	usepackages "shipping-app/internal/app/application/UsePackages"
 	"shipping-app/internal/app/domain/ports/repository"
 	"shipping-app/internal/app/infrastructure/adapters"
+	"shipping-app/internal/utils"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -97,7 +98,7 @@ func (h *PackageHandler) handleErrorCreate(ctx fiber.Ctx, err error) error {
 	}
 }
 
-func (h *PackageHandler) handleErrorConsult(c fiber.Ctx, err error) error {
+func (h *PackageHandler) handleErrorConsultOrList(c fiber.Ctx, err error) error {
 	switch err {
 	case usepackages.ErrInvalidSearchCriteria:
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -114,6 +115,17 @@ func (h *PackageHandler) handleErrorConsult(c fiber.Ctx, err error) error {
 			"error":   "package_not_found",
 			"message": "Package not found",
 		})
+	case usepackages.ErrNoPackagesFound:
+		packages := []*usepackages.ResponsePackage{}
+		response := utils.NewPaginationResponse(packages, 0, 0, 0)
+		return c.Status(fiber.StatusNotFound).JSON(response)
+
+	case usepackages.ErrGetRelatedEntities:
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "related_entities_retrieval_error",
+			"message": "Could not retrieve related entities for the package",
+		})
+
 	default:
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error":   "internal_server_error",

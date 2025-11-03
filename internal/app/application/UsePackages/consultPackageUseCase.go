@@ -56,7 +56,7 @@ var (
 	ErrAccessDenied          = errors.New("access denied to this package")
 )
 
-func (uc *ConsultPackageUseCase) Execute(input InputCheckAccess) (*ResponsePackage, error) {
+func (uc *ConsultPackageUseCase) Execute(input CheckAccessInput) (*ResponsePackage, error) {
 
 	if input.PackageID == nil && input.NumPackage == nil {
 		return nil, ErrInvalidSearchCriteria

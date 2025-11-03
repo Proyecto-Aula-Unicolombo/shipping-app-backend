@@ -19,7 +19,12 @@ func SetPackageRouter(api fiber.Router, db *sql.DB) {
 	repoPackage := adapters.NewPackageRepositoryPostgres(db)
 
 	consultPackageUseCase := usepackages.NewConsultPackageUseCase(repoPackage, addressPackage, comercialInformation, senderRepo, receiverRepo, statusDelivery)
-	packageHandler := handlerpackages.NewPackageHandler(nil, nil, consultPackageUseCase)
+	listPackagesUseCase := usepackages.NewListPackagesUseCase(
+		repoPackage, addressPackage, comercialInformation,
+		senderRepo, receiverRepo, statusDelivery,
+	)
+	packageHandler := handlerpackages.NewPackageHandler(nil, nil, consultPackageUseCase, listPackagesUseCase)
 
 	api.Get("/packages/:id", packageHandler.ConsultPackageByID)
+	api.Get("/packages", packageHandler.ListPackages)
 }
