@@ -122,14 +122,14 @@ CREATE TABLE IF NOT EXISTS informationdeliveries (
 CREATE TABLE IF NOT EXISTS tracks (
     id SERIAL PRIMARY KEY,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    location GEOMETRY(POINT, 4326) NOT NULL,
+    location GEOGRAPHY(POINT, 4326) NOT NULL,
     idorder INTEGER NOT NULL,
     FOREIGN KEY (idorder) REFERENCES orders(id)
 );
 
 CREATE TABLE IF NOT EXISTS deliverystops (
     id SERIAL PRIMARY KEY,
-    stoplocation GEOMETRY(POINT, 4326) NOT NULL,
+    stoplocation GEOGRAPHY(POINT, 4326) NOT NULL,
     typestop VARCHAR(50) NOT NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     description TEXT,
