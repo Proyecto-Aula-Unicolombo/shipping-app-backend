@@ -37,5 +37,6 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 	// apiv1.Use(middleware.JWTAuth(jwtService))
 	SetUserRouter(apiv1, db)
 	SetPackageRouter(apiv1, db)
+	SetTrackRouter(apiv1, db)
 
 }
