@@ -2,6 +2,7 @@ package tracksHandlers
 
 import (
 	"shipping-app/internal/app/application/tracks"
+	"shipping-app/internal/app/infrastructure/adapters/ws"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
@@ -9,10 +10,11 @@ import (
 
 type TrackHandler struct {
 	registerUC *tracks.TrackRegisterUseCase
+	hub        *ws.Hub
 }
 
-func NewTrackHandler(registerUC *tracks.TrackRegisterUseCase) *TrackHandler {
-	return &TrackHandler{registerUC: registerUC}
+func NewTrackHandler(registerUC *tracks.TrackRegisterUseCase, hub *ws.Hub) *TrackHandler {
+	return &TrackHandler{registerUC: registerUC, hub: hub}
 }
 
 type TrackRegisterRequest struct {
@@ -64,5 +66,12 @@ func (h *TrackHandler) RegisterTrack(ctx fiber.Ctx) error {
 		TrackID:   trackOutput.TrackID,
 	}
 
-	return ctx.Status(fiber.StatusCreated).JSON(trackOutputResponse)
+	var postMessage = ws.WebSocketMessage{
+		Type:    "Track_created",
+		Payload: trackOutputResponse,
+	}
+
+	h.hub.BroadcastJSON(postMessage, nil)
+
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Track created successfully"})
 }

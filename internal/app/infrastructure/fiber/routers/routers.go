@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	// "os"
 	// "shipping-app/internal/externalServices/auth"
+	"shipping-app/internal/app/infrastructure/adapters/ws"
 	"shipping-app/internal/externalServices/services"
+
 	// "shipping-app/internal/middleware"
 
 	"github.com/gofiber/fiber/v3"
@@ -15,7 +17,17 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{"Origin, Content-Type, Accept, Authorization"},
+		AllowHeaders: []string{
+			"Origin",
+			"Content-Type",
+			"Accept",
+			"Authorization",
+			"Upgrade",
+			"Connection",
+			"Sec-WebSocket-Key",
+			"Sec-WebSocket-Version",
+			"Sec-WebSocket-Protocol",
+		},
 		AllowMethods: []string{
 			fiber.MethodGet,
 			fiber.MethodPost,
@@ -26,6 +38,10 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 			fiber.MethodOptions,
 		},
 	}))
+
+	hub := ws.NewHub()
+	go hub.Run()
+	app.Get("/api/v1/ws", hub.HandleWebSocketConnection)
 	// jwtSecret := os.Getenv("JWT_SECRET")
 	// jwtService := auth.NewJWTService(jwtSecret)
 	apiKeyService := services.NewAPIKeyService(db)
@@ -37,6 +53,6 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 	// apiv1.Use(middleware.JWTAuth(jwtService))
 	SetUserRouter(apiv1, db)
 	SetPackageRouter(apiv1, db)
-	SetTrackRouter(apiv1, db)
+	SetTrackRouter(apiv1, db, hub)
 
 }
