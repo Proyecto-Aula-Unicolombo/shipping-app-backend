@@ -16,6 +16,11 @@ type UserRepositoryPostgres struct {
 	db *sql.DB
 }
 
+// DeleteUser implements repository.UserRepository.
+func (r *UserRepositoryPostgres) DeleteUser(id uint) error {
+	panic("unimplemented")
+}
+
 func NewUserRepositoryPostgres(db *sql.DB) *UserRepositoryPostgres {
 	return &UserRepositoryPostgres{db: db}
 }
