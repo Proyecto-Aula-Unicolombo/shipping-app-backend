@@ -1,18 +1,22 @@
 package users
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"shipping-app/internal/app/domain/entities"
 	"shipping-app/internal/app/domain/ports/repository"
 	"shipping-app/internal/utils"
 )
 
 type CreateUserInput struct {
-	Name     string
-	LastName string
-	Email    string
-	Password string
-	Role     string
+	Name        string
+	LastName    string
+	Email       string
+	Password    string
+	Role        string
+	PhoneNumber string
+	NumLicence  string
 }
 
 var (
@@ -23,14 +27,16 @@ var (
 )
 
 type CreateUserUseCase struct {
-	userRepo repository.UserRepository
+	userRepo   repository.UserRepository
+	driver     repository.DriverRepository
+	tcProvider repository.TxProvider
 }
 
-func NewCreateUserUseCase(userRepo repository.UserRepository) *CreateUserUseCase {
-	return &CreateUserUseCase{userRepo: userRepo}
+func NewCreateUserUseCase(userRepo repository.UserRepository, driver repository.DriverRepository, tcProvider repository.TxProvider) *CreateUserUseCase {
+	return &CreateUserUseCase{userRepo: userRepo, driver: driver, tcProvider: tcProvider}
 }
 
-func (us *CreateUserUseCase) Execute(input CreateUserInput) error {
+func (us *CreateUserUseCase) Execute(ctx context.Context, input CreateUserInput) error {
 	if err := validateInput(input); err != nil {
 		return err
 	}
@@ -38,6 +44,17 @@ func (us *CreateUserUseCase) Execute(input CreateUserInput) error {
 	if err != nil {
 		return errors.New("error hashing password")
 	}
+
+	tx, err := us.tcProvider.BeginTx(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	committed := false
+	defer func() {
+		if !committed {
+			_ = us.tcProvider.RollbackTx(ctx, tx)
+		}
+	}()
 
 	user := entities.User{
 		Name:     input.Name,
@@ -47,7 +64,27 @@ func (us *CreateUserUseCase) Execute(input CreateUserInput) error {
 		Role:     input.Role,
 	}
 
-	return us.userRepo.CreateUser(&user)
+	if err := us.userRepo.CreateUserTx(tx, &user); err != nil {
+		return err
+	}
+
+	if input.Role == "driver" {
+		driver := entities.Driver{
+			UserID:      user.ID,
+			PhoneNumber: input.PhoneNumber,
+			LicenseNo:   input.NumLicence,
+		}
+		if err := us.driver.CreateDriverTx(tx, &driver); err != nil {
+			return errors.New("error creating driver")
+		}
+	}
+
+	if err := us.tcProvider.CommitTx(ctx, tx); err != nil {
+		return fmt.Errorf("commit tx: %w", err)
+	}
+	committed = true
+
+	return nil
 }
 
 func validateInput(input CreateUserInput) error {
@@ -60,8 +97,9 @@ func validateInput(input CreateUserInput) error {
 	}
 
 	validRoles := map[string]bool{
-		"coord": true,
-		"admin": true,
+		"coord":  true,
+		"admin":  true,
+		"driver": true,
 	}
 
 	if !validRoles[input.Role] {

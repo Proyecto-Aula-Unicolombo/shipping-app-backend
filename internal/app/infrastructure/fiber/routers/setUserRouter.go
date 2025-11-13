@@ -12,7 +12,9 @@ import (
 
 func SetUserRouter(apiv1 fiber.Router, db *sql.DB) {
 	repoUser := adapters.NewUserRepositoryPostgres(db)
-	createUserUseCase := application.NewCreateUserUseCase(repoUser)
+	driverRepo := adapters.NewDriverRepositoryAdapter(db)
+	txProvider := adapters.NewSQLTxProvider(db)
+	createUserUseCase := application.NewCreateUserUseCase(repoUser, driverRepo, txProvider)
 	handlerUser := handler.NewHandlerUser(createUserUseCase)
 	apiv1.Post("/users", handlerUser.CreateUser)
 }
