@@ -9,11 +9,13 @@ import (
 )
 
 type CreateUserRequest struct {
-	Name     string `json:"name"`
-	LastName string `json:"last_name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Role     string `json:"role"`
+	Name        string `json:"name"`
+	LastName    string `json:"last_name"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	Role        string `json:"role"`
+	PhoneNumber string `json:"phone_number"`
+	NumLicence  string `json:"num_licence"`
 }
 
 type ErrorResponse struct {
@@ -38,14 +40,16 @@ func (h *HandlerUser) CreateUser(ctx fiber.Ctx) error {
 		})
 	}
 	input := users.CreateUserInput{
-		Name:     req.Name,
-		LastName: req.LastName,
-		Email:    req.Email,
-		Password: req.Password,
-		Role:     req.Role,
+		Name:        req.Name,
+		LastName:    req.LastName,
+		Email:       req.Email,
+		Password:    req.Password,
+		Role:        req.Role,
+		PhoneNumber: req.PhoneNumber,
+		NumLicence:  req.NumLicence,
 	}
 
-	if err := h.createUserUseCase.Execute(input); err != nil {
+	if err := h.createUserUseCase.Execute(ctx, input); err != nil {
 		return h.handleError(ctx, err)
 	}
 
