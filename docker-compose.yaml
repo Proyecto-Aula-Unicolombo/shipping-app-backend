@@ -1,41 +1,40 @@
+version: "3.8"
+
 services:
-    
-    db:
-      image: postgis/postgis:16-3.4-alpine
-      ports: 
-        - "${DB_PORT:-5432}:5432"
-      environment:
-        POSTGRES_USER: ${DB_USER}
-        POSTGRES_PASSWORD: ${DB_PASSWORD}
-        POSTGRES_DB: ${DB_NAME}
-      healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U postgres"]
-        interval: 20s
-        timeout: 15s
-        retries: 5
-      networks:
-        - app-network
-      volumes:
-        - db_data:/var/lib/postgresql/data
-        - ./internal/app/infrastructure/database/sql/init:/docker-entrypoint-initdb.d:ro
+  db:
+    image: postgis/postgis:16-3.4-alpine
+    ports: 
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: shipping
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 20s
+      timeout: 15s
+      retries: 5
+    networks:
+      - app-network
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./internal/app/infrastructure/database/sql/init:/docker-entrypoint-initdb.d:ro
 
-    app:
-      build: .
-      ports:
-        - "8000:8080"
-      environment:
-        DB_HOST:  ${DB_HOST}
-        DB_PORT: ${DB_PORT}
-        DB_USER: ${DB_USER}
-        DB_PASSWORD: ${DB_PASSWORD}
-        DB_NAME: ${DB_NAME}
-      depends_on:
-        db:
-          condition: service_healthy
-      networks:
-        - app-network
-
-
+  app:
+    build: .
+    ports:
+      - "8000:8080"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: shipping
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
 
 networks:
   app-network:
