@@ -57,3 +57,21 @@ func (r *UserRepositoryPostgres) GetUserByID(id uint) (*entities.User, error) {
 	}
 	return &user, nil
 }
+
+func (r *UserRepositoryPostgres) ListUsers(limit, offset int, NameOrLastname string) ([]*entities.User, error) {
+	query := `SELECT id, name, lastname, email, role FROM users WHERE name ILIKE $1 OR lastname ILIKE $1 LIMIT $2 OFFSET $3`
+	rows, err := r.db.Query(query, "%"+NameOrLastname+"%", limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("error listing users: %w", err)
+	}
+	defer rows.Close()
+	var users []*entities.User
+	for rows.Next() {
+		var user entities.User
+		if err := rows.Scan(&user.ID, &user.Name, &user.LastName, &user.Email, &user.Role); err != nil {
+			return nil, fmt.Errorf("error scanning user row: %w", err)
+		}
+		users = append(users, &user)
+	}
+	return users, nil
+}

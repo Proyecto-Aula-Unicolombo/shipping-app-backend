@@ -15,6 +15,9 @@ func SetUserRouter(apiv1 fiber.Router, db *sql.DB) {
 	driverRepo := adapters.NewDriverRepositoryAdapter(db)
 	txProvider := adapters.NewSQLTxProvider(db)
 	createUserUseCase := application.NewCreateUserUseCase(repoUser, driverRepo, txProvider)
-	handlerUser := handler.NewHandlerUser(createUserUseCase)
+	listUsersUseCase := application.NewListUsersUseCase(repoUser)
+	handlerUser := handler.NewHandlerUser(createUserUseCase, listUsersUseCase)
+
 	apiv1.Post("/users", handlerUser.CreateUser)
+	apiv1.Get("/users", handlerUser.ListUsers)
 }

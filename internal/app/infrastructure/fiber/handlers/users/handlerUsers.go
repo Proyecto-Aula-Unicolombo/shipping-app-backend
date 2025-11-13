@@ -1,9 +1,8 @@
 package users
 
 import (
-	"errors"
 	"shipping-app/internal/app/application/users"
-	"shipping-app/internal/app/infrastructure/adapters"
+	"shipping-app/internal/utils"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -25,10 +24,11 @@ type ErrorResponse struct {
 
 type HandlerUser struct {
 	createUserUseCase *users.CreateUserUseCase
+	listUsersUseCase  *users.ListUsersUseCase
 }
 
-func NewHandlerUser(createUserUseCase *users.CreateUserUseCase) *HandlerUser {
-	return &HandlerUser{createUserUseCase: createUserUseCase}
+func NewHandlerUser(createUserUseCase *users.CreateUserUseCase, listUsersUseCase *users.ListUsersUseCase) *HandlerUser {
+	return &HandlerUser{createUserUseCase: createUserUseCase, listUsersUseCase: listUsersUseCase}
 }
 
 func (h *HandlerUser) CreateUser(ctx fiber.Ctx) error {
@@ -56,32 +56,21 @@ func (h *HandlerUser) CreateUser(ctx fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "user created successfully"})
 }
 
-func (h *HandlerUser) handleError(ctx fiber.Ctx, err error) error {
-	switch {
-	case errors.Is(err, users.ErrInvalidInput):
-		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_input",
-			Message: err.Error(),
-		})
-	case errors.Is(err, users.ErrPasswordTooShort):
-		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "password_too_short",
-			Message: err.Error(),
-		})
-	case errors.Is(err, users.ErrInvalidRole):
-		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_role",
-			Message: err.Error(),
-		})
-	case errors.Is(err, adapters.ErrUserAlreadyExists):
-		return ctx.Status(fiber.StatusConflict).JSON(ErrorResponse{
-			Error:   "user_already_exists",
-			Message: "A user with this email already exists",
-		})
-	default:
-		return ctx.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "internal_server_error",
-			Message: "Could not create user",
-		})
+func (h *HandlerUser) ListUsers(ctx fiber.Ctx) error {
+	params := utils.GetPaginationParams(ctx)
+	nameOrLastname := ctx.Query("name_or_last_name")
+
+	input := users.ListUserInput{
+		Limit:          params.Limit,
+		Offset:         params.Offset,
+		NameOrLastname: nameOrLastname,
 	}
+	users, total, err := h.listUsersUseCase.Execute(input)
+	if err != nil {
+		return h.handleError(ctx, err)
+	}
+
+	response := utils.NewPaginationResponse(users, int(total), params.Page, params.Limit)
+
+	return ctx.JSON(response)
 }
