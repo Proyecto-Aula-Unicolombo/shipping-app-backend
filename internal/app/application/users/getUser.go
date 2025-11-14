@@ -29,7 +29,6 @@ func (uc *GetUser) Execute(id uint) (*entities.User, error) {
 		return nil, ErrUserNotFound
 	}
 
-	// No devolver password
 	user.Password = ""
 	return user, nil
 }

@@ -2,13 +2,21 @@ package vehicles
 
 import (
 	"errors"
-	"shipping-app/internal/app/application/Vehicles"
+	"shipping-app/internal/app/application/vehicles"
 	"shipping-app/internal/app/infrastructure/adapters"
     "strconv" 
 	"github.com/gofiber/fiber/v3"
 )
 
 type CreateVehicleRequest struct {
+	Plate       string `json:"plate"`
+	Brand       string `json:"brand"`
+	Model       string `json:"model"`
+	Color       string `json:"color"`
+	VehicleType string `json:"vehicleType"`
+}
+
+type UpdateVehicleRequest struct {  
 	Plate       string `json:"plate"`
 	Brand       string `json:"brand"`
 	Model       string `json:"model"`
@@ -26,19 +34,22 @@ type HandlerVehicle struct {
 	getVehicleUseCase    *vehicles.GetVehicle
 	deleteVehicleUseCase *vehicles.DeleteVehicleUseCase
 	listVehiclesUseCase  *vehicles.ListVehicles
+	updateVehicleUseCase *vehicles.UpdateVehicleUseCase
 }
 
 func NewHandlerVehicle(
 	createVehicleUseCase *vehicles.CreateVehicleUseCase,
 	getVehicleUseCase *vehicles.GetVehicle, 
 	deleteVehicleUseCase *vehicles.DeleteVehicleUseCase, 
-	listVehiclesUseCase *vehicles.ListVehicles,// ← AGREGAR
+	listVehiclesUseCase *vehicles.ListVehicles,
+	updateVehicleUseCase *vehicles.UpdateVehicleUseCase,
 ) *HandlerVehicle {
 	return &HandlerVehicle{
 		createVehicleUseCase: createVehicleUseCase,
 		getVehicleUseCase:    getVehicleUseCase, 
 		deleteVehicleUseCase: deleteVehicleUseCase,
-		listVehiclesUseCase:  listVehiclesUseCase, // ← AGREGAR
+		listVehiclesUseCase:  listVehiclesUseCase,
+		updateVehicleUseCase: updateVehicleUseCase, 
 	}
 }
 
@@ -70,10 +81,9 @@ func (h *HandlerVehicle) CreateVehicle(ctx fiber.Ctx) error {
 }
 
 func (h *HandlerVehicle) GetVehicle(ctx fiber.Ctx) error {
-	// 1. Extraer ID de la URL
+	
 	idParam := ctx.Params("id")
 	
-	// 2. Convertir a número
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
@@ -82,13 +92,11 @@ func (h *HandlerVehicle) GetVehicle(ctx fiber.Ctx) error {
 		})
 	}
 
-	// 3. Llamar al caso de uso
 	vehicle, err := h.getVehicleUseCase.Execute(uint(id))
 	if err != nil {
 		return h.handleGetVehicleError(ctx, err)
 	}
 
-	// 4. Devolver vehículo
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Vehículo consultado exitosamente",
 		"data":    vehicle,
@@ -96,12 +104,9 @@ func (h *HandlerVehicle) GetVehicle(ctx fiber.Ctx) error {
 }
 
 func (h *HandlerVehicle) DeleteVehicle(ctx fiber.Ctx) error {
-	// TODO: Validar que solo COORDINADOR puede eliminar
 	
-	// 1. Extraer ID de la URL
 	idParam := ctx.Params("id")
 	
-	// 2. Convertir a número
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
@@ -110,21 +115,17 @@ func (h *HandlerVehicle) DeleteVehicle(ctx fiber.Ctx) error {
 		})
 	}
 
-	// 3. Ejecutar caso de uso
 	err = h.deleteVehicleUseCase.Execute(uint(id))
 	if err != nil {
 		return h.handleDeleteVehicleError(ctx, err)
 	}
 
-	// 4. Respuesta exitosa
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Vehículo eliminado correctamente",
 	})
 }
 func (h *HandlerVehicle) ListVehiclesSimple(ctx fiber.Ctx) error {
-	// TODO: Agregar filtros por rol si es necesario
-	// COORDINADOR: todos los vehículos
-	// CONDUCTOR: solo vehículos asignados a él
+
 	
 	vehicles, err := h.listVehiclesUseCase.Execute()
 	if err != nil {
@@ -139,6 +140,8 @@ func (h *HandlerVehicle) ListVehiclesSimple(ctx fiber.Ctx) error {
 		"total": len(vehicles),
 	})
 }
+
+
 
 func (h *HandlerVehicle) handleDeleteVehicleError(ctx fiber.Ctx, err error) error {
 	switch {
@@ -173,6 +176,46 @@ func (h *HandlerVehicle) handleGetVehicleError(ctx fiber.Ctx, err error) error {
 			Message: "Error al consultar vehículo",
 		})
 	}
+}
+
+func (h *HandlerVehicle) UpdateVehicle(ctx fiber.Ctx) error {
+	idParam := ctx.Params("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Error:   "invalid_id",
+			Message: "El ID debe ser un número válido",
+		})
+	}
+
+	var req UpdateVehicleRequest
+	if err := ctx.Bind().Body(&req); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Error:   "invalid_request",
+			Message: "Cuerpo de petición inválido",
+		})
+	}
+
+	input := vehicles.UpdateVehicleInput{
+		ID:          uint(id),
+		Plate:       req.Plate,
+		Brand:       req.Brand,
+		Model:       req.Model,
+		Color:       req.Color,
+		VehicleType: req.VehicleType,
+	}
+
+	err = h.updateVehicleUseCase.Execute(input)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Error:   "update_failed",
+			Message: err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Vehículo actualizado correctamente",
+	})
 }
 
 func (h *HandlerVehicle) handleError(ctx fiber.Ctx, err error) error {

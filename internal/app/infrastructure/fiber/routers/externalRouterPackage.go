@@ -15,11 +15,9 @@ import (
 )
 
 func SetExternalRouter(external fiber.Router, db *sql.DB, apiKeyService *api_key.APIKeyService) {
-	// Rutas públicas
 	senderHandler := externalHandler.NewSenderHandler(apiKeyService)
 	external.Post("/senders/register", senderHandler.RegisterSender)
 
-	// Rutas protegidas con API Key
 	api := external.Group("/api/v1")
 	api.Use(middleware.APIKeyAuth(apiKeyService))
 

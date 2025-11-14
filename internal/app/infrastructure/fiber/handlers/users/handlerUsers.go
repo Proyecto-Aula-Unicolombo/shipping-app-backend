@@ -10,7 +10,6 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-// ========== ESTRUCTURAS ==========
 
 type UpdateUserRequest struct {
 	Name     string `json:"name"`
@@ -34,7 +33,6 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
-// ========== HANDLER ==========
 
 type HandlerUser struct {
 	createUserUseCase     *users.CreateUserUseCase
@@ -63,7 +61,6 @@ func NewHandlerUser(
 	}
 }
 
-// ========== CreateUser ==========
 
 func (h *HandlerUser) CreateUser(ctx fiber.Ctx) error {
 	var req CreateUserRequest
@@ -90,7 +87,6 @@ func (h *HandlerUser) CreateUser(ctx fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "user created successfully"})
 }
 
-// ========== GetUser ==========
 
 func (h *HandlerUser) GetUser(ctx fiber.Ctx) error {
 	idParam := ctx.Params("id")
@@ -114,7 +110,6 @@ func (h *HandlerUser) GetUser(ctx fiber.Ctx) error {
 	})
 }
 
-// ========== UpdateUser ==========
 
 func (h *HandlerUser) UpdateUser(ctx fiber.Ctx) error {
 	idParam := ctx.Params("id")
@@ -155,7 +150,6 @@ func (h *HandlerUser) UpdateUser(ctx fiber.Ctx) error {
 	})
 }
 
-// ========== DeleteUser ==========
 
 func (h *HandlerUser) DeleteUser(ctx fiber.Ctx) error {
 	idParam := ctx.Params("id")
@@ -178,7 +172,6 @@ func (h *HandlerUser) DeleteUser(ctx fiber.Ctx) error {
 	})
 }
 
-// ========== ListUsersSimple (tuyo - sin paginación) ==========
 
 func (h *HandlerUser) ListUsersSimple(ctx fiber.Ctx) error {
 	users, err := h.listUsersUseCase.Execute()
@@ -195,7 +188,6 @@ func (h *HandlerUser) ListUsersSimple(ctx fiber.Ctx) error {
 	})
 }
 
-// ========== ListUsersPaginated (del compañero - con paginación) ==========
 
 func (h *HandlerUser) ListUsersPaginated(ctx fiber.Ctx) error {
 	params := utils.GetPaginationParams(ctx)
@@ -217,7 +209,6 @@ func (h *HandlerUser) ListUsersPaginated(ctx fiber.Ctx) error {
 	return ctx.JSON(response)
 }
 
-// ========== MANEJO DE ERRORES ==========
 
 func (h *HandlerUser) handleGetUserError(ctx fiber.Ctx, err error) error {
 	switch {

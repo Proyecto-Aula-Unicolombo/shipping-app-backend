@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"shipping-app/internal/app/domain/entities"
-
 	"github.com/lib/pq"
 )
 
@@ -22,7 +21,6 @@ func NewVehicleRepositoryPostgres(db *sql.DB) *VehicleRepositoryPostgres {
 	return &VehicleRepositoryPostgres{db: db}
 }
 
-// ==================== CREATE ====================
 
 func (r *VehicleRepositoryPostgres) CreateVehicleTx(tx *sql.Tx, v *entities.Vehicle) error {
 	query := `
@@ -53,7 +51,6 @@ func (r *VehicleRepositoryPostgres) CreateVehicleTx(tx *sql.Tx, v *entities.Vehi
 	return nil
 }
 
-// ==================== GET BY ID ====================
 
 func (r *VehicleRepositoryPostgres) GetVehicleByID(id uint) (*entities.Vehicle, error) {
 	var v entities.Vehicle
@@ -83,11 +80,10 @@ func (r *VehicleRepositoryPostgres) GetVehicleByID(id uint) (*entities.Vehicle, 
 	return &v, nil
 }
 
-// ==================== UNIMPLEMENTED ====================
 
 func (r *VehicleRepositoryPostgres) DeleteVehicle(id uint) error {
 	query := `DELETE FROM vehicles WHERE id = $1`
-	
+
 	res, err := r.db.Exec(query, id)
 	if err != nil {
 		return fmt.Errorf("error deleting vehicle: %w", err)
@@ -97,7 +93,7 @@ func (r *VehicleRepositoryPostgres) DeleteVehicle(id uint) error {
 	if err != nil {
 		return fmt.Errorf("error checking rows affected: %w", err)
 	}
-	
+
 	if rowsAffected == 0 {
 		return ErrVehicleNotFound
 	}
@@ -111,13 +107,13 @@ func (r *VehicleRepositoryPostgres) GetAllVehicles() ([]*entities.Vehicle, error
 		FROM vehicles
 		ORDER BY id
 	`
-	
+
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("error getting all vehicles: %w", err)
 	}
 	defer rows.Close()
-	
+
 	var vehicles []*entities.Vehicle
 	for rows.Next() {
 		var v entities.Vehicle
@@ -134,11 +130,11 @@ func (r *VehicleRepositoryPostgres) GetAllVehicles() ([]*entities.Vehicle, error
 		}
 		vehicles = append(vehicles, &v)
 	}
-	
+
 	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating vehicles: %w", err)
 	}
-	
+
 	return vehicles, nil
 }
 
@@ -147,5 +143,33 @@ func (r *VehicleRepositoryPostgres) ListVehicles(limit int, offset int, PlateOrB
 }
 
 func (r *VehicleRepositoryPostgres) UpdateVehicle(vehicle *entities.Vehicle) error {
-	panic("unimplemented")
+	query := `
+		UPDATE vehicles 
+		SET plate = $1, brand = $2, model = $3, color = $4, vehicletype = $5
+		WHERE id = $6
+	`
+
+	res, err := r.db.Exec(
+		query,
+		vehicle.Plate,
+		vehicle.Brand,
+		vehicle.Model,
+		vehicle.Color,
+		vehicle.VehicleType,
+		vehicle.ID,
+	)
+	if err != nil {
+		return fmt.Errorf("error updating vehicle: %w", err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return ErrVehicleNotFound
+	}
+
+	return nil
 }

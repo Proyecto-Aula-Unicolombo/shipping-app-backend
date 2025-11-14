@@ -22,7 +22,7 @@ func NewUserRepositoryPostgres(db *sql.DB) *UserRepositoryPostgres {
 	return &UserRepositoryPostgres{db: db}
 }
 
-// CreateUserTx del compañero (con transacción)
+
 func (r *UserRepositoryPostgres) CreateUserTx(tx *sql.Tx, user *entities.User) error {
 	query := `
 		INSERT INTO users (name, lastname, email, password, role)
@@ -46,7 +46,6 @@ func (r *UserRepositoryPostgres) CreateUserTx(tx *sql.Tx, user *entities.User) e
 	return nil
 }
 
-// GetUserByID
 func (r *UserRepositoryPostgres) GetUserByID(id uint) (*entities.User, error) {
 	var user entities.User
 	query := `SELECT id, name, lastname, email, role FROM users WHERE id = $1`
@@ -69,7 +68,6 @@ func (r *UserRepositoryPostgres) GetUserByID(id uint) (*entities.User, error) {
 	return &user, nil
 }
 
-// ListUsers del compañero (con paginación y búsqueda)
 func (r *UserRepositoryPostgres) ListUsers(limit, offset int, NameOrLastname string) ([]*entities.User, error) {
 	query := `SELECT id, name, lastname, email, role FROM users WHERE name ILIKE $1 OR lastname ILIKE $1 LIMIT $2 OFFSET $3`
 	rows, err := r.db.Query(query, "%"+NameOrLastname+"%", limit, offset)
@@ -89,7 +87,6 @@ func (r *UserRepositoryPostgres) ListUsers(limit, offset int, NameOrLastname str
 	return users, nil
 }
 
-// GetAllUsers tuyo (sin paginación)
 func (r *UserRepositoryPostgres) GetAllUsers() ([]*entities.User, error) {
 	query := `SELECT id, name, lastname, email, role FROM users ORDER BY id`
 	
@@ -122,7 +119,6 @@ func (r *UserRepositoryPostgres) GetAllUsers() ([]*entities.User, error) {
 	return users, nil
 }
 
-// DeleteUser tuyo
 func (r *UserRepositoryPostgres) DeleteUser(id uint) error {
 	query := `DELETE FROM users WHERE id = $1`
 	res, err := r.db.Exec(query, id)
@@ -141,7 +137,6 @@ func (r *UserRepositoryPostgres) DeleteUser(id uint) error {
 	return nil
 }
 
-// UpdateUser tuyo
 func (r *UserRepositoryPostgres) UpdateUser(user *entities.User) error {
 	query := `
 		UPDATE users 
