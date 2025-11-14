@@ -110,13 +110,9 @@ func (h *HandlerUser) GetUser(ctx fiber.Ctx) error {
 		return h.handleGetUserError(ctx, err)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Usuario consultado exitosamente",
-		"data":    user,
-	})
+	return ctx.Status(fiber.StatusOK).JSON(user)
 }
 
-// ========== UpdateUser ==========
 
 func (h *HandlerUser) UpdateUser(ctx fiber.Ctx) error {
 	idParam := ctx.Params("id")

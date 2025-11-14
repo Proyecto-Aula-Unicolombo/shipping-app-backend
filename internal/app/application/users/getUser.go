@@ -2,7 +2,7 @@ package users
 
 import (
 	"errors"
-	"shipping-app/internal/app/domain/entities"
+	"shipping-app/internal/app/application/users/drivers"
 	"shipping-app/internal/app/domain/ports/repository"
 )
 
@@ -11,15 +11,25 @@ var (
 	ErrInvalidID    = errors.New("ID inválido")
 )
 
+type UserOutput struct {
+	ID       uint
+	Name     string
+	LastName string
+	Email    string
+	Role     string
+	Driver   drivers.DriverDTO
+}
+
 type GetUser struct {
-	repo repository.UserRepository
+	repo       repository.UserRepository
+	driverRepo repository.DriverRepository
 }
 
-func NewGetUser(repo repository.UserRepository) *GetUser {
-	return &GetUser{repo: repo}
+func NewGetUser(repo repository.UserRepository, driverRepo repository.DriverRepository) *GetUser {
+	return &GetUser{repo: repo, driverRepo: driverRepo}
 }
 
-func (uc *GetUser) Execute(id uint) (*entities.User, error) {
+func (uc *GetUser) Execute(id uint) (*UserOutput, error) {
 	if id == 0 {
 		return nil, ErrInvalidID
 	}
@@ -29,7 +39,25 @@ func (uc *GetUser) Execute(id uint) (*entities.User, error) {
 		return nil, ErrUserNotFound
 	}
 
-	// No devolver password
-	user.Password = ""
-	return user, nil
+	userOutput := &UserOutput{
+		ID:       user.ID,
+		Name:     user.Name,
+		LastName: user.LastName,
+		Email:    user.Email,
+		Role:     user.Role,
+	}
+
+	if user.Role == "driver" {
+		driver, err := uc.driverRepo.GetDriverByUserID(user.ID)
+		if err != nil {
+			return nil, err
+		}
+		userOutput.Driver = drivers.DriverDTO{
+			ID:          driver.ID,
+			PhoneNumber: driver.PhoneNumber,
+			LicenseNo:   driver.LicenseNo,
+		}
+	}
+
+	return userOutput, nil
 }
