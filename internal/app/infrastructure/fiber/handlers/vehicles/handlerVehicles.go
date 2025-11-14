@@ -2,7 +2,7 @@ package vehicles
 
 import (
 	"errors"
-	"shipping-app/internal/app/application/vehicles"
+	"shipping-app/internal/app/application/Vehicles"
 	"shipping-app/internal/app/infrastructure/adapters"
 
 	"github.com/gofiber/fiber/v3"
