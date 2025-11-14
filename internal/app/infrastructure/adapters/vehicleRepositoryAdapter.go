@@ -86,11 +86,60 @@ func (r *VehicleRepositoryPostgres) GetVehicleByID(id uint) (*entities.Vehicle, 
 // ==================== UNIMPLEMENTED ====================
 
 func (r *VehicleRepositoryPostgres) DeleteVehicle(id uint) error {
-	panic("unimplemented")
+	query := `DELETE FROM vehicles WHERE id = $1`
+	
+	res, err := r.db.Exec(query, id)
+	if err != nil {
+		return fmt.Errorf("error deleting vehicle: %w", err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking rows affected: %w", err)
+	}
+	
+	if rowsAffected == 0 {
+		return ErrVehicleNotFound
+	}
+
+	return nil
 }
 
 func (r *VehicleRepositoryPostgres) GetAllVehicles() ([]*entities.Vehicle, error) {
-	panic("unimplemented")
+	query := `
+		SELECT id, plate, brand, model, color, vehicletype
+		FROM vehicles
+		ORDER BY id
+	`
+	
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error getting all vehicles: %w", err)
+	}
+	defer rows.Close()
+	
+	var vehicles []*entities.Vehicle
+	for rows.Next() {
+		var v entities.Vehicle
+		err := rows.Scan(
+			&v.ID,
+			&v.Plate,
+			&v.Brand,
+			&v.Model,
+			&v.Color,
+			&v.VehicleType,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning vehicle: %w", err)
+		}
+		vehicles = append(vehicles, &v)
+	}
+	
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating vehicles: %w", err)
+	}
+	
+	return vehicles, nil
 }
 
 func (r *VehicleRepositoryPostgres) ListVehicles(limit int, offset int, PlateOrBrand string) ([]*entities.Vehicle, error) {

@@ -24,15 +24,21 @@ type ErrorResponse struct {
 type HandlerVehicle struct {
 	createVehicleUseCase *vehicles.CreateVehicleUseCase    
 	getVehicleUseCase    *vehicles.GetVehicle
+	deleteVehicleUseCase *vehicles.DeleteVehicleUseCase
+	listVehiclesUseCase  *vehicles.ListVehicles
 }
 
 func NewHandlerVehicle(
 	createVehicleUseCase *vehicles.CreateVehicleUseCase,
-	getVehicleUseCase *vehicles.GetVehicle,  // ← AGREGAR
+	getVehicleUseCase *vehicles.GetVehicle, 
+	deleteVehicleUseCase *vehicles.DeleteVehicleUseCase, 
+	listVehiclesUseCase *vehicles.ListVehicles,// ← AGREGAR
 ) *HandlerVehicle {
 	return &HandlerVehicle{
 		createVehicleUseCase: createVehicleUseCase,
-		getVehicleUseCase:    getVehicleUseCase,  // ← AGREGAR
+		getVehicleUseCase:    getVehicleUseCase, 
+		deleteVehicleUseCase: deleteVehicleUseCase,
+		listVehiclesUseCase:  listVehiclesUseCase, // ← AGREGAR
 	}
 }
 
@@ -87,6 +93,66 @@ func (h *HandlerVehicle) GetVehicle(ctx fiber.Ctx) error {
 		"message": "Vehículo consultado exitosamente",
 		"data":    vehicle,
 	})
+}
+
+func (h *HandlerVehicle) DeleteVehicle(ctx fiber.Ctx) error {
+	// TODO: Validar que solo COORDINADOR puede eliminar
+	
+	// 1. Extraer ID de la URL
+	idParam := ctx.Params("id")
+	
+	// 2. Convertir a número
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Error:   "invalid_id",
+			Message: "El ID debe ser un número válido",
+		})
+	}
+
+	// 3. Ejecutar caso de uso
+	err = h.deleteVehicleUseCase.Execute(uint(id))
+	if err != nil {
+		return h.handleDeleteVehicleError(ctx, err)
+	}
+
+	// 4. Respuesta exitosa
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Vehículo eliminado correctamente",
+	})
+}
+func (h *HandlerVehicle) ListVehiclesSimple(ctx fiber.Ctx) error {
+	// TODO: Agregar filtros por rol si es necesario
+	// COORDINADOR: todos los vehículos
+	// CONDUCTOR: solo vehículos asignados a él
+	
+	vehicles, err := h.listVehiclesUseCase.Execute()
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+			Error:   "internal_error",
+			Message: "Error al listar vehículos",
+		})
+	}
+	
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"data":  vehicles,
+		"total": len(vehicles),
+	})
+}
+
+func (h *HandlerVehicle) handleDeleteVehicleError(ctx fiber.Ctx, err error) error {
+	switch {
+	case errors.Is(err, vehicles.ErrVehicleNotFound):
+		return ctx.Status(fiber.StatusNotFound).JSON(ErrorResponse{
+			Error:   "vehicle_not_found",
+			Message: "Vehículo no registrado",
+		})
+	default:
+		return ctx.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+			Error:   "internal_error",
+			Message: "Error al eliminar vehículo",
+		})
+	}
 }
 
 func (h *HandlerVehicle) handleGetVehicleError(ctx fiber.Ctx, err error) error {
