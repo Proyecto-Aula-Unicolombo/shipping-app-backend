@@ -16,10 +16,10 @@ func SetUserRouter(apiv1 fiber.Router, db *sql.DB) {
 	txProvider := adapters.NewSQLTxProvider(db)
 
 	createUserUseCase := application.NewCreateUserUseCase(repoUser, driverRepo, txProvider)
-	getUserUseCase := application.NewGetUser(repoUser)
+	getUserUseCase := application.NewGetUser(repoUser, driverRepo)
 	deleteUserUseCase := application.NewDeleteUserUseCase(repoUser)
-	listUsersUseCase := application.NewListUsers(repoUser)           
-	listUsersPaginatedUC := application.NewListUsersUseCase(repoUser)  
+	listUsersUseCase := application.NewListUsers(repoUser)            
+	listUsersPaginatedUC := application.NewListUsersUseCase(repoUser) 
 	updateUserUseCase := application.NewUpdateUserUseCase(repoUser)
 
 	userHandler := handler.NewHandlerUser(
@@ -34,7 +34,8 @@ func SetUserRouter(apiv1 fiber.Router, db *sql.DB) {
 	
 	apiv1.Post("/users", userHandler.CreateUser)
 	apiv1.Get("/users/:id", userHandler.GetUser)
-	apiv1.Get("/users", userHandler.ListUsersPaginated)     
-	apiv1.Get("/users/all", userHandler.ListUsersSimple)   
+	apiv1.Get("/users", userHandler.ListUsersPaginated)  
+	apiv1.Get("/users/all", userHandler.ListUsersSimple) 
+	apiv1.Put("/users/:id", userHandler.UpdateUser)
 	apiv1.Delete("/users/:id", userHandler.DeleteUser)
 }

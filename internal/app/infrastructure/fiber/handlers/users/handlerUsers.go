@@ -2,20 +2,22 @@ package users
 
 import (
 	"errors"
-	"strconv"
 	"shipping-app/internal/app/application/users"
 	"shipping-app/internal/app/infrastructure/adapters"
 	"shipping-app/internal/utils"
+	"strconv"
 
 	"github.com/gofiber/fiber/v3"
 )
 
 
 type UpdateUserRequest struct {
-	Name     string `json:"name"`
-	LastName string `json:"last_name"`
-	Email    string `json:"email"`
-	Role     string `json:"role"`
+	Name        string `json:"name"`
+	LastName    string `json:"last_name"`
+	Email       string `json:"email"`
+	Role        string `json:"role"`
+	PhoneNumber string `json:"phone_number"`
+	NumLicence  string `json:"num_licence"`
 }
 
 type CreateUserRequest struct {
@@ -35,12 +37,12 @@ type ErrorResponse struct {
 
 
 type HandlerUser struct {
-	createUserUseCase     *users.CreateUserUseCase
-	getUserUseCase        *users.GetUser
-	deleteUserUseCase     *users.DeleteUserUseCase
-	listUsersUseCase      *users.ListUsers          // Tuyo (sin paginación)
-	listUsersPaginatedUC  *users.ListUsersUseCase   // Del compañero (con paginación)
-	updateUserUseCase     *users.UpdateUserUseCase
+	createUserUseCase    *users.CreateUserUseCase
+	getUserUseCase       *users.GetUser
+	deleteUserUseCase    *users.DeleteUserUseCase
+	listUsersUseCase     *users.ListUsers        // Tuyo (sin paginación)
+	listUsersPaginatedUC *users.ListUsersUseCase // Del compañero (con paginación)
+	updateUserUseCase    *users.UpdateUserUseCase
 }
 
 func NewHandlerUser(
@@ -106,7 +108,7 @@ func (h *HandlerUser) GetUser(ctx fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Usuario consultado exitosamente",
-		"data":    user,
+		"data":    user,  // ← Ahora es UserOutput con info del driver
 	})
 }
 
@@ -153,7 +155,7 @@ func (h *HandlerUser) UpdateUser(ctx fiber.Ctx) error {
 
 func (h *HandlerUser) DeleteUser(ctx fiber.Ctx) error {
 	idParam := ctx.Params("id")
-	
+
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
@@ -181,7 +183,7 @@ func (h *HandlerUser) ListUsersSimple(ctx fiber.Ctx) error {
 			Message: "Error al listar usuarios",
 		})
 	}
-	
+
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"data":  users,
 		"total": len(users),
@@ -192,19 +194,27 @@ func (h *HandlerUser) ListUsersSimple(ctx fiber.Ctx) error {
 func (h *HandlerUser) ListUsersPaginated(ctx fiber.Ctx) error {
 	params := utils.GetPaginationParams(ctx)
 	nameOrLastname := ctx.Query("name_or_last_name")
+	role := ctx.Query("role")
 
 	input := users.ListUserInput{
 		Limit:          params.Limit,
 		Offset:         params.Offset,
 		NameOrLastname: nameOrLastname,
-	}
-	
-	users, total, err := h.listUsersPaginatedUC.Execute(input)
-	if err != nil {
-		return h.handleError(ctx, err)
+		Role:           role,
 	}
 
-	response := utils.NewPaginationResponse(users, int(total), params.Page, params.Limit)
+	usersOuputs, total, err := h.listUsersPaginatedUC.Execute(input)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+			Error:   "internal_error",
+			Message: "Error al listar usuarios",
+		})
+	}
+	if usersOuputs == nil {
+		usersOuputs = []*users.ListUserOutput{}
+	}
+
+	response := utils.NewPaginationResponse(usersOuputs, int(total), params.Page, params.Limit)
 
 	return ctx.JSON(response)
 }
