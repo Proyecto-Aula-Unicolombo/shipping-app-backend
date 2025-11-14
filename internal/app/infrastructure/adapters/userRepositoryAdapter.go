@@ -50,7 +50,7 @@ func (r *UserRepositoryPostgres) CreateUserTx(tx *sql.Tx, user *entities.User) e
 func (r *UserRepositoryPostgres) GetUserByID(id uint) (*entities.User, error) {
 	var user entities.User
 	query := `SELECT id, name, lastname, email, role FROM users WHERE id = $1`
-	
+
 	err := r.db.QueryRow(query, id).Scan(
 		&user.ID,
 		&user.Name,
@@ -58,7 +58,7 @@ func (r *UserRepositoryPostgres) GetUserByID(id uint) (*entities.User, error) {
 		&user.Email,
 		&user.Role,
 	)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrUserNotFound
@@ -70,14 +70,14 @@ func (r *UserRepositoryPostgres) GetUserByID(id uint) (*entities.User, error) {
 }
 
 // ListUsers del compañero (con paginación y búsqueda)
-func (r *UserRepositoryPostgres) ListUsers(limit, offset int, NameOrLastname string) ([]*entities.User, error) {
-	query := `SELECT id, name, lastname, email, role FROM users WHERE name ILIKE $1 OR lastname ILIKE $1 LIMIT $2 OFFSET $3`
-	rows, err := r.db.Query(query, "%"+NameOrLastname+"%", limit, offset)
+func (r *UserRepositoryPostgres) ListUsers(limit, offset int, NameOrLastname, role string) ([]*entities.User, error) {
+	query := `SELECT id, name, lastname, email, role FROM users WHERE (name ILIKE $1 OR lastname ILIKE $1) AND role ILIKE $2 LIMIT $3 OFFSET $4`
+	rows, err := r.db.Query(query, "%"+NameOrLastname+"%", "%"+role+"%", limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("error listing users: %w", err)
 	}
 	defer rows.Close()
-	
+
 	var users []*entities.User
 	for rows.Next() {
 		var user entities.User
@@ -92,13 +92,13 @@ func (r *UserRepositoryPostgres) ListUsers(limit, offset int, NameOrLastname str
 // GetAllUsers tuyo (sin paginación)
 func (r *UserRepositoryPostgres) GetAllUsers() ([]*entities.User, error) {
 	query := `SELECT id, name, lastname, email, role FROM users ORDER BY id`
-	
+
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("error getting all users: %w", err)
 	}
 	defer rows.Close()
-	
+
 	var users []*entities.User
 	for rows.Next() {
 		var user entities.User
@@ -114,11 +114,11 @@ func (r *UserRepositoryPostgres) GetAllUsers() ([]*entities.User, error) {
 		}
 		users = append(users, &user)
 	}
-	
+
 	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating users: %w", err)
 	}
-	
+
 	return users, nil
 }
 
@@ -170,4 +170,14 @@ func (r *UserRepositoryPostgres) UpdateUser(user *entities.User) error {
 	}
 
 	return nil
+}
+
+func (r *UserRepositoryPostgres) CountUsers(nameOrLastname, role string) (int64, error) {
+	query := `SELECT COUNT(*) FROM users WHERE (name ILIKE $1 OR lastname ILIKE $1) AND role ILIKE $2`
+	var count int64
+	err := r.db.QueryRow(query, "%"+nameOrLastname+"%", "%"+role+"%").Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("error counting users: %w", err)
+	}
+	return count, nil
 }

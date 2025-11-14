@@ -11,5 +11,6 @@ type UserRepository interface {
 	DeleteUser(id uint) error
 	UpdateUser(user *entities.User) error
 	GetAllUsers() ([]*entities.User, error)
-	ListUsers(limit, offset int, NameOrLastname string) ([]*entities.User, error)
+	ListUsers(limit, offset int, NameOrLastname, role string) ([]*entities.User, error)
+	CountUsers(nameOrLastname, role string) (int64, error)
 }
