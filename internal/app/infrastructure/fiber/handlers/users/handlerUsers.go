@@ -104,10 +104,7 @@ func (h *HandlerUser) GetUser(ctx fiber.Ctx) error {
 		return h.handleGetUserError(ctx, err)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Usuario consultado exitosamente",
-		"data":    user, // ← Ahora es UserOutput con info del driver
-	})
+	return ctx.Status(fiber.StatusOK).JSON(user)
 }
 
 func (h *HandlerUser) UpdateUser(ctx fiber.Ctx) error {
