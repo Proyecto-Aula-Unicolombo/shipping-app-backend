@@ -22,7 +22,6 @@ func NewUserRepositoryPostgres(db *sql.DB) *UserRepositoryPostgres {
 	return &UserRepositoryPostgres{db: db}
 }
 
-
 func (r *UserRepositoryPostgres) CreateUserTx(tx *sql.Tx, user *entities.User) error {
 	query := `
 		INSERT INTO users (name, lastname, email, password, role)
@@ -138,14 +137,14 @@ func (r *UserRepositoryPostgres) DeleteUser(id uint) error {
 	return nil
 }
 
-func (r *UserRepositoryPostgres) UpdateUser(user *entities.User) error {
+func (r *UserRepositoryPostgres) UpdateUser(tx *sql.Tx, user *entities.User) error {
 	query := `
 		UPDATE users 
 		SET name = $1, lastname = $2, email = $3, role = $4
 		WHERE id = $5
 	`
 
-	res, err := r.db.Exec(
+	res, err := tx.Exec(
 		query,
 		user.Name,
 		user.LastName,

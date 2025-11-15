@@ -18,9 +18,9 @@ func SetUserRouter(apiv1 fiber.Router, db *sql.DB) {
 	createUserUseCase := application.NewCreateUserUseCase(repoUser, driverRepo, txProvider)
 	getUserUseCase := application.NewGetUser(repoUser, driverRepo)
 	deleteUserUseCase := application.NewDeleteUserUseCase(repoUser)
-	listUsersUseCase := application.NewListUsers(repoUser)            
-	listUsersPaginatedUC := application.NewListUsersUseCase(repoUser) 
-	updateUserUseCase := application.NewUpdateUserUseCase(repoUser)
+	listUsersUseCase := application.NewListUsers(repoUser)
+	listUsersPaginatedUC := application.NewListUsersUseCase(repoUser)
+	updateUserUseCase := application.NewUpdateUserUseCase(repoUser, driverRepo, txProvider)
 
 	userHandler := handler.NewHandlerUser(
 		createUserUseCase,
@@ -31,10 +31,9 @@ func SetUserRouter(apiv1 fiber.Router, db *sql.DB) {
 		updateUserUseCase,
 	)
 
-	
 	apiv1.Post("/users", userHandler.CreateUser)
 	apiv1.Get("/users/:id", userHandler.GetUser)
-	apiv1.Get("/users", userHandler.ListUsersPaginated)  
+	apiv1.Get("/users", userHandler.ListUsersPaginated)
 	apiv1.Put("/users/:id", userHandler.UpdateUser)
 	apiv1.Delete("/users/:id", userHandler.DeleteUser)
 }

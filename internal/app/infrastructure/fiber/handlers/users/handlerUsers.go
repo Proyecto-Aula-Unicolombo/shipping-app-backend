@@ -3,6 +3,7 @@ package users
 import (
 	"errors"
 	"shipping-app/internal/app/application/users"
+	"shipping-app/internal/app/application/users/drivers"
 	"shipping-app/internal/app/infrastructure/adapters"
 	"shipping-app/internal/utils"
 	"strconv"
@@ -10,11 +11,11 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-
 type UpdateUserRequest struct {
 	Name        string `json:"name"`
 	LastName    string `json:"last_name"`
 	Email       string `json:"email"`
+	Password    string `json:"password"`
 	Role        string `json:"role"`
 	PhoneNumber string `json:"phone_number"`
 	NumLicence  string `json:"num_licence"`
@@ -34,7 +35,6 @@ type ErrorResponse struct {
 	Error   string `json:"error"`
 	Message string `json:"message"`
 }
-
 
 type HandlerUser struct {
 	createUserUseCase    *users.CreateUserUseCase
@@ -63,7 +63,6 @@ func NewHandlerUser(
 	}
 }
 
-
 func (h *HandlerUser) CreateUser(ctx fiber.Ctx) error {
 	var req CreateUserRequest
 	if err := ctx.Bind().Body(&req); err != nil {
@@ -89,10 +88,9 @@ func (h *HandlerUser) CreateUser(ctx fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "user created successfully"})
 }
 
-
 func (h *HandlerUser) GetUser(ctx fiber.Ctx) error {
 	idParam := ctx.Params("id")
-	
+
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
@@ -108,10 +106,9 @@ func (h *HandlerUser) GetUser(ctx fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Usuario consultado exitosamente",
-		"data":    user,  // ← Ahora es UserOutput con info del driver
+		"data":    user, // ← Ahora es UserOutput con info del driver
 	})
 }
-
 
 func (h *HandlerUser) UpdateUser(ctx fiber.Ctx) error {
 	idParam := ctx.Params("id")
@@ -136,10 +133,15 @@ func (h *HandlerUser) UpdateUser(ctx fiber.Ctx) error {
 		Name:     req.Name,
 		LastName: req.LastName,
 		Email:    req.Email,
+		Password: req.Password,
 		Role:     req.Role,
+		Driver: drivers.DriverUpdateDTO{
+			PhoneNumber: req.PhoneNumber,
+			LicenseNo:   req.NumLicence,
+		},
 	}
 
-	err = h.updateUserUseCase.Execute(input)
+	err = h.updateUserUseCase.Execute(ctx, input)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
 			Error:   "update_failed",
@@ -151,7 +153,6 @@ func (h *HandlerUser) UpdateUser(ctx fiber.Ctx) error {
 		"message": "Usuario actualizado correctamente",
 	})
 }
-
 
 func (h *HandlerUser) DeleteUser(ctx fiber.Ctx) error {
 	idParam := ctx.Params("id")
@@ -174,7 +175,6 @@ func (h *HandlerUser) DeleteUser(ctx fiber.Ctx) error {
 	})
 }
 
-
 func (h *HandlerUser) ListUsersSimple(ctx fiber.Ctx) error {
 	users, err := h.listUsersUseCase.Execute()
 	if err != nil {
@@ -189,7 +189,6 @@ func (h *HandlerUser) ListUsersSimple(ctx fiber.Ctx) error {
 		"total": len(users),
 	})
 }
-
 
 func (h *HandlerUser) ListUsersPaginated(ctx fiber.Ctx) error {
 	params := utils.GetPaginationParams(ctx)
@@ -218,7 +217,6 @@ func (h *HandlerUser) ListUsersPaginated(ctx fiber.Ctx) error {
 
 	return ctx.JSON(response)
 }
-
 
 func (h *HandlerUser) handleGetUserError(ctx fiber.Ctx, err error) error {
 	switch {
