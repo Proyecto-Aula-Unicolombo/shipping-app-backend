@@ -11,34 +11,31 @@ import (
 )
 
 func SetVehicleRouter(apiv1 fiber.Router, db *sql.DB) {
-	
+
 	repoVehicle := adapters.NewVehicleRepositoryPostgres(db)
 	txProvider := adapters.NewSQLTxProvider(db)
 
-	
 	createVehicleUC := application.NewCreateVehicleUseCase(
 		repoVehicle,
 		txProvider,
 	)
-		deleteVehicleUC := application.NewDeleteVehicleUseCase(repoVehicle) 
-	getVehicleUC := application.NewGetVehicle(repoVehicle)  
-	
-	listVehiclesUC := application.NewListVehicles(repoVehicle) 
-		updateVehicleUC := application.NewUpdateVehicleUseCase(repoVehicle) 
+	deleteVehicleUC := application.NewDeleteVehicleUseCase(repoVehicle)
+	getVehicleUC := application.NewGetVehicle(repoVehicle)
 
-	
+	listVehiclesUC := application.NewListVehicles(repoVehicle)
+	updateVehicleUC := application.NewUpdateVehicleUseCase(repoVehicle)
+
 	handlerVehicle := handler.NewHandlerVehicle(
 		createVehicleUC,
-		getVehicleUC,  
+		getVehicleUC,
 		deleteVehicleUC,
 		listVehiclesUC,
 		updateVehicleUC,
 	)
 
-	
 	apiv1.Post("/vehicles", handlerVehicle.CreateVehicle)
 	apiv1.Get("/vehicles/:id", handlerVehicle.GetVehicle)
-		apiv1.Delete("/vehicles/:id", handlerVehicle.DeleteVehicle)
-			apiv1.Put("/vehicles/:id", handlerVehicle.UpdateVehicle)  
-		apiv1.Get("/vehicles", handlerVehicle.ListVehiclesSimple)  
+	apiv1.Delete("/vehicles/:id", handlerVehicle.DeleteVehicle)
+	apiv1.Put("/vehicles/:id", handlerVehicle.UpdateVehicle)
+	apiv1.Get("/vehicles", handlerVehicle.ListVehiclesSimple)
 }

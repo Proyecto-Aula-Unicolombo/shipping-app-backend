@@ -5,7 +5,6 @@ import (
 	"shipping-app/internal/app/infrastructure/adapters/ws"
 	"shipping-app/internal/externalServices/services"
 
-
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
 )
@@ -48,5 +47,6 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 	SetUserRouter(apiv1, db)
 	SetPackageRouter(apiv1, db)
 	SetTrackRouter(apiv1, db, hub)
+	SetVehicleRouter(apiv1, db)
 
 }
