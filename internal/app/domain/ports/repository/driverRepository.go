@@ -10,4 +10,5 @@ type DriverRepository interface {
 	UpdateDriverTx(tx *sql.Tx, driver *entities.Driver) error
 	ListDrivers() ([]*entities.Driver, error)
 	GetDriverByUserID(userID uint) (*entities.Driver, error)
+	DeleteDriverByUserIDTx(tx *sql.Tx, userID uint) error
 }

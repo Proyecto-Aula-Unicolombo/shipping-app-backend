@@ -119,9 +119,9 @@ func (r *UserRepositoryPostgres) GetAllUsers() ([]*entities.User, error) {
 	return users, nil
 }
 
-func (r *UserRepositoryPostgres) DeleteUser(id uint) error {
+func (r *UserRepositoryPostgres) DeleteUser(tx *sql.Tx, id uint) error {
 	query := `DELETE FROM users WHERE id = $1`
-	res, err := r.db.Exec(query, id)
+	res, err := tx.Exec(query, id)
 	if err != nil {
 		return fmt.Errorf("error deleting user: %w", err)
 	}

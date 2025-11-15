@@ -165,12 +165,12 @@ func (h *HandlerUser) DeleteUser(ctx fiber.Ctx) error {
 		})
 	}
 
-	err = h.deleteUserUseCase.Execute(uint(id))
+	err = h.deleteUserUseCase.Execute(ctx, uint(id))
 	if err != nil {
 		return h.handleDeleteUserError(ctx, err)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+	return ctx.Status(fiber.StatusNoContent).JSON(fiber.Map{
 		"message": "Usuario eliminado correctamente",
 	})
 }

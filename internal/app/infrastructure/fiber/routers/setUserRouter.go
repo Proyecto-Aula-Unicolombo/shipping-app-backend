@@ -17,7 +17,7 @@ func SetUserRouter(apiv1 fiber.Router, db *sql.DB) {
 
 	createUserUseCase := application.NewCreateUserUseCase(repoUser, driverRepo, txProvider)
 	getUserUseCase := application.NewGetUser(repoUser, driverRepo)
-	deleteUserUseCase := application.NewDeleteUserUseCase(repoUser)
+	deleteUserUseCase := application.NewDeleteUserUseCase(repoUser, driverRepo, txProvider)
 	listUsersUseCase := application.NewListUsers(repoUser)
 	listUsersPaginatedUC := application.NewListUsersUseCase(repoUser)
 	updateUserUseCase := application.NewUpdateUserUseCase(repoUser, driverRepo, txProvider)

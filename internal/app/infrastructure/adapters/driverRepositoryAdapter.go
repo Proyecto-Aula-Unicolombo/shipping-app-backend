@@ -58,3 +58,9 @@ func (r *DriverRepositoryAdapter) UpdateDriverTx(tx *sql.Tx, driver *entities.Dr
 	return err
 
 }
+
+func (r *DriverRepositoryAdapter) DeleteDriverByUserIDTx(tx *sql.Tx, userID uint) error {
+	query := `DELETE FROM drivers WHERE iduser = $1`
+	_, err := tx.Exec(query, userID)
+	return err
+}
