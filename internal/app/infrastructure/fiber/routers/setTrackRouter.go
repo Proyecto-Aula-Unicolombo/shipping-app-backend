@@ -7,7 +7,6 @@ import (
 	"shipping-app/internal/app/infrastructure/adapters/ws"
 	tracksHandlers "shipping-app/internal/app/infrastructure/fiber/handlers/tracksHabdkers"
 
-	// "shipping-app/internal/middleware"
 
 	"github.com/gofiber/fiber/v3"
 )

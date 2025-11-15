@@ -19,7 +19,6 @@ func (uc *ListUsers) Execute() ([]*entities.User, error) {
         return nil, err
     }
     
-    // Limpiar passwords
     for _, user := range users {
         user.Password = ""
     }
