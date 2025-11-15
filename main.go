@@ -21,13 +21,9 @@ func main() {
 		log.Fatal("error al configurar fiber")
 	}
 
-	api := app.Group("/api/v1")
-
-	routers.SetUserRouter(api, db)
-	routers.SetVehicleRouter(api, db)
+	routers.SetupRouters(app, db)
 
 	if err := app.Listen(":8080"); err != nil {
 		log.Fatalf("error al iniciar el servidor: %v", err)
 	}
 }
-
