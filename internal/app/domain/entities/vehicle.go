@@ -7,4 +7,7 @@ type Vehicle struct {
 	Model       string
 	Color       string
 	VehicleType string
+
+	AssignedDriverName     string
+	AssignedDriverLastName string
 }

@@ -1,6 +1,7 @@
 package vehicles
 
 import (
+	"context"
 	"errors"
 	"shipping-app/internal/app/domain/ports/repository"
 )
@@ -17,13 +18,12 @@ func NewDeleteVehicleUseCase(repo repository.VehicleRepository) *DeleteVehicleUs
 	return &DeleteVehicleUseCase{repo: repo}
 }
 
-func (uc *DeleteVehicleUseCase) Execute(id uint) error {
+func (uc *DeleteVehicleUseCase) Execute(ctx context.Context, id uint) error {
 	if id == 0 {
 		return ErrInvalidID
 	}
 
-	
-	_, err := uc.repo.GetVehicleByID(id)
+	_, err := uc.repo.GetByID(ctx, id)
 	if err != nil {
 		return ErrVehicleNotFound
 	}

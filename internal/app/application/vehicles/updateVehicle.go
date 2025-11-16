@@ -1,6 +1,7 @@
 package vehicles
 
 import (
+	"context"
 	"errors"
 	"shipping-app/internal/app/domain/ports/repository"
 )
@@ -22,12 +23,12 @@ type UpdateVehicleInput struct {
 	VehicleType string
 }
 
-func (uc *UpdateVehicleUseCase) Execute(input UpdateVehicleInput) error {
+func (uc *UpdateVehicleUseCase) Execute(ctx context.Context, input UpdateVehicleInput) error {
 	if input.ID == 0 {
 		return errors.New("ID inválido")
 	}
 
-	existingVehicle, err := uc.repo.GetVehicleByID(input.ID)
+	existingVehicle, err := uc.repo.GetByID(ctx, input.ID)
 	if err != nil {
 		return errors.New("vehículo no encontrado")
 	}
@@ -48,6 +49,5 @@ func (uc *UpdateVehicleUseCase) Execute(input UpdateVehicleInput) error {
 		existingVehicle.VehicleType = input.VehicleType
 	}
 
-	
 	return uc.repo.UpdateVehicle(existingVehicle)
 }

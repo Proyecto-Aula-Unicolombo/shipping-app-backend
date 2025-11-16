@@ -23,7 +23,7 @@ func NewVehicleRepositoryPostgres(db *sql.DB) *VehicleRepositoryPostgres {
 	return &VehicleRepositoryPostgres{db: db}
 }
 
-func (r *VehicleRepositoryPostgres) CreateVehicleTx(tx *sql.Tx, v *entities.Vehicle) error {
+func (r *VehicleRepositoryPostgres) CreateVehicleTx(v *entities.Vehicle) error {
 	query := `
 		INSERT INTO vehicles (plate, brand, model, color, vehicletype)
 		VALUES ($1, $2, $3, $4, $5)
@@ -32,7 +32,7 @@ func (r *VehicleRepositoryPostgres) CreateVehicleTx(tx *sql.Tx, v *entities.Vehi
 
 	var err error
 
-	err = tx.QueryRow(query,
+	err = r.db.QueryRow(query,
 		v.Plate,
 		v.Brand,
 		v.Model,
@@ -50,34 +50,6 @@ func (r *VehicleRepositoryPostgres) CreateVehicleTx(tx *sql.Tx, v *entities.Vehi
 	}
 
 	return nil
-}
-
-func (r *VehicleRepositoryPostgres) GetVehicleByID(id uint) (*entities.Vehicle, error) {
-	var v entities.Vehicle
-
-	query := `
-		SELECT id, plate, brand, model, color, vehicletype
-		FROM vehicles
-		WHERE id = $1
-	`
-
-	err := r.db.QueryRow(query, id).Scan(
-		&v.ID,
-		&v.Plate,
-		&v.Brand,
-		&v.Model,
-		&v.Color,
-		&v.VehicleType,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, ErrVehicleNotFound
-		}
-		return nil, fmt.Errorf("error fetching vehicle by id: %w", err)
-	}
-
-	return &v, nil
 }
 
 func (r *VehicleRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entities.Vehicle, error) {
@@ -128,47 +100,68 @@ func (r *VehicleRepositoryPostgres) DeleteVehicle(id uint) error {
 	return nil
 }
 
-func (r *VehicleRepositoryPostgres) GetAllVehicles() ([]*entities.Vehicle, error) {
+func (r *VehicleRepositoryPostgres) ListVehicles(limit int, offset int, PlateBrandOrModel string) ([]*entities.Vehicle, error) {
 	query := `
-		SELECT id, plate, brand, model, color, vehicletype
-		FROM vehicles
-		ORDER BY id
+		SELECT 
+            v.id, 
+            v.plate, 
+            v.brand, 
+            v.model, 
+            v.vehicletype,
+            u.name AS driver_name,
+            u.lastname AS driver_last_name
+        FROM vehicles v
+        LEFT JOIN orders o ON v.id = o.idvehicle 
+        LEFT JOIN drivers d ON o.iddriver = d.id
+        LEFT JOIN users u ON d.iduser = u.id
+        WHERE 1=1
 	`
+	args := []interface{}{}
+	argPosition := 1
 
-	rows, err := r.db.Query(query)
+	if PlateBrandOrModel != "" {
+		query += fmt.Sprintf(" AND (plate ILIKE $%d OR brand ILIKE $%d OR model ILIKE $%d)", argPosition, argPosition, argPosition)
+		args = append(args, "%"+PlateBrandOrModel+"%")
+		argPosition++
+	}
+
+	query += " ORDER BY id LIMIT $" + fmt.Sprint(argPosition) + " OFFSET $" + fmt.Sprint(argPosition+1)
+	args = append(args, limit, offset)
+
+	rows, err := r.db.Query(query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("error getting all vehicles: %w", err)
+		return nil, fmt.Errorf("error listing users: %w", err)
 	}
 	defer rows.Close()
 
 	var vehicles []*entities.Vehicle
+	var driverName sql.NullString
+	var driverLastName sql.NullString
 	for rows.Next() {
-		var v entities.Vehicle
-		err := rows.Scan(
-			&v.ID,
-			&v.Plate,
-			&v.Brand,
-			&v.Model,
-			&v.Color,
-			&v.VehicleType,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("error scanning vehicle: %w", err)
+		var vehicle entities.Vehicle
+		if err := rows.Scan(&vehicle.ID, &vehicle.Plate, &vehicle.Brand, &vehicle.Model, &vehicle.VehicleType, &driverName, &driverLastName); err != nil {
+			return nil, fmt.Errorf("error scanning vehicle row: %w", err)
 		}
-		vehicles = append(vehicles, &v)
+		if driverName.Valid {
+			vehicle.AssignedDriverName = driverName.String
+		}
+		if driverLastName.Valid {
+			vehicle.AssignedDriverLastName = driverLastName.String
+		}
+		vehicles = append(vehicles, &vehicle)
 	}
-
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating vehicles: %w", err)
-	}
-
 	return vehicles, nil
 }
 
-func (r *VehicleRepositoryPostgres) ListVehicles(limit int, offset int, PlateOrBrand string) ([]*entities.Vehicle, error) {
-	panic("unimplemented")
+func (r *VehicleRepositoryPostgres) CountVehicles(PlateBrandOrModel string) (int64, error) {
+	query := `SELECT COUNT(*) FROM vehicles WHERE (plate ILIKE $1 OR brand ILIKE $1 OR model ILIKE $1)`
+	var count int64
+	err := r.db.QueryRow(query, "%"+PlateBrandOrModel+"%").Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("error counting vehicles: %w", err)
+	}
+	return count, nil
 }
-
 func (r *VehicleRepositoryPostgres) UpdateVehicle(vehicle *entities.Vehicle) error {
 	query := `
 		UPDATE vehicles 
