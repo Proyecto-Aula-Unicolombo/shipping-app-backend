@@ -4,7 +4,9 @@ import (
 	"errors"
 	"shipping-app/internal/app/application/vehicles"
 	"shipping-app/internal/app/infrastructure/adapters"
-    "strconv" 
+	"shipping-app/internal/utils"
+	"strconv"
+
 	"github.com/gofiber/fiber/v3"
 )
 
@@ -13,10 +15,10 @@ type CreateVehicleRequest struct {
 	Brand       string `json:"brand"`
 	Model       string `json:"model"`
 	Color       string `json:"color"`
-	VehicleType string `json:"vehicleType"`
+	VehicleType string `json:"vehicle_type"`
 }
 
-type UpdateVehicleRequest struct {  
+type UpdateVehicleRequest struct {
 	Plate       string `json:"plate"`
 	Brand       string `json:"brand"`
 	Model       string `json:"model"`
@@ -30,7 +32,7 @@ type ErrorResponse struct {
 }
 
 type HandlerVehicle struct {
-	createVehicleUseCase *vehicles.CreateVehicleUseCase    
+	createVehicleUseCase *vehicles.CreateVehicleUseCase
 	getVehicleUseCase    *vehicles.GetVehicle
 	deleteVehicleUseCase *vehicles.DeleteVehicleUseCase
 	listVehiclesUseCase  *vehicles.ListVehicles
@@ -39,17 +41,17 @@ type HandlerVehicle struct {
 
 func NewHandlerVehicle(
 	createVehicleUseCase *vehicles.CreateVehicleUseCase,
-	getVehicleUseCase *vehicles.GetVehicle, 
-	deleteVehicleUseCase *vehicles.DeleteVehicleUseCase, 
+	getVehicleUseCase *vehicles.GetVehicle,
+	deleteVehicleUseCase *vehicles.DeleteVehicleUseCase,
 	listVehiclesUseCase *vehicles.ListVehicles,
 	updateVehicleUseCase *vehicles.UpdateVehicleUseCase,
 ) *HandlerVehicle {
 	return &HandlerVehicle{
 		createVehicleUseCase: createVehicleUseCase,
-		getVehicleUseCase:    getVehicleUseCase, 
+		getVehicleUseCase:    getVehicleUseCase,
 		deleteVehicleUseCase: deleteVehicleUseCase,
 		listVehiclesUseCase:  listVehiclesUseCase,
-		updateVehicleUseCase: updateVehicleUseCase, 
+		updateVehicleUseCase: updateVehicleUseCase,
 	}
 }
 
@@ -81,9 +83,9 @@ func (h *HandlerVehicle) CreateVehicle(ctx fiber.Ctx) error {
 }
 
 func (h *HandlerVehicle) GetVehicle(ctx fiber.Ctx) error {
-	
+
 	idParam := ctx.Params("id")
-	
+
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
@@ -92,21 +94,18 @@ func (h *HandlerVehicle) GetVehicle(ctx fiber.Ctx) error {
 		})
 	}
 
-	vehicle, err := h.getVehicleUseCase.Execute(uint(id))
+	vehicle, err := h.getVehicleUseCase.Execute(ctx, uint(id))
 	if err != nil {
 		return h.handleGetVehicleError(ctx, err)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Vehículo consultado exitosamente",
-		"data":    vehicle,
-	})
+	return ctx.Status(fiber.StatusOK).JSON(vehicle)
 }
 
 func (h *HandlerVehicle) DeleteVehicle(ctx fiber.Ctx) error {
-	
+
 	idParam := ctx.Params("id")
-	
+
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
@@ -115,7 +114,7 @@ func (h *HandlerVehicle) DeleteVehicle(ctx fiber.Ctx) error {
 		})
 	}
 
-	err = h.deleteVehicleUseCase.Execute(uint(id))
+	err = h.deleteVehicleUseCase.Execute(ctx, uint(id))
 	if err != nil {
 		return h.handleDeleteVehicleError(ctx, err)
 	}
@@ -125,23 +124,30 @@ func (h *HandlerVehicle) DeleteVehicle(ctx fiber.Ctx) error {
 	})
 }
 func (h *HandlerVehicle) ListVehiclesSimple(ctx fiber.Ctx) error {
+	params := utils.GetPaginationParams(ctx)
+	plateBrandOrModel := ctx.Query("plate_brand_or_model")
 
-	
-	vehicles, err := h.listVehiclesUseCase.Execute()
+	input := vehicles.ListVehiclesInput{
+		Limit:             params.Limit,
+		Offset:            params.Offset,
+		PlateBrandOrModel: plateBrandOrModel,
+	}
+	vehiclesOutputs, total, err := h.listVehiclesUseCase.Execute(input)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
 			Error:   "internal_error",
 			Message: "Error al listar vehículos",
 		})
 	}
-	
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"data":  vehicles,
-		"total": len(vehicles),
-	})
+
+	if vehiclesOutputs == nil {
+		vehiclesOutputs = []*vehicles.ListVehiclesOutput{}
+	}
+
+	reponse := utils.NewPaginationResponse(vehiclesOutputs, int(total), params.Limit, params.Offset)
+
+	return ctx.Status(fiber.StatusOK).JSON(reponse)
 }
-
-
 
 func (h *HandlerVehicle) handleDeleteVehicleError(ctx fiber.Ctx, err error) error {
 	switch {
@@ -205,7 +211,7 @@ func (h *HandlerVehicle) UpdateVehicle(ctx fiber.Ctx) error {
 		VehicleType: req.VehicleType,
 	}
 
-	err = h.updateVehicleUseCase.Execute(input)
+	err = h.updateVehicleUseCase.Execute(ctx, input)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
 			Error:   "update_failed",

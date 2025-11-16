@@ -13,11 +13,9 @@ import (
 func SetVehicleRouter(apiv1 fiber.Router, db *sql.DB) {
 
 	repoVehicle := adapters.NewVehicleRepositoryPostgres(db)
-	txProvider := adapters.NewSQLTxProvider(db)
 
 	createVehicleUC := application.NewCreateVehicleUseCase(
 		repoVehicle,
-		txProvider,
 	)
 	deleteVehicleUC := application.NewDeleteVehicleUseCase(repoVehicle)
 	getVehicleUC := application.NewGetVehicle(repoVehicle)
