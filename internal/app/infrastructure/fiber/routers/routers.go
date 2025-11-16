@@ -58,5 +58,6 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 	SetOrderRouter(apiv1, db)
 	SetDeliveryRouter(apiv1, db)
 	SetTrackingRouter(apiv1, db)
+	SetDriverRouter(apiv1, db)
 
 }

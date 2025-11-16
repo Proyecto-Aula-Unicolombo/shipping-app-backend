@@ -62,7 +62,7 @@ func (r *DriverRepositoryAdapter) ListDrivers() ([]*entities.Driver, error) {
 }
 
 func (r *DriverRepositoryAdapter) GetDriverByUserID(userID uint) (*entities.Driver, error) {
-	query := `SELECT iddriver, iduser, phonenumber, license FROM drivers WHERE iduser = $1`
+	query := `SELECT id, iduser, phonenumber, license FROM drivers WHERE iduser = $1`
 	driver := &entities.Driver{}
 	err := r.db.QueryRow(query, userID).Scan(&driver.ID, &driver.UserID, &driver.PhoneNumber, &driver.LicenseNo)
 	if err != nil {
