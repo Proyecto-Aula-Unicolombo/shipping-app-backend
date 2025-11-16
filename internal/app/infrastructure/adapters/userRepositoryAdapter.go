@@ -68,9 +68,27 @@ func (r *UserRepositoryPostgres) GetUserByID(id uint) (*entities.User, error) {
 }
 
 // ListUsers del compañero (con paginación y búsqueda)
-func (r *UserRepositoryPostgres) ListUsers(limit, offset int, NameOrLastname, role string) ([]*entities.User, error) {
-	query := `SELECT id, name, lastname, email, role FROM users WHERE (name ILIKE $1 OR lastname ILIKE $1) AND role ILIKE $2 LIMIT $3 OFFSET $4`
-	rows, err := r.db.Query(query, "%"+NameOrLastname+"%", "%"+role+"%", limit, offset)
+func (r *UserRepositoryPostgres) ListUsers(limit, offset int, nameOrLastname, role string) ([]*entities.User, error) {
+	query := `SELECT id, name, lastname, email, role FROM users WHERE 1=1`
+	args := []interface{}{}
+	argPosition := 1
+
+	if nameOrLastname != "" {
+		query += fmt.Sprintf(" AND (name ILIKE $%d OR lastname ILIKE $%d)", argPosition, argPosition)
+		args = append(args, "%"+nameOrLastname+"%")
+		argPosition++
+	}
+
+	if role != "" && role != "all" {
+		query += fmt.Sprintf(" AND role = $%d", argPosition)
+		args = append(args, role)
+		argPosition++
+	}
+	
+	query += " ORDER BY id LIMIT $" + fmt.Sprint(argPosition) + " OFFSET $" + fmt.Sprint(argPosition+1)
+	args = append(args, limit, offset)
+
+	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("error listing users: %w", err)
 	}
