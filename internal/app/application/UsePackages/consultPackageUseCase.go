@@ -9,11 +9,11 @@ import (
 
 type ResponsePackage struct {
 	ID                   uint
-	NumPackage           int64
+	NumPackage           string
 	StartStatus          string
 	DescriptionContent   *string
 	Weight               *float64
-	Dimension            *float64
+	Dimension            *string
 	DeclaredValue        *float64
 	TypePackage          *string
 	IsFragile            bool

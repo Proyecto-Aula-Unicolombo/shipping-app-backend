@@ -35,10 +35,10 @@ func NewCancellPackageUseCase(
 	}
 }
 
-func (u *CancelPackageUseCase) Execute(ctx context.Context, numPackage int64) error {
+func (u *CancelPackageUseCase) Execute(ctx context.Context, numPackage string) error {
 	pkg, err := u.PackageRepo.GetByNumPackage(ctx, numPackage)
 	if err != nil {
-		log.Printf("ERROR: Failed to get package by numpackage %d: %v", numPackage, err)
+		log.Printf("ERROR: Failed to get package by numpackage %s: %v", numPackage, err)
 
 		return ErrToGetPackage
 	}

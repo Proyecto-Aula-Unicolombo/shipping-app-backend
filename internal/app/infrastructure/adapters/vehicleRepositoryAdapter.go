@@ -1,10 +1,12 @@
 package adapters
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"shipping-app/internal/app/domain/entities"
+
 	"github.com/lib/pq"
 )
 
@@ -20,7 +22,6 @@ type VehicleRepositoryPostgres struct {
 func NewVehicleRepositoryPostgres(db *sql.DB) *VehicleRepositoryPostgres {
 	return &VehicleRepositoryPostgres{db: db}
 }
-
 
 func (r *VehicleRepositoryPostgres) CreateVehicleTx(tx *sql.Tx, v *entities.Vehicle) error {
 	query := `
@@ -51,7 +52,6 @@ func (r *VehicleRepositoryPostgres) CreateVehicleTx(tx *sql.Tx, v *entities.Vehi
 	return nil
 }
 
-
 func (r *VehicleRepositoryPostgres) GetVehicleByID(id uint) (*entities.Vehicle, error) {
 	var v entities.Vehicle
 
@@ -80,6 +80,33 @@ func (r *VehicleRepositoryPostgres) GetVehicleByID(id uint) (*entities.Vehicle, 
 	return &v, nil
 }
 
+func (r *VehicleRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entities.Vehicle, error) {
+	var v entities.Vehicle
+
+	query := `
+		SELECT id, plate, brand, model, color, vehicletype
+		FROM vehicles
+		WHERE id = $1
+	`
+
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&v.ID,
+		&v.Plate,
+		&v.Brand,
+		&v.Model,
+		&v.Color,
+		&v.VehicleType,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrVehicleNotFound
+		}
+		return nil, fmt.Errorf("get vehicle by id: %w", err)
+	}
+
+	return &v, nil
+}
 
 func (r *VehicleRepositoryPostgres) DeleteVehicle(id uint) error {
 	query := `DELETE FROM vehicles WHERE id = $1`

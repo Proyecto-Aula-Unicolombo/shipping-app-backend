@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"shipping-app/internal/app/domain/entities"
 )
@@ -11,4 +12,5 @@ type DriverRepository interface {
 	ListDrivers() ([]*entities.Driver, error)
 	GetDriverByUserID(userID uint) (*entities.Driver, error)
 	DeleteDriverByUserIDTx(tx *sql.Tx, userID uint) error
+	GetByID(ctx context.Context, id uint) (*entities.Driver, error)
 }

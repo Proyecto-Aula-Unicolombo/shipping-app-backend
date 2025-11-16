@@ -31,8 +31,8 @@ func NewValidationError(fields map[string]string) *ValidationError {
 func ValidateCreateInput(input CreatePackageInput) error {
 	fields := make(map[string]string)
 
-	if input.NumPackage == 0 {
-		fields["numpackage"] = "numpackage is required and must be greater than 0"
+	if input.NumPackage == "" {
+		fields["numpackage"] = "numpackage is required"
 	}
 
 	if input.AddressPackage == nil {
@@ -113,7 +113,8 @@ func ValidateBusinessRules(domainSvc *services.ValidatePackageService, input Cre
 	if domainSvc == nil {
 		return nil
 	}
-	if err := domainSvc.ValidatePackageBusinessRules(input.Weight, input.Dimension, input.DeclaredValue, input.IsFragile); err != nil {
+	// Dimension ahora es string descriptivo, no se valida numéricamente
+	if err := domainSvc.ValidatePackageBusinessRules(input.Weight, nil, input.DeclaredValue, input.IsFragile); err != nil {
 		return err
 	}
 	return nil

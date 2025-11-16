@@ -36,8 +36,3 @@ type StatusDeliveryRepository interface {
 	Create(ctx context.Context, tx *sql.Tx, s *entities.StatusDelivery) error
 	Delete(ctx context.Context, tx *sql.Tx, id uint) error
 }
-
-type OrderRepository interface {
-	GetByID(ctx context.Context, id uint) (*entities.Order, error)
-	Create(ctx context.Context, tx *sql.Tx, o *entities.Order) error
-}

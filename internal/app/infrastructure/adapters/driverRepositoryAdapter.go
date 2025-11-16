@@ -1,7 +1,10 @@
 package adapters
 
 import (
+	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"shipping-app/internal/app/domain/entities"
 )
 
@@ -23,44 +26,78 @@ func (r *DriverRepositoryAdapter) CreateDriverTx(tx *sql.Tx, driver *entities.Dr
 	return err
 }
 
+func (r *DriverRepositoryAdapter) UpdateDriverTx(tx *sql.Tx, driver *entities.Driver) error {
+	query := `UPDATE drivers SET phonenumber = $1, license = $2 WHERE iduser = $3`
+	if tx != nil {
+		_, err := tx.Exec(query, driver.PhoneNumber, driver.LicenseNo, driver.UserID)
+		return err
+	}
+	_, err := r.db.Exec(query, driver.PhoneNumber, driver.LicenseNo, driver.UserID)
+	return err
+}
+
 func (r *DriverRepositoryAdapter) ListDrivers() ([]*entities.Driver, error) {
-	query := `SELECT id, iduser, phonenumber, license FROM drivers`
+	query := `SELECT iddriver, iduser, phonenumber, license FROM drivers`
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
 	var drivers []*entities.Driver
 	for rows.Next() {
-		var driver entities.Driver
-		if err := rows.Scan(&driver.ID, &driver.UserID, &driver.PhoneNumber, &driver.LicenseNo); err != nil {
+		driver := &entities.Driver{}
+		err := rows.Scan(&driver.ID, &driver.UserID, &driver.PhoneNumber, &driver.LicenseNo)
+		if err != nil {
 			return nil, err
 		}
-		drivers = append(drivers, &driver)
+		drivers = append(drivers, driver)
 	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return drivers, nil
 }
 
 func (r *DriverRepositoryAdapter) GetDriverByUserID(userID uint) (*entities.Driver, error) {
-	query := `SELECT id, phonenumber, license FROM drivers WHERE iduser = $1`
-	row := r.db.QueryRow(query, userID)
-	var driver entities.Driver
-	if err := row.Scan(&driver.ID, &driver.PhoneNumber, &driver.LicenseNo); err != nil {
+	query := `SELECT iddriver, iduser, phonenumber, license FROM drivers WHERE iduser = $1`
+	driver := &entities.Driver{}
+	err := r.db.QueryRow(query, userID).Scan(&driver.ID, &driver.UserID, &driver.PhoneNumber, &driver.LicenseNo)
+	if err != nil {
 		return nil, err
 	}
-	return &driver, nil
-}
-
-func (r *DriverRepositoryAdapter) UpdateDriverTx(tx *sql.Tx, driver *entities.Driver) error {
-	query := `UPDATE drivers SET phonenumber = $1, license = $2 WHERE iduser = $3`
-
-	_, err := tx.Exec(query, driver.PhoneNumber, driver.LicenseNo, driver.UserID)
-	return err
-
+	return driver, nil
 }
 
 func (r *DriverRepositoryAdapter) DeleteDriverByUserIDTx(tx *sql.Tx, userID uint) error {
 	query := `DELETE FROM drivers WHERE iduser = $1`
-	_, err := tx.Exec(query, userID)
+	if tx != nil {
+		_, err := tx.Exec(query, userID)
+		return err
+	}
+	_, err := r.db.Exec(query, userID)
 	return err
+}
+
+func (r *DriverRepositoryAdapter) GetByID(ctx context.Context, id uint) (*entities.Driver, error) {
+	query := `SELECT id, phonenumber, license, iduser FROM drivers WHERE id = $1`
+
+	var driver entities.Driver
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&driver.ID,
+		&driver.PhoneNumber,
+		&driver.LicenseNo,
+		&driver.UserID,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("driver not found with id %d", id)
+		}
+		return nil, fmt.Errorf("get driver by id: %w", err)
+	}
+
+	return &driver, nil
 }

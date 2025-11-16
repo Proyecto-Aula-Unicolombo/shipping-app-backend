@@ -13,7 +13,7 @@ var (
 
 type CheckAccessInput struct {
 	Ctx        context.Context
-	NumPackage *int64
+	NumPackage *string
 	PackageID  *uint
 	AuthType   string `json:"-"` // "jwt" o "api_key"
 	UserRole   string `json:"-"` // "coordinator", "driver"

@@ -10,10 +10,10 @@ import (
 )
 
 type CreatePackageRequest struct {
-	NumPackage           int64                              `json:"numpackage"`
+	NumPackage           string                             `json:"numpackage"`
 	DescriptionContent   *string                            `json:"descriptioncontent"`
 	Weight               *float64                           `json:"weight"`
-	Dimension            *float64                           `json:"dimension"`
+	Dimension            *string                            `json:"dimension"`
 	DeclaredValue        *float64                           `json:"declaredvalue"`
 	TypePackage          *string                            `json:"typepackage"`
 	IsFragile            bool                               `json:"is_fragile"`
@@ -71,16 +71,15 @@ func (h *PackageHandler) CreatePackage(ctx fiber.Ctx) error {
 }
 
 func (h *PackageHandler) DeletePackage(ctx fiber.Ctx) error {
-	numPackageSTR := ctx.Params("numPackage")
+	numPackage := ctx.Params("numPackage")
 
-	numPackage, err := strconv.Atoi(numPackageSTR)
-	if err != nil {
+	if numPackage == "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "invalid request",
+			"message": "invalid request: numPackage is required",
 		})
 	}
 
-	err = h.cancelleUC.Execute(ctx.Context(), int64(numPackage))
+	err := h.cancelleUC.Execute(ctx.Context(), numPackage)
 	if err != nil {
 		return h.handleErrorCancel(ctx, err)
 	}
@@ -89,12 +88,11 @@ func (h *PackageHandler) DeletePackage(ctx fiber.Ctx) error {
 }
 
 func (h *PackageHandler) ConsultPackageByNumPackage(ctx fiber.Ctx) error {
-	numPackageStr := ctx.Params("numPackage")
-	numPackage, err := strconv.ParseInt(numPackageStr, 10, 64)
-	if err != nil {
+	numPackage := ctx.Params("numPackage")
+	if numPackage == "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error":   "invalid_numpackage",
-			"message": "NumPackage must be a valid number",
+			"message": "NumPackage is required",
 		})
 	}
 

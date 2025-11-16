@@ -66,7 +66,7 @@ func (r *PackageRepositoryPostgres) Create(ctx context.Context, tx *sql.Tx, pkg 
 	}
 
 	if rowErr == nil {
-		log.Printf("✓ Package created successfully: ID=%d, NumPackage=%d", pkg.ID, pkg.NumPackage)
+		log.Printf("✓ Package created successfully: ID=%d, NumPackage=%s", pkg.ID, pkg.NumPackage)
 		return nil
 	}
 
@@ -88,7 +88,7 @@ func (r *PackageRepositoryPostgres) Create(ctx context.Context, tx *sql.Tx, pkg 
 	return fmt.Errorf("package create: %w", rowErr)
 }
 
-func (r *PackageRepositoryPostgres) GetByNumPackage(ctx context.Context, numPackage int64) (*entities.Package, error) {
+func (r *PackageRepositoryPostgres) GetByNumPackage(ctx context.Context, numPackage string) (*entities.Package, error) {
 	query := `
 		SELECT id, numpackage, startstatus, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
 		       idaddresspackage, idstatusdelivery, idcomercialinformation, idsender, idreceivers, created_at, updated_at
@@ -288,15 +288,15 @@ func (r *PackageRepositoryPostgres) ListPackages(ctx context.Context, limit, off
 }
 
 type PackageConflictError struct {
-	NumPackage int64
+	NumPackage string
 	ExistingID uint
 }
 
 func (e *PackageConflictError) Error() string {
 	if e.ExistingID == 0 {
-		return fmt.Sprintf("package with numpackage %d already exists (ID unknown)", e.NumPackage)
+		return fmt.Sprintf("package with numpackage %s already exists (ID unknown)", e.NumPackage)
 	}
-	return fmt.Sprintf("package with numpackage %d already exists with id %d", e.NumPackage, e.ExistingID)
+	return fmt.Sprintf("package with numpackage %s already exists with id %d", e.NumPackage, e.ExistingID)
 }
 
 func isDuplicatePackageError(err error) bool {
@@ -318,4 +318,21 @@ func isDuplicatePackageError(err error) bool {
 		strings.Contains(errMsg, "packages_numpackage_key")
 
 	return isDuplicate
+}
+
+func (r *PackageRepositoryPostgres) UnassignPackagesFromOrder(ctx context.Context, tx *sql.Tx, orderID uint) error {
+	query := `UPDATE packages SET idorder = NULL WHERE idorder = $1`
+
+	var err error
+	if tx != nil {
+		_, err = tx.ExecContext(ctx, query, orderID)
+	} else {
+		_, err = r.db.ExecContext(ctx, query, orderID)
+	}
+
+	if err != nil {
+		return fmt.Errorf("unassign packages from order: %w", err)
+	}
+
+	return nil
 }
