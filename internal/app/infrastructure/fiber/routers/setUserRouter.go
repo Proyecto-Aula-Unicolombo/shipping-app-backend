@@ -11,20 +11,17 @@ import (
 )
 
 func SetUserRouter(apiv1 fiber.Router, db *sql.DB) {
-	// Repositorios
 	repoUser := adapters.NewUserRepositoryPostgres(db)
 	driverRepo := adapters.NewDriverRepositoryAdapter(db)
 	txProvider := adapters.NewSQLTxProvider(db)
 
-	// Casos de uso
 	createUserUseCase := application.NewCreateUserUseCase(repoUser, driverRepo, txProvider)
-	getUserUseCase := application.NewGetUser(repoUser)
-	deleteUserUseCase := application.NewDeleteUserUseCase(repoUser)
-	listUsersUseCase := application.NewListUsers(repoUser)             // Tuyo (sin paginación)
-	listUsersPaginatedUC := application.NewListUsersUseCase(repoUser)  // Del compañero (con paginación)
-	updateUserUseCase := application.NewUpdateUserUseCase(repoUser)
+	getUserUseCase := application.NewGetUser(repoUser, driverRepo)
+	deleteUserUseCase := application.NewDeleteUserUseCase(repoUser, driverRepo, txProvider)
+	listUsersUseCase := application.NewListUsers(repoUser)
+	listUsersPaginatedUC := application.NewListUsersUseCase(repoUser)
+	updateUserUseCase := application.NewUpdateUserUseCase(repoUser, driverRepo, txProvider)
 
-	// Handler con TODOS los casos de uso
 	userHandler := handler.NewHandlerUser(
 		createUserUseCase,
 		getUserUseCase,
@@ -34,11 +31,9 @@ func SetUserRouter(apiv1 fiber.Router, db *sql.DB) {
 		updateUserUseCase,
 	)
 
-	// Rutas
 	apiv1.Post("/users", userHandler.CreateUser)
 	apiv1.Get("/users/:id", userHandler.GetUser)
-	apiv1.Get("/users", userHandler.ListUsersPaginated)     // Con paginación (del compañero)
-	apiv1.Get("/users/all", userHandler.ListUsersSimple)    // Sin paginación (tuyo)
+	apiv1.Get("/users", userHandler.ListUsersPaginated)
 	apiv1.Put("/users/:id", userHandler.UpdateUser)
 	apiv1.Delete("/users/:id", userHandler.DeleteUser)
 }

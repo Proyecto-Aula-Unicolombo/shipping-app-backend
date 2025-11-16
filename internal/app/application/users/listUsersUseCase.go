@@ -1,7 +1,6 @@
 package users
 
 import (
-	"errors"
 	"shipping-app/internal/app/domain/entities"
 	"shipping-app/internal/app/domain/ports/repository"
 )
@@ -11,6 +10,7 @@ type ListUserInput struct {
 	Offset int
 
 	NameOrLastname string
+	Role           string
 }
 
 type ListUserOutput struct {
@@ -31,21 +31,21 @@ func NewListUsersUseCase(userRepo repository.UserRepository) *ListUsersUseCase {
 	}
 }
 
-var ErrNoUsersFound = errors.New("no users found")
-
 func (uc *ListUsersUseCase) Execute(input ListUserInput) ([]*ListUserOutput, int64, error) {
-	var total int64
-	var users []*entities.User
-	var err error
-
-	users, err = uc.userRepo.ListUsers(input.Limit, input.Offset, input.NameOrLastname)
+	total, err := uc.userRepo.CountUsers(input.NameOrLastname, input.Role)
 	if err != nil {
 		return nil, 0, err
 	}
-	if len(users) == 0 {
-		return nil, 0, ErrNoUsersFound
+
+	if total == 0 {
+		return []*ListUserOutput{}, 0, nil
 	}
-	total = int64(len(users))
+	var users []*entities.User
+
+	users, err = uc.userRepo.ListUsers(input.Limit, input.Offset, input.NameOrLastname, input.Role)
+	if err != nil {
+		return nil, 0, err
+	}
 
 	var outputs []*ListUserOutput
 	for _, user := range users {
