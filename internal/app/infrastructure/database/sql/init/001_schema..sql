@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS drivers (
     phonenumber VARCHAR(20) NOT NULL,
     license VARCHAR(50) NOT NULL UNIQUE,
     iduser INTEGER NOT NULL,
+    is_active BOOLEAN DEFAULT false,
     FOREIGN KEY (iduser) REFERENCES users(id) ON DELETE CASCADE
 );
 
