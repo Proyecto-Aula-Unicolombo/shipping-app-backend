@@ -14,6 +14,7 @@ type ListDriverOutput struct {
 	Name     string
 	LastName string
 	NumOrder uint
+	IsActive bool
 }
 
 type ListDriverUseCase struct {
@@ -51,6 +52,7 @@ func (uc *ListDriverUseCase) Execute(input ListDriverInput) ([]*ListDriverOutput
 			Name:     driver.User.Name,
 			LastName: driver.User.LastName,
 			NumOrder: driver.NumOrder,
+			IsActive: driver.IsActive,
 		})
 	}
 

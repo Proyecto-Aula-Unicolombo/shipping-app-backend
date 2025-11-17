@@ -44,6 +44,7 @@ func (r *DriverRepositoryAdapter) ListDrivers(limit, offset int, NameOrLastName 
 		u.lastname,
 		d.phonenumber,
 		d.license,
+		d.is_active,
 		o.id AS order_id
 		FROM drivers d
 		JOIN users u ON d.iduser = u.id
@@ -59,7 +60,7 @@ func (r *DriverRepositoryAdapter) ListDrivers(limit, offset int, NameOrLastName 
 		args = append(args, fmt.Sprintf("%%%s%%", NameOrLastName))
 		argsPosition++
 	}
-	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argsPosition, argsPosition+1)
+	query += fmt.Sprintf(" ORDER BY id LIMIT $%d OFFSET $%d", argsPosition, argsPosition+1)
 	args = append(args, limit, offset)
 
 	rows, err := r.db.Query(query, args...)
@@ -74,7 +75,7 @@ func (r *DriverRepositoryAdapter) ListDrivers(limit, offset int, NameOrLastName 
 		driver := entities.Driver{
 			User: &entities.User{},
 		}
-		if err := rows.Scan(&driver.ID, &driver.User.Name, &driver.User.LastName, &driver.PhoneNumber, &driver.LicenseNo, &orderID); err != nil {
+		if err := rows.Scan(&driver.ID, &driver.User.Name, &driver.User.LastName, &driver.PhoneNumber, &driver.LicenseNo, &driver.IsActive, &orderID); err != nil {
 			return nil, fmt.Errorf("error scanning driver row: %w", err)
 		}
 		if orderID.Valid {
@@ -117,6 +118,7 @@ func (r *DriverRepositoryAdapter) GetByID(ctx context.Context, id uint) (*entiti
 		u.email,
 		d.phonenumber,
 		d.license,
+		d.is_active,
 		o.id AS order_id
 		FROM drivers d
 		JOIN users u ON d.iduser = u.id
@@ -135,6 +137,7 @@ func (r *DriverRepositoryAdapter) GetByID(ctx context.Context, id uint) (*entiti
 		&driver.User.Email,
 		&driver.PhoneNumber,
 		&driver.LicenseNo,
+		&driver.IsActive,
 		&orderID,
 	)
 
