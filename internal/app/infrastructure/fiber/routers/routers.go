@@ -2,12 +2,11 @@ package routers
 
 import (
 	"database/sql"
-	// "os"
-	// "shipping-app/internal/externalServices/auth"
+	"os"
 	"shipping-app/internal/app/infrastructure/adapters/ws"
+	"shipping-app/internal/externalServices/auth"
 	"shipping-app/internal/externalServices/services"
-
-	// "shipping-app/internal/middleware"
+	"shipping-app/internal/middleware"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
@@ -42,21 +41,31 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 	hub := ws.NewHub()
 	go hub.Run()
 	app.Get("/api/v1/ws", hub.HandleWebSocketConnection)
-	// jwtSecret := os.Getenv("JWT_SECRET")
-	// jwtService := auth.NewJWTService(jwtSecret)
+
+	// Configurar servicios de autenticación
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "your-secret-key-change-in-production" // Fallback para desarrollo
+	}
+	jwtService := auth.NewJWTService(jwtSecret)
 	apiKeyService := services.NewAPIKeyService(db)
 
+	// Rutas externas (API Gateway con API Key)
 	external := app.Group("/external")
 	SetExternalRouter(external, db, apiKeyService)
 
+	// Rutas públicas (sin autenticación)
 	apiv1 := app.Group("/api/v1")
-	// apiv1.Use(middleware.JWTAuth(jwtService))
-	SetUserRouter(apiv1, db)
-	SetPackageRouter(apiv1, db)
-	SetTrackRouter(apiv1, db, hub)
-	SetVehicleRouter(apiv1, db)
-	SetOrderRouter(apiv1, db)
-	SetDriverRouter(apiv1, db)
-	SetDeliveryRouter(apiv1, db)
-	SetTrackingRouter(apiv1, db)
+	SetAuthRouter(apiv1, db, jwtService)
+
+	// Rutas protegidas (requieren JWT)
+	protected := apiv1.Group("", middleware.JWTAuth(jwtService))
+	SetUserRouter(protected, db)
+	SetPackageRouter(protected, db)
+	SetTrackRouter(protected, db, hub)
+	SetVehicleRouter(protected, db)
+	SetOrderRouter(protected, db)
+	SetDriverRouter(protected, db)
+	SetDeliveryRouter(protected, db)
+	SetTrackingRouter(protected, db)
 }

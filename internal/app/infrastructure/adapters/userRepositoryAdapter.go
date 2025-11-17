@@ -67,6 +67,29 @@ func (r *UserRepositoryPostgres) GetUserByID(id uint) (*entities.User, error) {
 	return &user, nil
 }
 
+func (r *UserRepositoryPostgres) GetUserByEmail(email string) (*entities.User, error) {
+	var user entities.User
+	query := `SELECT id, name, lastname, email, password, role FROM users WHERE email = $1`
+
+	err := r.db.QueryRow(query, email).Scan(
+		&user.ID,
+		&user.Name,
+		&user.LastName,
+		&user.Email,
+		&user.Password,
+		&user.Role,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrUserNotFound
+		}
+		return nil, fmt.Errorf("error fetching user by email: %w", err)
+	}
+
+	return &user, nil
+}
+
 // ListUsers del compañero (con paginación y búsqueda)
 func (r *UserRepositoryPostgres) ListUsers(limit, offset int, nameOrLastname, role string) ([]*entities.User, error) {
 	query := `SELECT id, name, lastname, email, role FROM users WHERE 1=1`
@@ -84,7 +107,7 @@ func (r *UserRepositoryPostgres) ListUsers(limit, offset int, nameOrLastname, ro
 		args = append(args, role)
 		argPosition++
 	}
-	
+
 	query += " ORDER BY id LIMIT $" + fmt.Sprint(argPosition) + " OFFSET $" + fmt.Sprint(argPosition+1)
 	args = append(args, limit, offset)
 
