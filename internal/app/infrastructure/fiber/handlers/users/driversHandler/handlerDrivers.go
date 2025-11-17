@@ -24,16 +24,18 @@ type ErrorResponse struct {
 }
 
 type HandlerDrivers struct {
-	createDriverUseCase  *drivers.CreateDriverUseCase
-	ListDriversUseCase   *drivers.ListDriverUseCase
-	GetDriverByIdUseCase *drivers.GetDriversByIdUseCase
+	createDriverUseCase       *drivers.CreateDriverUseCase
+	ListDriversUseCase        *drivers.ListDriverUseCase
+	GetDriverByIdUseCase      *drivers.GetDriversByIdUseCase
+	UpdateStatusDriverUseCase *drivers.UpdateStatusDriverUseCase
 }
 
-func NewHandlerDrivers(createDriverUseCase *drivers.CreateDriverUseCase, listDriversUseCase *drivers.ListDriverUseCase, getDriverByIdUseCase *drivers.GetDriversByIdUseCase) *HandlerDrivers {
+func NewHandlerDrivers(createDriverUseCase *drivers.CreateDriverUseCase, listDriversUseCase *drivers.ListDriverUseCase, getDriverByIdUseCase *drivers.GetDriversByIdUseCase, updateStatusDriverUseCase *drivers.UpdateStatusDriverUseCase) *HandlerDrivers {
 	return &HandlerDrivers{
-		createDriverUseCase:  createDriverUseCase,
-		ListDriversUseCase:   listDriversUseCase,
-		GetDriverByIdUseCase: getDriverByIdUseCase,
+		createDriverUseCase:       createDriverUseCase,
+		ListDriversUseCase:        listDriversUseCase,
+		GetDriverByIdUseCase:      getDriverByIdUseCase,
+		UpdateStatusDriverUseCase: updateStatusDriverUseCase,
 	}
 }
 
@@ -115,6 +117,35 @@ func (h *HandlerDrivers) GetDriverByID(ctx fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(driverOutput)
+}
+
+func (h *HandlerDrivers) UpdateStatusDriver(ctx fiber.Ctx) error {
+	var req struct {
+		IsActive bool `json:"is_active"`
+	}
+	if err := ctx.Bind().Body(&req); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Error:   "invalid_request",
+			Message: "Invalid request body",
+		})
+	}
+
+	idstr := ctx.Params("id")
+	id, err := strconv.Atoi(idstr)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Error:   "invalid_id",
+			Message: "El ID debe ser un número válido",
+		})
+	}
+
+	if err := h.UpdateStatusDriverUseCase.Execute(uint(id), req.IsActive); err != nil {
+		return h.handleError(ctx, err)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Driver status updated successfully",
+	})
 }
 
 func (h *HandlerDrivers) handleError(ctx fiber.Ctx, err error) error {

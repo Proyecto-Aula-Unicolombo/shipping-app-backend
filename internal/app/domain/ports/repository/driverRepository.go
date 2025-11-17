@@ -14,4 +14,5 @@ type DriverRepository interface {
 	DeleteDriverByUserIDTx(tx *sql.Tx, userID uint) error
 	GetByID(ctx context.Context, id uint) (*entities.Driver, error)
 	CountDrivers(nameLastNameOrNumOrder string) (int64, error)
+	UpdateDriverStatus(driverID uint, isActive bool) error
 }

@@ -17,11 +17,12 @@ func SetDriverRouter(apiv1 fiber.Router, db *sql.DB) {
 	createDriverUseCase := application.NewCreateDriverUseCase(userRepo, driverRepo, txRepo)
 	listDriverUseCase := application.NewListDriverUseCase(driverRepo, userRepo)
 	getDriverByIdUseCase := application.NewGetByIdDriverUseCase(driverRepo)
+	updateStatusDriverUseCase := application.NewUpdateStatusDriverUseCase(driverRepo)
 
-	drivershandler := drivershandler.NewHandlerDrivers(createDriverUseCase, listDriverUseCase, getDriverByIdUseCase)
+	drivershandler := drivershandler.NewHandlerDrivers(createDriverUseCase, listDriverUseCase, getDriverByIdUseCase, updateStatusDriverUseCase)
 
 	apiv1.Post("/drivers", drivershandler.CreateDriver)
 	apiv1.Get("/drivers", drivershandler.ListDrivers)
 	apiv1.Get("/drivers/:id", drivershandler.GetDriverByID)
-
+	apiv1.Patch("/drivers/:id/status", drivershandler.UpdateStatusDriver)
 }

@@ -185,3 +185,13 @@ func (r *DriverRepositoryAdapter) CountDrivers(nameLastName string) (int64, erro
 
 	return count, nil
 }
+
+func (r *DriverRepositoryAdapter) UpdateDriverStatus(driverID uint, isActive bool) error {
+	query := `UPDATE drivers SET is_active = $1 WHERE id = $2`
+	_, err := r.db.Exec(query, isActive, driverID)
+	if err != nil {
+		return fmt.Errorf("update driver status: %w", err)
+	}
+
+	return nil
+}
