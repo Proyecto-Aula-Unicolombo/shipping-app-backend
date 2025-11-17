@@ -60,7 +60,7 @@ func (r *DriverRepositoryAdapter) ListDrivers(limit, offset int, NameOrLastName 
 		args = append(args, fmt.Sprintf("%%%s%%", NameOrLastName))
 		argsPosition++
 	}
-	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argsPosition, argsPosition+1)
+	query += fmt.Sprintf(" ORDER BY id LIMIT $%d OFFSET $%d", argsPosition, argsPosition+1)
 	args = append(args, limit, offset)
 
 	rows, err := r.db.Query(query, args...)
