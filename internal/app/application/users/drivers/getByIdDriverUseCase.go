@@ -14,6 +14,7 @@ type GetDriverOutput struct {
 	PhoneNumber string
 	NumLicence  string
 	NumOrder    uint
+	IsActive    bool
 }
 
 type GetDriversByIdUseCase struct {
@@ -42,6 +43,7 @@ func (uc *GetDriversByIdUseCase) Execute(ctx context.Context, id uint) (*GetDriv
 		PhoneNumber: driver.PhoneNumber,
 		NumLicence:  driver.LicenseNo,
 		NumOrder:    driver.NumOrder,
+		IsActive:    driver.IsActive,
 	}
 
 	return &driverOutput, nil
