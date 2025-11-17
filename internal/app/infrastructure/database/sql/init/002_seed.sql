@@ -14,12 +14,12 @@ INSERT INTO users (name, lastname, email, password, role) VALUES
 ('Carmen', 'Jiménez', 'carmen.jimenez@logistica.com', '$2a$10$example.hash.coord3', 'coord');
 
 -- Insert Drivers (references users 3-7)
-INSERT INTO drivers (phonenumber, license, iduser) VALUES
-('+57 300 123 4567', 'COL-2023-001234', 3),
-('+57 301 234 5678', 'COL-2023-005678', 4),
-('+57 302 345 6789', 'COL-2023-009012', 5),
-('+57 303 456 7890', 'COL-2023-003456', 6),
-('+57 304 567 8901', 'COL-2023-007890', 7);
+INSERT INTO drivers (phonenumber, license, is_active, iduser) VALUES
+('+57 300 123 4567', 'COL-2023-001234', false, 3),
+('+57 301 234 5678', 'COL-2023-005678', false, 4),
+('+57 302 345 6789', 'COL-2023-009012', false, 5),
+('+57 303 456 7890', 'COL-2023-003456', false, 6),
+('+57 304 567 8901', 'COL-2023-007890', false, 7);
 
 -- Insert Vehicles
 INSERT INTO vehicles (plate, brand, model, color, vehicletype) VALUES
