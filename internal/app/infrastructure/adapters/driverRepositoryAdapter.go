@@ -45,10 +45,17 @@ func (r *DriverRepositoryAdapter) ListDrivers(limit, offset int, NameOrLastName 
 		d.phonenumber,
 		d.license,
 		d.is_active,
-		o.id AS order_id
+		latest_order.order_id
 		FROM drivers d
 		JOIN users u ON d.iduser = u.id
-		LEFT JOIN orders o ON d.id = o.iddriver
+		LEFT JOIN  LATERAL (
+			SELECT
+			o.id AS order_id
+			FROM orders o 
+			WHERE o.iddriver = d.id
+			ORDER BY o.create_at DESC
+			LIMIT 1
+			) AS latest_order ON true
 		WHERE 1=1
 	`
 
@@ -119,17 +126,20 @@ func (r *DriverRepositoryAdapter) GetByID(ctx context.Context, id uint) (*entiti
 		d.phonenumber,
 		d.license,
 		d.is_active,
-		o.id AS order_id
+		o.id AS order_id,
+		o.status AS order_status
 		FROM drivers d
 		JOIN users u ON d.iduser = u.id
 		LEFT JOIN orders o ON d.id = o.iddriver
 		WHERE d.id = $1
+		ORDER BY o.create_at DESC
 
 	`
 	driver := entities.Driver{
 		User: &entities.User{},
 	}
 	var orderID sql.NullInt64
+	var orderStatus sql.NullString
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&driver.ID,
 		&driver.User.Name,
@@ -139,11 +149,15 @@ func (r *DriverRepositoryAdapter) GetByID(ctx context.Context, id uint) (*entiti
 		&driver.LicenseNo,
 		&driver.IsActive,
 		&orderID,
+		&orderStatus,
 	)
 
 	if orderID.Valid {
 		numOrder := uint(orderID.Int64)
 		driver.NumOrder = numOrder
+	}
+	if orderStatus.Valid {
+		driver.OrderStatus = orderStatus.String
 	}
 
 	if err != nil {

@@ -8,5 +8,6 @@ type Driver struct {
 	UserID      uint
 	User        *User
 
-	NumOrder uint
+	NumOrder    uint
+	OrderStatus string
 }
