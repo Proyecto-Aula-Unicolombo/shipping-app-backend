@@ -6,4 +6,6 @@ type Driver struct {
 	LicenseNo   string
 	UserID      uint
 	User        *User
+
+	NumOrder uint
 }

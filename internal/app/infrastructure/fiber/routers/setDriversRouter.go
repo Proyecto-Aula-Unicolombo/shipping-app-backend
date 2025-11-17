@@ -15,8 +15,13 @@ func SetDriverRouter(apiv1 fiber.Router, db *sql.DB) {
 	userRepo := adapters.NewUserRepositoryPostgres(db)
 
 	createDriverUseCase := application.NewCreateDriverUseCase(userRepo, driverRepo, txRepo)
+	listDriverUseCase := application.NewListDriverUseCase(driverRepo, userRepo)
+	getDriverByIdUseCase := application.NewGetByIdDriverUseCase(driverRepo)
 
-	drivershandler := drivershandler.NewHandlerDrivers(createDriverUseCase)
+	drivershandler := drivershandler.NewHandlerDrivers(createDriverUseCase, listDriverUseCase, getDriverByIdUseCase)
 
 	apiv1.Post("/drivers", drivershandler.CreateDriver)
+	apiv1.Get("/drivers", drivershandler.ListDrivers)
+	apiv1.Get("/drivers/:id", drivershandler.GetDriverByID)
+
 }

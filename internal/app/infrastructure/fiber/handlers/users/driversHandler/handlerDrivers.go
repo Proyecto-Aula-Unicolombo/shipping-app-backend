@@ -4,6 +4,8 @@ import (
 	"errors"
 	"shipping-app/internal/app/application/users/drivers"
 	"shipping-app/internal/app/infrastructure/adapters"
+	"shipping-app/internal/utils"
+	"strconv"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -22,12 +24,16 @@ type ErrorResponse struct {
 }
 
 type HandlerDrivers struct {
-	createDriverUseCase *drivers.CreateDriverUseCase
+	createDriverUseCase  *drivers.CreateDriverUseCase
+	ListDriversUseCase   *drivers.ListDriverUseCase
+	GetDriverByIdUseCase *drivers.GetDriversByIdUseCase
 }
 
-func NewHandlerDrivers(createDriverUseCase *drivers.CreateDriverUseCase) *HandlerDrivers {
+func NewHandlerDrivers(createDriverUseCase *drivers.CreateDriverUseCase, listDriversUseCase *drivers.ListDriverUseCase, getDriverByIdUseCase *drivers.GetDriversByIdUseCase) *HandlerDrivers {
 	return &HandlerDrivers{
-		createDriverUseCase: createDriverUseCase,
+		createDriverUseCase:  createDriverUseCase,
+		ListDriversUseCase:   listDriversUseCase,
+		GetDriverByIdUseCase: getDriverByIdUseCase,
 	}
 }
 
@@ -55,6 +61,60 @@ func (h *HandlerDrivers) CreateDriver(ctx fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "Driver created successfully",
 	})
+}
+
+func (h *HandlerDrivers) ListDrivers(ctx fiber.Ctx) error {
+	params := utils.GetPaginationParams(ctx)
+	nameORLastName := ctx.Query("name_or_lastname")
+
+	input := drivers.ListDriverInput{
+		Limit:          params.Limit,
+		Offset:         params.Offset,
+		NameOrLastName: nameORLastName,
+	}
+
+	driversOutput, total, err := h.ListDriversUseCase.Execute(input)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+			Error:   "internal_error",
+			Message: "Error al listar drivers",
+		})
+	}
+
+	if driversOutput == nil {
+		driversOutput = []*drivers.ListDriverOutput{}
+	}
+
+	response := utils.NewPaginationResponse(driversOutput, int(total), params.Page, params.Limit)
+
+	return ctx.JSON(response)
+}
+
+func (h *HandlerDrivers) GetDriverByID(ctx fiber.Ctx) error {
+	idstr := ctx.Params("id")
+	id, err := strconv.Atoi(idstr)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Error:   "invalid_id",
+			Message: "El ID debe ser un número válido",
+		})
+	}
+	driverOutput, err := h.GetDriverByIdUseCase.Execute(ctx.Context(), uint(id))
+	if err != nil {
+		if errors.Is(err, drivers.ErrNotFound) {
+			return ctx.Status(fiber.StatusNotFound).JSON(ErrorResponse{
+				Error:   "not_found",
+				Message: "Driver not found",
+			})
+		} else {
+			return ctx.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error:   "internal_server_error",
+				Message: "Could not retrieve driver",
+			})
+		}
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(driverOutput)
 }
 
 func (h *HandlerDrivers) handleError(ctx fiber.Ctx, err error) error {

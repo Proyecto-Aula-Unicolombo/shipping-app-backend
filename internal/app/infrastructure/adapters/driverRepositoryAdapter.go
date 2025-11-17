@@ -36,26 +36,53 @@ func (r *DriverRepositoryAdapter) UpdateDriverTx(tx *sql.Tx, driver *entities.Dr
 	return err
 }
 
-func (r *DriverRepositoryAdapter) ListDrivers() ([]*entities.Driver, error) {
-	query := `SELECT iddriver, iduser, phonenumber, license FROM drivers`
-	rows, err := r.db.Query(query)
+func (r *DriverRepositoryAdapter) ListDrivers(limit, offset int, NameOrLastName string) ([]*entities.Driver, error) {
+	query := `
+		SELECT 
+		d.id,
+		u.name,
+		u.lastname,
+		d.phonenumber,
+		d.license,
+		o.id AS order_id
+		FROM drivers d
+		JOIN users u ON d.iduser = u.id
+		LEFT JOIN orders o ON d.id = o.iddriver
+		WHERE 1=1
+	`
+
+	args := []interface{}{}
+	argsPosition := 1
+
+	if NameOrLastName != "" {
+		query += fmt.Sprintf(" AND (u.name ILIKE $%d OR u.lastname ILIKE $%d)", argsPosition, argsPosition)
+		args = append(args, fmt.Sprintf("%%%s%%", NameOrLastName))
+		argsPosition++
+	}
+	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argsPosition, argsPosition+1)
+	args = append(args, limit, offset)
+
+	rows, err := r.db.Query(query, args...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error listing drivers: %w", err)
 	}
 	defer rows.Close()
 
 	var drivers []*entities.Driver
+	var orderID sql.NullInt64
 	for rows.Next() {
-		driver := &entities.Driver{}
-		err := rows.Scan(&driver.ID, &driver.UserID, &driver.PhoneNumber, &driver.LicenseNo)
-		if err != nil {
-			return nil, err
+		driver := entities.Driver{
+			User: &entities.User{},
 		}
-		drivers = append(drivers, driver)
-	}
+		if err := rows.Scan(&driver.ID, &driver.User.Name, &driver.User.LastName, &driver.PhoneNumber, &driver.LicenseNo, &orderID); err != nil {
+			return nil, fmt.Errorf("error scanning driver row: %w", err)
+		}
+		if orderID.Valid {
+			numOrder := uint(orderID.Int64)
+			driver.NumOrder = numOrder
+		}
 
-	if err = rows.Err(); err != nil {
-		return nil, err
+		drivers = append(drivers, &driver)
 	}
 
 	return drivers, nil
@@ -82,15 +109,39 @@ func (r *DriverRepositoryAdapter) DeleteDriverByUserIDTx(tx *sql.Tx, userID uint
 }
 
 func (r *DriverRepositoryAdapter) GetByID(ctx context.Context, id uint) (*entities.Driver, error) {
-	query := `SELECT id, phonenumber, license, iduser FROM drivers WHERE id = $1`
+	query := `
+		SELECT 
+		d.id,
+		u.name,
+		u.lastname,
+		u.email,
+		d.phonenumber,
+		d.license,
+		o.id AS order_id
+		FROM drivers d
+		JOIN users u ON d.iduser = u.id
+		LEFT JOIN orders o ON d.id = o.iddriver
+		WHERE d.id = $1
 
-	var driver entities.Driver
+	`
+	driver := entities.Driver{
+		User: &entities.User{},
+	}
+	var orderID sql.NullInt64
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&driver.ID,
+		&driver.User.Name,
+		&driver.User.LastName,
+		&driver.User.Email,
 		&driver.PhoneNumber,
 		&driver.LicenseNo,
-		&driver.UserID,
+		&orderID,
 	)
+
+	if orderID.Valid {
+		numOrder := uint(orderID.Int64)
+		driver.NumOrder = numOrder
+	}
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -100,4 +151,20 @@ func (r *DriverRepositoryAdapter) GetByID(ctx context.Context, id uint) (*entiti
 	}
 
 	return &driver, nil
+}
+
+func (r *DriverRepositoryAdapter) CountDrivers(nameLastName string) (int64, error) {
+	query := `
+		SELECT COUNT(*) FROM drivers d
+		JOIN users u ON d.iduser = u.id
+		WHERE u.name ILIKE $1 OR u.lastname ILIKE $1`
+
+	var count int64
+
+	err := r.db.QueryRow(query, "%"+nameLastName+"%").Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("count drivers: %w", err)
+	}
+
+	return count, nil
 }
