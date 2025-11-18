@@ -92,6 +92,10 @@ func (uc *ReportDeliveryUseCase) Execute(ctx context.Context, input ReportDelive
 		return nil, fmt.Errorf("create delivery information: %w", err)
 	}
 
+	if err := uc.packageRepo.UpdatePackageStatusDelivery(ctx, tx, "entregado", input.PackageID); err != nil {
+		return nil, fmt.Errorf("update package status delivery: %w", err)
+	}
+
 	// Commit transacción
 	if err := uc.txProvider.CommitTx(ctx, tx); err != nil {
 		return nil, fmt.Errorf("commit tx: %w", err)

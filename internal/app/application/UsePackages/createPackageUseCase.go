@@ -36,7 +36,6 @@ type CreatePackageUseCase struct {
 	comercialRepo repository.ComercialInformationRepository
 	senderRepo    repository.SenderRepository
 	receiverRepo  repository.ReceiverRepository
-	statusRepo    repository.StatusDeliveryRepository
 	domainSvc     *services.ValidatePackageService
 }
 
@@ -47,7 +46,6 @@ func NewCreatePackageUseCase(
 	comercialRepo repository.ComercialInformationRepository,
 	senderRepo repository.SenderRepository,
 	receiverRepo repository.ReceiverRepository,
-	statusRepo repository.StatusDeliveryRepository,
 	domainSvc *services.ValidatePackageService,
 ) *CreatePackageUseCase {
 	return &CreatePackageUseCase{
@@ -57,7 +55,6 @@ func NewCreatePackageUseCase(
 		comercialRepo: comercialRepo,
 		senderRepo:    senderRepo,
 		receiverRepo:  receiverRepo,
-		statusRepo:    statusRepo,
 		domainSvc:     domainSvc,
 	}
 }
@@ -84,11 +81,10 @@ func (uc *CreatePackageUseCase) Execute(ctx context.Context, input CreatePackage
 	}()
 
 	// Crear o verificar relacionadas dentro de la tx
-	addr, status, cominfo, sender, receiver, err := CreateOrFetchRelatedEntitiesFromDTOs(
+	addr, cominfo, sender, receiver, err := CreateOrFetchRelatedEntitiesFromDTOs(
 		ctx,
 		tx,
 		uc.addressRepo,
-		uc.statusRepo,
 		uc.comercialRepo,
 		uc.senderRepo,
 		uc.receiverRepo,
@@ -100,7 +96,7 @@ func (uc *CreatePackageUseCase) Execute(ctx context.Context, input CreatePackage
 	//  Preparar entidad Package y persistir
 	pkg := &entities.Package{
 		NumPackage:             input.NumPackage,
-		StartStatus:            "Pending",
+		Status:                 "pendiente",
 		DescriptionContent:     input.DescriptionContent,
 		Weight:                 input.Weight,
 		Dimension:              input.Dimension,
@@ -108,7 +104,6 @@ func (uc *CreatePackageUseCase) Execute(ctx context.Context, input CreatePackage
 		TypePackage:            input.TypePackage,
 		IsFragile:              input.IsFragile,
 		AddressPackageID:       addr.ID,
-		StatusDeliveryID:       status.ID,
 		ComercialInformationID: cominfo.ID,
 		SenderID:               sender.ID,
 		ReceiverID:             receiver.ID,

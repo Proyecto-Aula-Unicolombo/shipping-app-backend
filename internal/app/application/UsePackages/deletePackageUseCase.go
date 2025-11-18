@@ -15,23 +15,20 @@ var (
 )
 
 type CancelPackageUseCase struct {
-	PackageRepo        repository.PackageRepository
-	ComertialInfoRepo  repository.ComercialInformationRepository
-	StatusDeliveryRepo repository.StatusDeliveryRepository
-	ProviderTx         repository.TxProvider
+	PackageRepo       repository.PackageRepository
+	ComertialInfoRepo repository.ComercialInformationRepository
+	ProviderTx        repository.TxProvider
 }
 
 func NewCancellPackageUseCase(
 	packageRepo repository.PackageRepository,
 	comertialInfoRepo repository.ComercialInformationRepository,
-	statusDeliveryRepo repository.StatusDeliveryRepository,
 	providerTx repository.TxProvider,
 ) *CancelPackageUseCase {
 	return &CancelPackageUseCase{
-		PackageRepo:        packageRepo,
-		ComertialInfoRepo:  comertialInfoRepo,
-		StatusDeliveryRepo: statusDeliveryRepo,
-		ProviderTx:         providerTx,
+		PackageRepo:       packageRepo,
+		ComertialInfoRepo: comertialInfoRepo,
+		ProviderTx:        providerTx,
 	}
 }
 
@@ -47,8 +44,7 @@ func (u *CancelPackageUseCase) Execute(ctx context.Context, numPackage string) e
 	if err != nil {
 		return ErrToGetStatus
 	}
-	log.Println("Package status:", pkgStatus.StartStatus)
-	if pkgStatus.StartStatus != "Pending" {
+	if pkgStatus.Status != "pendiente" {
 		return ErrCannotCancel
 	}
 
@@ -69,10 +65,6 @@ func (u *CancelPackageUseCase) Execute(ctx context.Context, numPackage string) e
 
 	if err := u.ComertialInfoRepo.Delete(ctx, tx, pkg.ComercialInformationID); err != nil {
 		return fmt.Errorf("delete comercial information: %w", err)
-	}
-
-	if err := u.StatusDeliveryRepo.Delete(ctx, tx, pkg.StatusDeliveryID); err != nil {
-		return fmt.Errorf("delete status delivery: %w", err)
 	}
 
 	if err := u.ProviderTx.CommitTx(ctx, tx); err != nil {

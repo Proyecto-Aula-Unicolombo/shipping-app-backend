@@ -25,26 +25,25 @@ func SetExternalRouter(external fiber.Router, db *sql.DB, apiKeyService *api_key
 	comercialInformation := adapters.NewComercialInformationRepositoryPostgres(db)
 	senderRepo := adapters.NewSenderRepositoryPostgres(db)
 	receiverRepo := adapters.NewReceiverRepositoryPostgres(db)
-	statusDelivery := adapters.NewStatusDeliveryRepositoryPostgres(db)
 	txProviderRepo := adapters.NewSQLTxProvider(db)
 	domainSvc := services.NewValidatePackageService()
 	repoPackage := adapters.NewPackageRepositoryPostgres(db)
 
 	createPackageUseCase := usepackages.NewCreatePackageUseCase(
 		txProviderRepo, repoPackage, addressPackage, comercialInformation,
-		senderRepo, receiverRepo, statusDelivery, domainSvc,
+		senderRepo, receiverRepo, domainSvc,
 	)
 	consultPackageUseCase := usepackages.NewConsultPackageUseCase(
 		repoPackage, addressPackage, comercialInformation,
-		senderRepo, receiverRepo, statusDelivery,
+		senderRepo, receiverRepo,
 	)
 	cancelPackageUseCase := usepackages.NewCancellPackageUseCase(
-		repoPackage, comercialInformation, statusDelivery, txProviderRepo,
+		repoPackage, comercialInformation, txProviderRepo,
 	)
 
 	listPackagesUseCase := usepackages.NewListPackagesUseCase(
 		repoPackage, addressPackage, comercialInformation,
-		senderRepo, receiverRepo, statusDelivery,
+		senderRepo, receiverRepo,
 	)
 	packageHandler := handlerpackages.NewPackageHandler(createPackageUseCase, cancelPackageUseCase, consultPackageUseCase, listPackagesUseCase)
 

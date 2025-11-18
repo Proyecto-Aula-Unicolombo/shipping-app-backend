@@ -23,18 +23,17 @@ type LocationInfo struct {
 }
 
 type TrackPackageResponse struct {
-	PackageID         uint           `json:"package_id"`
-	NumPackage        string         `json:"num_package"`
-	Status            string         `json:"status"`
-	Origin            string         `json:"origin"`
-	Destination       string         `json:"destination"`
-	EstimatedDelivery *time.Time     `json:"estimated_delivery"`
-	CurrentLocation   *LocationInfo  `json:"current_location"`
-	ReceiverName      string         `json:"receiver_name"`
-	ReceiverPhone     string         `json:"receiver_phone"`
-	IsFragile         bool           `json:"is_fragile"`
-	Weight            *float64       `json:"weight"`
-	TrackingHistory   []LocationInfo `json:"tracking_history"`
+	PackageID       uint           `json:"package_id"`
+	NumPackage      string         `json:"num_package"`
+	Status          string         `json:"status"`
+	Origin          string         `json:"origin"`
+	Destination     string         `json:"destination"`
+	CurrentLocation *LocationInfo  `json:"current_location"`
+	ReceiverName    string         `json:"receiver_name"`
+	ReceiverPhone   string         `json:"receiver_phone"`
+	IsFragile       bool           `json:"is_fragile"`
+	Weight          *float64       `json:"weight"`
+	TrackingHistory []LocationInfo `json:"tracking_history"`
 }
 
 var (
@@ -86,7 +85,7 @@ func (uc *TrackPackageUseCase) Execute(ctx context.Context, input TrackPackageIn
 	response := &TrackPackageResponse{
 		PackageID:  pkg.ID,
 		NumPackage: pkg.NumPackage,
-		Status:     pkg.StartStatus,
+		Status:     pkg.Status,
 		IsFragile:  pkg.IsFragile,
 		Weight:     pkg.Weight,
 	}
@@ -95,11 +94,6 @@ func (uc *TrackPackageUseCase) Execute(ctx context.Context, input TrackPackageIn
 	if pkg.AddressPackage != nil {
 		response.Origin = pkg.AddressPackage.Origin
 		response.Destination = pkg.AddressPackage.Destination
-	}
-
-	// Obtener información de entrega estimada
-	if pkg.StatusDelivery != nil && pkg.StatusDelivery.DateEstimatedDelivery != nil {
-		response.EstimatedDelivery = pkg.StatusDelivery.DateEstimatedDelivery
 	}
 
 	// Obtener información del destinatario

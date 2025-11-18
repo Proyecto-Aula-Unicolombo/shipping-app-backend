@@ -21,4 +21,5 @@ type PackageRepository interface {
 	ListPackages(ctx context.Context, limit, offset int) ([]*entities.Package, error)
 	DeletePackage(ctx context.Context, tx *sql.Tx, id uint) error
 	UnassignPackagesFromOrder(ctx context.Context, tx *sql.Tx, orderID uint) error
+	UpdatePackageStatusDelivery(ctx context.Context, tx *sql.Tx, newStatus string, packageID uint) error
 }

@@ -5,7 +5,7 @@ import "time"
 type Package struct {
 	ID                     uint
 	NumPackage             string
-	StartStatus            string
+	Status                 string
 	DescriptionContent     *string
 	Weight                 *float64
 	Dimension              *string
@@ -15,13 +15,11 @@ type Package struct {
 	CreatedAt              time.Time
 	UpdatedAt              *time.Time
 	AddressPackageID       uint
-	StatusDeliveryID       uint
 	ComercialInformationID uint
 	SenderID               uint
 	ReceiverID             uint
 	OrderID                *uint
 	AddressPackage         *AddressPackage
-	StatusDelivery         *StatusDelivery
 	ComercialInformation   *ComercialInformation
 	Sender                 *Sender
 	Receiver               *Receiver

@@ -21,14 +21,12 @@ func CreateOrFetchRelatedEntitiesFromDTOs(
 	ctx context.Context,
 	tx *sql.Tx,
 	addressRepo repository.AddressPackageRepository,
-	statusRepo repository.StatusDeliveryRepository,
 	comercialRepo repository.ComercialInformationRepository,
 	senderRepo repository.SenderRepository,
 	receiverRepo repository.ReceiverRepository,
 	input CreatePackageInput,
 ) (
 	*entities.AddressPackage,
-	*entities.StatusDelivery,
 	*entities.ComercialInformation,
 	*entities.Sender,
 	*entities.Receiver,
@@ -36,77 +34,67 @@ func CreateOrFetchRelatedEntitiesFromDTOs(
 ) {
 	// AddressPackage - Buscar por origin + destination
 	if input.AddressPackage == nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("%w: addresspackage", ErrMissingRelatedInput)
+		return nil, nil, nil, nil, fmt.Errorf("%w: addresspackage", ErrMissingRelatedInput)
 	}
 
 	addrEntity, err := addressRepo.FindByRoute(ctx, input.AddressPackage.Origin, input.AddressPackage.Destination)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, nil, nil, nil, nil, fmt.Errorf("find addresspackage: %w", err)
+		return nil, nil, nil, nil, fmt.Errorf("find addresspackage: %w", err)
 	}
 
 	if addrEntity == nil {
 		// No existe, crear nueva
 		addrEntity = mapAddressInputToEntity(input.AddressPackage)
 		if err := addressRepo.Create(ctx, tx, addrEntity); err != nil {
-			return nil, nil, nil, nil, nil, fmt.Errorf("create addresspackage: %w", err)
+			return nil, nil, nil, nil, fmt.Errorf("create addresspackage: %w", err)
 		}
-	}
-
-	// StatusDelivery - Siempre crear nueva (es específica del paquete)
-	if input.StatusDelivery == nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("%w: statusdelivery", ErrMissingRelatedInput)
-	}
-
-	statusEntity := mapStatusInputToEntity(input.StatusDelivery)
-	if err := statusRepo.Create(ctx, tx, statusEntity); err != nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("create statusdelivery: %w", err)
 	}
 
 	// ComercialInformation - Siempre crear nueva (específica del paquete)
 	if input.ComercialInformation == nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("%w: comercialinformation", ErrMissingRelatedInput)
+		return nil, nil, nil, nil, fmt.Errorf("%w: comercialinformation", ErrMissingRelatedInput)
 	}
 
 	cominfoEntity := mapComercialInputToEntity(input.ComercialInformation)
 	if err := comercialRepo.Create(ctx, tx, cominfoEntity); err != nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("create comercialinformation: %w", err)
+		return nil, nil, nil, nil, fmt.Errorf("create comercialinformation: %w", err)
 	}
 
 	// Sender - Buscar por email o document
 	if input.Sender == nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("%w: sender", ErrMissingRelatedInput)
+		return nil, nil, nil, nil, fmt.Errorf("%w: sender", ErrMissingRelatedInput)
 	}
 
 	senderEntity, err := senderRepo.FindByEmailOrDocument(ctx, input.Sender.Email, input.Sender.Document)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, nil, nil, nil, nil, fmt.Errorf("find sender: %w", err)
+		return nil, nil, nil, nil, fmt.Errorf("find sender: %w", err)
 	}
 
 	if senderEntity == nil {
 		log.Println("Sender not found, creating new one")
 		senderEntity = mapSenderInputToEntity(input.Sender)
 		if err := senderRepo.Create(ctx, tx, senderEntity); err != nil {
-			return nil, nil, nil, nil, nil, fmt.Errorf("create sender: %w", err)
+			return nil, nil, nil, nil, fmt.Errorf("create sender: %w", err)
 		}
 	}
 	// Receiver - Buscar por email
 	if input.Receiver == nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("%w: receiver", ErrMissingRelatedInput)
+		return nil, nil, nil, nil, fmt.Errorf("%w: receiver", ErrMissingRelatedInput)
 	}
 
 	receiverEntity, err := receiverRepo.FindByEmail(ctx, input.Receiver.Email)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, nil, nil, nil, nil, fmt.Errorf("find receiver: %w", err)
+		return nil, nil, nil, nil, fmt.Errorf("find receiver: %w", err)
 	}
 
 	if receiverEntity == nil {
 		receiverEntity = mapReceiverInputToEntity(input.Receiver)
 		if err := receiverRepo.Create(ctx, tx, receiverEntity); err != nil {
-			return nil, nil, nil, nil, nil, fmt.Errorf("create receiver: %w", err)
+			return nil, nil, nil, nil, fmt.Errorf("create receiver: %w", err)
 		}
 	}
 
-	return addrEntity, statusEntity, cominfoEntity, senderEntity, receiverEntity, nil
+	return addrEntity, cominfoEntity, senderEntity, receiverEntity, nil
 }
 
 func mapAddressInputToEntity(in *related.AdressPackageInput) *entities.AddressPackage {
@@ -117,18 +105,6 @@ func mapAddressInputToEntity(in *related.AdressPackageInput) *entities.AddressPa
 		Origin:               in.Origin,
 		Destination:          in.Destination,
 		DeliveryInstructions: in.DeliveryInstructions,
-	}
-}
-
-func mapStatusInputToEntity(in *related.StatusDeliveryInput) *entities.StatusDelivery {
-	if in == nil {
-		return nil
-	}
-	return &entities.StatusDelivery{
-		Status:                in.Status,
-		Priority:              in.Priority,
-		DateEstimatedDelivery: in.DateEstimatedDelivery,
-		DateRealDelivery:      in.DateRealDelivery,
 	}
 }
 

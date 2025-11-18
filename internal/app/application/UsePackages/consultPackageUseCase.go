@@ -10,7 +10,7 @@ import (
 type ResponsePackage struct {
 	ID                   uint
 	NumPackage           string
-	StartStatus          string
+	Status               string
 	DescriptionContent   *string
 	Weight               *float64
 	Dimension            *string
@@ -18,7 +18,6 @@ type ResponsePackage struct {
 	TypePackage          *string
 	IsFragile            bool
 	AddressPackage       *related.AdressPackageResponse
-	StatusDelivery       *related.StatusDeliveryResponse
 	ComercialInformation *related.ComercialInformationResponse
 	Sender               *related.SenderResponse
 	Receiver             *related.ReceiverResponse
@@ -29,7 +28,6 @@ type ConsultPackageUseCase struct {
 	comercialRepo repository.ComercialInformationRepository
 	senderRepo    repository.SenderRepository
 	receiverRepo  repository.ReceiverRepository
-	statusRepo    repository.StatusDeliveryRepository
 }
 
 func NewConsultPackageUseCase(
@@ -38,7 +36,6 @@ func NewConsultPackageUseCase(
 	comercialRepo repository.ComercialInformationRepository,
 	senderRepo repository.SenderRepository,
 	receiverRepo repository.ReceiverRepository,
-	statusRepo repository.StatusDeliveryRepository,
 ) *ConsultPackageUseCase {
 	return &ConsultPackageUseCase{
 		packageRepo:   packageRepo,
@@ -46,7 +43,6 @@ func NewConsultPackageUseCase(
 		comercialRepo: comercialRepo,
 		senderRepo:    senderRepo,
 		receiverRepo:  receiverRepo,
-		statusRepo:    statusRepo,
 	}
 }
 
@@ -83,10 +79,9 @@ func (uc *ConsultPackageUseCase) Execute(input CheckAccessInput) (*ResponsePacka
 		return nil, err
 	}
 
-	addrEntity, statusEntity, cominfoEntity, senderEntity, receiverEntity, err := GetRelatedEntities(
+	addrEntity, cominfoEntity, senderEntity, receiverEntity, err := GetRelatedEntities(
 		input.Ctx,
 		uc.addressRepo,
-		uc.statusRepo,
 		uc.comercialRepo,
 		uc.senderRepo,
 		uc.receiverRepo,
@@ -100,7 +95,7 @@ func (uc *ConsultPackageUseCase) Execute(input CheckAccessInput) (*ResponsePacka
 	response := &ResponsePackage{
 		ID:                 pkg.ID,
 		NumPackage:         pkg.NumPackage,
-		StartStatus:        pkg.StartStatus,
+		Status:             pkg.Status,
 		DescriptionContent: pkg.DescriptionContent,
 		Weight:             pkg.Weight,
 		Dimension:          pkg.Dimension,
@@ -111,11 +106,6 @@ func (uc *ConsultPackageUseCase) Execute(input CheckAccessInput) (*ResponsePacka
 			Origin:               addrEntity.Origin,
 			Destination:          addrEntity.Destination,
 			DeliveryInstructions: addrEntity.DeliveryInstructions,
-		},
-		StatusDelivery: &related.StatusDeliveryResponse{
-			Status:                statusEntity.Status,
-			Priority:              statusEntity.Priority,
-			DateEstimatedDelivery: statusEntity.DateEstimatedDelivery,
 		},
 		ComercialInformation: &related.ComercialInformationResponse{
 			CostSending: cominfoEntity.CostSending,

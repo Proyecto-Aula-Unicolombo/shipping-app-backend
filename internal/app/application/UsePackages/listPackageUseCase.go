@@ -25,7 +25,6 @@ type ListPackagesUseCase struct {
 	comercialRepo repository.ComercialInformationRepository
 	senderRepo    repository.SenderRepository
 	receiverRepo  repository.ReceiverRepository
-	statusRepo    repository.StatusDeliveryRepository
 }
 
 func NewListPackagesUseCase(
@@ -33,15 +32,13 @@ func NewListPackagesUseCase(
 	addressRepo repository.AddressPackageRepository,
 	comercialRepo repository.ComercialInformationRepository,
 	senderRepo repository.SenderRepository,
-	receiverRepo repository.ReceiverRepository,
-	statusRepo repository.StatusDeliveryRepository) *ListPackagesUseCase {
+	receiverRepo repository.ReceiverRepository) *ListPackagesUseCase {
 	return &ListPackagesUseCase{
 		packageRepo:   packageRepo,
 		addressRepo:   addressRepo,
 		comercialRepo: comercialRepo,
 		senderRepo:    senderRepo,
 		receiverRepo:  receiverRepo,
-		statusRepo:    statusRepo,
 	}
 }
 
@@ -80,10 +77,9 @@ func (uc *ListPackagesUseCase) Execute(input ListPackagesInput) ([]*ResponsePack
 
 	var responsePackages []*ResponsePackage
 	for _, p := range allowedPkg {
-		addrEntity, statusEntity, cominfoEntity, senderEntity, receiverEntity, err := GetRelatedEntities(
+		addrEntity, cominfoEntity, senderEntity, receiverEntity, err := GetRelatedEntities(
 			input.Ctx,
 			uc.addressRepo,
-			uc.statusRepo,
 			uc.comercialRepo,
 			uc.senderRepo,
 			uc.receiverRepo,
@@ -95,7 +91,7 @@ func (uc *ListPackagesUseCase) Execute(input ListPackagesInput) ([]*ResponsePack
 		responsePackage := &ResponsePackage{
 			ID:                 p.ID,
 			NumPackage:         p.NumPackage,
-			StartStatus:        p.StartStatus,
+			Status:             p.Status,
 			DescriptionContent: p.DescriptionContent,
 			Weight:             p.Weight,
 			Dimension:          p.Dimension,
@@ -106,11 +102,6 @@ func (uc *ListPackagesUseCase) Execute(input ListPackagesInput) ([]*ResponsePack
 				Origin:               addrEntity.Origin,
 				Destination:          addrEntity.Destination,
 				DeliveryInstructions: addrEntity.DeliveryInstructions,
-			},
-			StatusDelivery: &related.StatusDeliveryResponse{
-				Status:                statusEntity.Status,
-				Priority:              statusEntity.Priority,
-				DateEstimatedDelivery: statusEntity.DateEstimatedDelivery,
 			},
 			ComercialInformation: &related.ComercialInformationResponse{
 				CostSending: cominfoEntity.CostSending,

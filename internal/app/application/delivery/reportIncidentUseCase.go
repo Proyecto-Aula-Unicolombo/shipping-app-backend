@@ -115,6 +115,10 @@ func (uc *ReportIncidentUseCase) Execute(ctx context.Context, input ReportIncide
 		return nil, fmt.Errorf("create incident information: %w", err)
 	}
 
+	if err := uc.packageRepo.UpdatePackageStatusDelivery(ctx, tx, "incidente", input.PackageID); err != nil {
+		return nil, fmt.Errorf("update package status delivery: %w", err)
+	}
+
 	// Commit transacción
 	if err := uc.txProvider.CommitTx(ctx, tx); err != nil {
 		return nil, fmt.Errorf("commit tx: %w", err)

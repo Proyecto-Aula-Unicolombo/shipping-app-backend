@@ -46,17 +46,6 @@ func ValidateCreateInput(input CreatePackageInput) error {
 		}
 	}
 
-	if input.StatusDelivery == nil {
-		fields["statusdelivery"] = "statusdelivery is required"
-	} else {
-		if input.StatusDelivery.Status == "" {
-			fields["statusdelivery.status"] = "status is required"
-		}
-		if input.StatusDelivery.Priority == "" {
-			fields["statusdelivery.priority"] = "priority is required"
-		}
-	}
-
 	if input.ComercialInformation == nil {
 		fields["comercialinformation"] = "comercialinformation is required"
 	} else {

@@ -56,15 +56,6 @@ CREATE TABLE IF NOT EXISTS comercialinformations (
 );
 
 
-
-CREATE TABLE IF NOT EXISTS statusdelivery (
-    id SERIAL PRIMARY KEY,
-    status VARCHAR(50) NOT NULL,
-    priority VARCHAR(20) NOT NULL,
-    date_estimated_delivery TIMESTAMP,
-    date_real_delivery TIMESTAMP
-);
-
 CREATE TABLE IF NOT EXISTS addresspackages (
     id SERIAL PRIMARY KEY,
     origin TEXT NOT NULL,
@@ -87,7 +78,7 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE TABLE IF NOT EXISTS packages (
     id SERIAL PRIMARY KEY,
     numpackage VARCHAR(50) NOT NULL UNIQUE,
-    startstatus VARCHAR(50) NOT NULL,
+    status VARCHAR(50) NOT NULL,
     descriptioncontent TEXT,
     weight DECIMAL(8,2),
     dimension VARCHAR(100),
@@ -97,13 +88,11 @@ CREATE TABLE IF NOT EXISTS packages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     idaddresspackage INTEGER NOT NULL,
-    idstatusdelivery INTEGER NOT NULL,
     idcomercialinformation INTEGER NOT NULL,
     idsender INTEGER NOT NULL,
     idreceivers INTEGER NOT NULL,
     idorder INTEGER,
     FOREIGN KEY (idaddresspackage) REFERENCES addresspackages(id),
-    FOREIGN KEY (idstatusdelivery) REFERENCES statusdelivery(id),
     FOREIGN KEY (idcomercialinformation) REFERENCES comercialinformations(id),
     FOREIGN KEY (idsender) REFERENCES senders(id),
     FOREIGN KEY (idreceivers) REFERENCES receivers(id),

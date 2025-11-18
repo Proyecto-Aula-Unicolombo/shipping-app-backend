@@ -111,6 +111,12 @@ func (uc *CreateOrderUseCase) Execute(ctx context.Context, input CreateOrderInpu
 		return nil, fmt.Errorf("assign packages to order: %w", err)
 	}
 
+	for _, pkgID := range input.PackageIDs {
+		if err := uc.packageRepo.UpdatePackageStatusDelivery(ctx, tx, "asignado", pkgID); err != nil {
+			return nil, fmt.Errorf("update package status delivery: %w", err)
+		}
+	}
+
 	// Commit
 	if err := uc.txProvider.CommitTx(ctx, tx); err != nil {
 		return nil, fmt.Errorf("commit tx: %w", err)

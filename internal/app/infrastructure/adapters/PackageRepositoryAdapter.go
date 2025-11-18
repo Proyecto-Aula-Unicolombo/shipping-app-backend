@@ -26,7 +26,7 @@ func (r *PackageRepositoryPostgres) Create(ctx context.Context, tx *sql.Tx, pkg 
 	query := `
 		INSERT INTO packages (
 			numpackage,
-			startstatus,
+			status,
 			descriptioncontent,
 			weight,
 			dimension,
@@ -34,17 +34,16 @@ func (r *PackageRepositoryPostgres) Create(ctx context.Context, tx *sql.Tx, pkg 
 			type_package,
 			is_fragile,
 			idaddresspackage,
-			idstatusdelivery,
 			idcomercialinformation,
 			idsender,
 			idreceivers
-		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
 		RETURNING id
 	`
 
 	args := []interface{}{
 		pkg.NumPackage,
-		pkg.StartStatus,
+		pkg.Status,
 		pkg.DescriptionContent,
 		pkg.Weight,
 		pkg.Dimension,
@@ -52,7 +51,6 @@ func (r *PackageRepositoryPostgres) Create(ctx context.Context, tx *sql.Tx, pkg 
 		pkg.TypePackage,
 		pkg.IsFragile,
 		pkg.AddressPackageID,
-		pkg.StatusDeliveryID,
 		pkg.ComercialInformationID,
 		pkg.SenderID,
 		pkg.ReceiverID,
@@ -90,8 +88,8 @@ func (r *PackageRepositoryPostgres) Create(ctx context.Context, tx *sql.Tx, pkg 
 
 func (r *PackageRepositoryPostgres) GetByNumPackage(ctx context.Context, numPackage string) (*entities.Package, error) {
 	query := `
-		SELECT id, numpackage, startstatus, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
-		       idaddresspackage, idstatusdelivery, idcomercialinformation, idsender, idreceivers, created_at, updated_at
+		SELECT id, numpackage, status, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
+		       idaddresspackage, idcomercialinformation, idsender, idreceivers, created_at, updated_at
 		FROM packages
 		WHERE numpackage = $1
 	`
@@ -102,7 +100,7 @@ func (r *PackageRepositoryPostgres) GetByNumPackage(ctx context.Context, numPack
 	scanErr = r.db.QueryRowContext(ctx, query, numPackage).Scan(
 		&pkg.ID,
 		&pkg.NumPackage,
-		&pkg.StartStatus,
+		&pkg.Status,
 		&pkg.DescriptionContent,
 		&pkg.Weight,
 		&pkg.Dimension,
@@ -110,7 +108,6 @@ func (r *PackageRepositoryPostgres) GetByNumPackage(ctx context.Context, numPack
 		&pkg.TypePackage,
 		&pkg.IsFragile,
 		&pkg.AddressPackageID,
-		&pkg.StatusDeliveryID,
 		&pkg.ComercialInformationID,
 		&pkg.SenderID,
 		&pkg.ReceiverID,
@@ -129,7 +126,7 @@ func (r *PackageRepositoryPostgres) GetByNumPackage(ctx context.Context, numPack
 
 func (r *PackageRepositoryPostgres) GetStatusPackageToCancel(ctx context.Context, id uint) (*entities.Package, error) {
 	query := `
-		SELECT startstatus
+		SELECT status
 		FROM packages
 		WHERE id = $1
 	`
@@ -137,7 +134,7 @@ func (r *PackageRepositoryPostgres) GetStatusPackageToCancel(ctx context.Context
 	var pkg entities.Package
 	var scanErr error
 	scanErr = r.db.QueryRowContext(ctx, query, id).Scan(
-		&pkg.StartStatus,
+		&pkg.Status,
 	)
 	if scanErr != nil {
 		if errors.Is(scanErr, sql.ErrNoRows) {
@@ -162,8 +159,8 @@ func (r *PackageRepositoryPostgres) DeletePackage(ctx context.Context, tx *sql.T
 
 func (r *PackageRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entities.Package, error) {
 	query := `
-		SELECT id, numpackage, startstatus, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
-		       idaddresspackage, idstatusdelivery, idcomercialinformation, idsender, idreceivers, created_at, updated_at
+		SELECT id, numpackage, status, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
+		       idaddresspackage, idcomercialinformation, idsender, idreceivers, created_at, updated_at
 		FROM packages
 		WHERE id = $1
 	`
@@ -172,7 +169,7 @@ func (r *PackageRepositoryPostgres) GetByID(ctx context.Context, id uint) (*enti
 	scanErr = r.db.QueryRowContext(ctx, query, id).Scan(
 		&pkg.ID,
 		&pkg.NumPackage,
-		&pkg.StartStatus,
+		&pkg.Status,
 		&pkg.DescriptionContent,
 		&pkg.Weight,
 		&pkg.Dimension,
@@ -180,7 +177,6 @@ func (r *PackageRepositoryPostgres) GetByID(ctx context.Context, id uint) (*enti
 		&pkg.TypePackage,
 		&pkg.IsFragile,
 		&pkg.AddressPackageID,
-		&pkg.StatusDeliveryID,
 		&pkg.ComercialInformationID,
 		&pkg.SenderID,
 		&pkg.ReceiverID,
@@ -200,8 +196,8 @@ func (r *PackageRepositoryPostgres) GetByID(ctx context.Context, id uint) (*enti
 
 func (r *PackageRepositoryPostgres) ListPackagesBySenderID(ctx context.Context, senderID uint, limit, offset int) ([]*entities.Package, error) {
 	query := `
-		SELECT id, numpackage, startstatus, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
-		       idaddresspackage, idstatusdelivery, idcomercialinformation, idsender, idreceivers, created_at
+		SELECT id, numpackage, status, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
+		       idaddresspackage, idcomercialinformation, idsender, idreceivers, created_at
 		FROM packages
 		WHERE idsender = $1
 		ORDER BY created_at DESC
@@ -219,7 +215,7 @@ func (r *PackageRepositoryPostgres) ListPackagesBySenderID(ctx context.Context, 
 		if err := rows.Scan(
 			&pkg.ID,
 			&pkg.NumPackage,
-			&pkg.StartStatus,
+			&pkg.Status,
 			&pkg.DescriptionContent,
 			&pkg.Weight,
 			&pkg.Dimension,
@@ -227,7 +223,6 @@ func (r *PackageRepositoryPostgres) ListPackagesBySenderID(ctx context.Context, 
 			&pkg.TypePackage,
 			&pkg.IsFragile,
 			&pkg.AddressPackageID,
-			&pkg.StatusDeliveryID,
 			&pkg.ComercialInformationID,
 			&pkg.SenderID,
 			&pkg.ReceiverID,
@@ -245,10 +240,26 @@ func (r *PackageRepositoryPostgres) ListPackagesBySenderID(ctx context.Context, 
 
 func (r *PackageRepositoryPostgres) ListPackages(ctx context.Context, limit, offset int) ([]*entities.Package, error) {
 	query := `
-		SELECT id, numpackage, startstatus, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
-		       idaddresspackage, idstatusdelivery, idcomercialinformation, idsender, idreceivers, created_at
-		FROM packages
-		ORDER BY created_at DESC
+		 SELECT 
+			p.id, 
+			p.numpackage, 
+			p.status, 
+			p.descriptioncontent, 
+			p.weight, 
+			p.dimension, 
+			p.declared_value, 
+			p.type_package, 
+			p.is_fragile,
+			p.idaddresspackage, 
+			p.idcomercialinformation, 
+			p.idsender, 
+			p.idreceivers, 
+			p.created_at
+		FROM packages p
+		LEFT JOIN informationdeliveries id ON p.id = id.idpackage
+		WHERE id.idpackage IS NULL 
+		AND p.status NOT IN ('entregado', 'incidente', 'asignado')
+		ORDER BY p.created_at DESC
 		LIMIT $1 OFFSET $2
 	`
 	rows, err := r.db.QueryContext(ctx, query, limit, offset)
@@ -263,7 +274,7 @@ func (r *PackageRepositoryPostgres) ListPackages(ctx context.Context, limit, off
 		if err := rows.Scan(
 			&pkg.ID,
 			&pkg.NumPackage,
-			&pkg.StartStatus,
+			&pkg.Status,
 			&pkg.DescriptionContent,
 			&pkg.Weight,
 			&pkg.Dimension,
@@ -271,7 +282,6 @@ func (r *PackageRepositoryPostgres) ListPackages(ctx context.Context, limit, off
 			&pkg.TypePackage,
 			&pkg.IsFragile,
 			&pkg.AddressPackageID,
-			&pkg.StatusDeliveryID,
 			&pkg.ComercialInformationID,
 			&pkg.SenderID,
 			&pkg.ReceiverID,
@@ -332,6 +342,22 @@ func (r *PackageRepositoryPostgres) UnassignPackagesFromOrder(ctx context.Contex
 
 	if err != nil {
 		return fmt.Errorf("unassign packages from order: %w", err)
+	}
+
+	return nil
+}
+
+func (r *PackageRepositoryPostgres) UpdatePackageStatusDelivery(ctx context.Context, tx *sql.Tx, newStatus string, packageID uint) error {
+	query := `
+		UPDATE packages 
+		SET status = $1
+		WHERE id = $2 
+		`
+	if tx != nil {
+		_, err := tx.ExecContext(ctx, query, newStatus, packageID)
+		if err != nil {
+			return fmt.Errorf("update package status delivery: %w", err)
+		}
 	}
 
 	return nil
