@@ -171,7 +171,14 @@ func (h *PackageHandler) ListPackages(ctx fiber.Ctx) error {
 	}
 	packages, total, err := h.listPkgUC.Execute(input)
 	if err != nil {
-		return h.handleErrorConsultOrList(ctx, err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"Error":   "internal_error",
+			"Message": "Could not get packages",
+		})
+	}
+
+	if packages == nil {
+		packages = []*usepackages.ResponsePackage{}
 	}
 
 	response := utils.NewPaginationResponse(packages, int(total), params.Page, params.Limit)

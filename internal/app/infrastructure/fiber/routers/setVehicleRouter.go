@@ -22,6 +22,7 @@ func SetVehicleRouter(apiv1 fiber.Router, db *sql.DB) {
 
 	listVehiclesUC := application.NewListVehicles(repoVehicle)
 	updateVehicleUC := application.NewUpdateVehicleUseCase(repoVehicle)
+	listUnassignedVehiclesUC := application.NewListUnassignedVehiclesUseCase(repoVehicle)
 
 	handlerVehicle := handler.NewHandlerVehicle(
 		createVehicleUC,
@@ -29,11 +30,13 @@ func SetVehicleRouter(apiv1 fiber.Router, db *sql.DB) {
 		deleteVehicleUC,
 		listVehiclesUC,
 		updateVehicleUC,
+		listUnassignedVehiclesUC,
 	)
 
 	apiv1.Post("/vehicles", handlerVehicle.CreateVehicle)
+	apiv1.Get("/vehicles", handlerVehicle.ListVehiclesSimple)
+	apiv1.Get("/vehicles/unassigned", handlerVehicle.ListUnassignedVehicles)
 	apiv1.Get("/vehicles/:id", handlerVehicle.GetVehicle)
 	apiv1.Delete("/vehicles/:id", handlerVehicle.DeleteVehicle)
 	apiv1.Put("/vehicles/:id", handlerVehicle.UpdateVehicle)
-	apiv1.Get("/vehicles", handlerVehicle.ListVehiclesSimple)
 }

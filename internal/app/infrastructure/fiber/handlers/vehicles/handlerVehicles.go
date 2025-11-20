@@ -32,11 +32,12 @@ type ErrorResponse struct {
 }
 
 type HandlerVehicle struct {
-	createVehicleUseCase *vehicles.CreateVehicleUseCase
-	getVehicleUseCase    *vehicles.GetVehicle
-	deleteVehicleUseCase *vehicles.DeleteVehicleUseCase
-	listVehiclesUseCase  *vehicles.ListVehicles
-	updateVehicleUseCase *vehicles.UpdateVehicleUseCase
+	createVehicleUseCase          *vehicles.CreateVehicleUseCase
+	getVehicleUseCase             *vehicles.GetVehicle
+	deleteVehicleUseCase          *vehicles.DeleteVehicleUseCase
+	listVehiclesUseCase           *vehicles.ListVehicles
+	updateVehicleUseCase          *vehicles.UpdateVehicleUseCase
+	listUnassignedVehiclesUseCase *vehicles.ListUnassignedVehiclesUseCase
 }
 
 func NewHandlerVehicle(
@@ -45,13 +46,15 @@ func NewHandlerVehicle(
 	deleteVehicleUseCase *vehicles.DeleteVehicleUseCase,
 	listVehiclesUseCase *vehicles.ListVehicles,
 	updateVehicleUseCase *vehicles.UpdateVehicleUseCase,
+	listUnassignedVehiclesUseCase *vehicles.ListUnassignedVehiclesUseCase,
 ) *HandlerVehicle {
 	return &HandlerVehicle{
-		createVehicleUseCase: createVehicleUseCase,
-		getVehicleUseCase:    getVehicleUseCase,
-		deleteVehicleUseCase: deleteVehicleUseCase,
-		listVehiclesUseCase:  listVehiclesUseCase,
-		updateVehicleUseCase: updateVehicleUseCase,
+		createVehicleUseCase:          createVehicleUseCase,
+		getVehicleUseCase:             getVehicleUseCase,
+		deleteVehicleUseCase:          deleteVehicleUseCase,
+		listVehiclesUseCase:           listVehiclesUseCase,
+		updateVehicleUseCase:          updateVehicleUseCase,
+		listUnassignedVehiclesUseCase: listUnassignedVehiclesUseCase,
 	}
 }
 
@@ -222,6 +225,22 @@ func (h *HandlerVehicle) UpdateVehicle(ctx fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Vehículo actualizado correctamente",
 	})
+}
+
+func (h *HandlerVehicle) ListUnassignedVehicles(ctx fiber.Ctx) error {
+	vehiclesOutputs, err := h.listUnassignedVehiclesUseCase.Execute()
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+			Error:   "internal_error",
+			Message: "Error al listar vehículos no asignados",
+		})
+	}
+
+	if vehiclesOutputs == nil {
+		vehiclesOutputs = []*vehicles.ListUnassignedVehiclesOutput{}
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(vehiclesOutputs)
 }
 
 func (h *HandlerVehicle) handleError(ctx fiber.Ctx, err error) error {

@@ -54,11 +54,8 @@ type ComercialInformationResponse struct {
 }
 
 type SenderResponse struct {
-	Name        string `json:"name"`
-	Document    string `json:"document"`
-	Address     string `json:"address"`
-	PhoneNumber string `json:"phone_number"`
-	Email       string `json:"email"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 type ReceiverResponse struct {

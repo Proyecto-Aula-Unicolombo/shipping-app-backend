@@ -24,18 +24,26 @@ type ErrorResponse struct {
 }
 
 type HandlerDrivers struct {
-	createDriverUseCase       *drivers.CreateDriverUseCase
-	ListDriversUseCase        *drivers.ListDriverUseCase
-	GetDriverByIdUseCase      *drivers.GetDriversByIdUseCase
-	UpdateStatusDriverUseCase *drivers.UpdateStatusDriverUseCase
+	createDriverUseCase         *drivers.CreateDriverUseCase
+	ListDriversUseCase          *drivers.ListDriverUseCase
+	GetDriverByIdUseCase        *drivers.GetDriversByIdUseCase
+	UpdateStatusDriverUseCase   *drivers.UpdateStatusDriverUseCase
+	listDriverUnassignedUseCase *drivers.ListDriverUnassignedUseCase
 }
 
-func NewHandlerDrivers(createDriverUseCase *drivers.CreateDriverUseCase, listDriversUseCase *drivers.ListDriverUseCase, getDriverByIdUseCase *drivers.GetDriversByIdUseCase, updateStatusDriverUseCase *drivers.UpdateStatusDriverUseCase) *HandlerDrivers {
+func NewHandlerDrivers(
+	createDriverUseCase *drivers.CreateDriverUseCase,
+	listDriversUseCase *drivers.ListDriverUseCase,
+	getDriverByIdUseCase *drivers.GetDriversByIdUseCase,
+	updateStatusDriverUseCase *drivers.UpdateStatusDriverUseCase,
+	listDriverUnassignedUseCase *drivers.ListDriverUnassignedUseCase,
+) *HandlerDrivers {
 	return &HandlerDrivers{
-		createDriverUseCase:       createDriverUseCase,
-		ListDriversUseCase:        listDriversUseCase,
-		GetDriverByIdUseCase:      getDriverByIdUseCase,
-		UpdateStatusDriverUseCase: updateStatusDriverUseCase,
+		createDriverUseCase:         createDriverUseCase,
+		ListDriversUseCase:          listDriversUseCase,
+		GetDriverByIdUseCase:        getDriverByIdUseCase,
+		UpdateStatusDriverUseCase:   updateStatusDriverUseCase,
+		listDriverUnassignedUseCase: listDriverUnassignedUseCase,
 	}
 }
 
@@ -146,6 +154,22 @@ func (h *HandlerDrivers) UpdateStatusDriver(ctx fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Driver status updated successfully",
 	})
+}
+
+func (h *HandlerDrivers) ListUnassignedDrivers(ctx fiber.Ctx) error {
+	driversOuput, err := h.listDriverUnassignedUseCase.Execute()
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+			Error:   "internal_error",
+			Message: "Error al listar conductores",
+		})
+	}
+
+	if driversOuput == nil {
+		driversOuput = []*drivers.ListDriverUnassignedOutput{}
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(driversOuput)
 }
 
 func (h *HandlerDrivers) handleError(ctx fiber.Ctx, err error) error {

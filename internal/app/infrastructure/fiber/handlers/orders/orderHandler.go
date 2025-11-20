@@ -11,9 +11,10 @@ import (
 
 type CreateOrderRequest struct {
 	Observation *string `json:"observation"`
-	DriverID    uint    `json:"driver_id"`
-	VehicleID   uint    `json:"vehicle_id"`
+	DriverID    *uint   `json:"driver_id"`
+	VehicleID   *uint   `json:"vehicle_id"`
 	PackageIDs  []uint  `json:"package_ids"`
+	TypeService string  `json:"type_service"`
 }
 
 type AssignOrderRequest struct {
@@ -70,6 +71,7 @@ func (h *OrderHandler) CreateOrder(ctx fiber.Ctx) error {
 		DriverID:    req.DriverID,
 		VehicleID:   req.VehicleID,
 		PackageIDs:  req.PackageIDs,
+		TypeService: req.TypeService,
 	}
 
 	output, err := h.createUC.Execute(ctx.Context(), input)
@@ -87,18 +89,39 @@ func (h *OrderHandler) CreateOrder(ctx fiber.Ctx) error {
 
 func (h *OrderHandler) ListOrders(ctx fiber.Ctx) error {
 	params := utils.GetPaginationParams(ctx)
-
-	input := orders.ListOrdersInput{
-		Limit:  params.Limit,
-		Offset: params.Offset,
+	typeService := ctx.Query("type_service")
+	status := ctx.Query("status")
+	orderIDStr := ctx.Query("order_id")
+	var orderID uint
+	if orderIDStr != "" {
+		parsedID, err := strconv.ParseUint(orderIDStr, 10, 32)
+		if err != nil {
+			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error":   "invalid_order_id",
+				"message": "Order ID must be a valid number",
+			})
+		}
+		orderID = uint(parsedID)
 	}
 
-	ordersList, err := h.listUC.Execute(ctx.Context(), input)
+	input := orders.ListOrdersInput{
+		Limit:       params.Limit,
+		Offset:      params.Offset,
+		TypeService: typeService,
+		Status:      status,
+		OrderID:     orderID,
+	}
+
+	ordersList, total, err := h.listUC.Execute(ctx.Context(), input)
 	if err != nil {
 		return h.handleError(ctx, err)
 	}
 
-	response := utils.NewPaginationResponse(ordersList, len(ordersList), params.Page, params.Limit)
+	if ordersList == nil {
+		ordersList = []*orders.ListOrdersByDriverOutput{}
+	}
+
+	response := utils.NewPaginationResponse(ordersList, int(total), params.Page, params.Limit)
 	return ctx.JSON(response)
 }
 
@@ -221,11 +244,11 @@ func (h *OrderHandler) ListOrdersByDriver(ctx fiber.Ctx) error {
 		Offset:   params.Offset,
 	}
 
-	ordersList, err := h.listByDriverUC.Execute(ctx.Context(), input)
+	ordersList, total, err := h.listByDriverUC.Execute(ctx.Context(), input)
 	if err != nil {
 		return h.handleError(ctx, err)
 	}
 
-	response := utils.NewPaginationResponse(ordersList, len(ordersList), params.Page, params.Limit)
+	response := utils.NewPaginationResponse(ordersList, int(total), params.Page, params.Limit)
 	return ctx.JSON(response)
 }

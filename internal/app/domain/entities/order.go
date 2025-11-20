@@ -8,8 +8,9 @@ type Order struct {
 	AssignedAt  *time.Time
 	Observation *string
 	Status      string
-	DriverID    uint
-	VehicleID   uint
+	TypeService string
+	DriverID    *uint
+	VehicleID   *uint
 	Driver      *Driver
 	Vehicle     *Vehicle
 }

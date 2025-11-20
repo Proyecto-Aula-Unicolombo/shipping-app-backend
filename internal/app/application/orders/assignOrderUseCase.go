@@ -44,7 +44,7 @@ func (uc *AssignOrderUseCase) Execute(ctx context.Context, input AssignOrderInpu
 	}
 
 	// Verificar que la orden no esté ya asignada
-	if order.Status != "Pendiente" {
+	if order.Status != "pendiente" {
 		return ErrOrderAlreadyAssigned
 	}
 

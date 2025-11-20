@@ -69,8 +69,9 @@ CREATE TABLE IF NOT EXISTS orders (
     assigned_at TIMESTAMP,
     observation TEXT,
     status VARCHAR(50) NOT NULL,
-    iddriver INTEGER NOT NULL,
-    idvehicle INTEGER NOT NULL,
+    typeservice VARCHAR(100) NOT NULL,
+    iddriver INTEGER,
+    idvehicle INTEGER,
     FOREIGN KEY (iddriver) REFERENCES drivers(id),
     FOREIGN KEY (idvehicle) REFERENCES vehicles(id)
 );

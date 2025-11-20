@@ -19,6 +19,8 @@ type OrderRepository interface {
 	Delete(ctx context.Context, id uint) error
 	DeleteWithTx(ctx context.Context, tx *sql.Tx, id uint) error
 	GetByID(ctx context.Context, id uint) (*entities.Order, error)
-	List(ctx context.Context, limit, offset int) ([]*entities.Order, error)
+	List(ctx context.Context, orderID uint, limit, offset int, typeService, status string) ([]*entities.Order, error)
 	ListByDriver(ctx context.Context, driverID uint, limit, offset int) ([]*entities.Order, error)
+	Count(ctx context.Context, typeService, status string) (int64, error)
+	CountByDriver(ctx context.Context, driverID uint) (int64, error)
 }

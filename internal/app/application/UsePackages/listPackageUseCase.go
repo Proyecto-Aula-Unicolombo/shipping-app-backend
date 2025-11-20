@@ -42,8 +42,6 @@ func NewListPackagesUseCase(
 	}
 }
 
-var ErrNoPackagesFound = errors.New("no packages found")
-
 func (uc *ListPackagesUseCase) Execute(input ListPackagesInput) ([]*ResponsePackage, int64, error) {
 	var total int64
 	var pkg []*entities.Package
@@ -55,7 +53,7 @@ func (uc *ListPackagesUseCase) Execute(input ListPackagesInput) ([]*ResponsePack
 			return nil, 0, err
 		}
 		if len(pkg) == 0 {
-			return nil, 0, ErrNoPackagesFound
+			return nil, 0, errors.New("no packages found")
 		}
 		total = int64(len(pkg))
 	} else {
@@ -64,7 +62,7 @@ func (uc *ListPackagesUseCase) Execute(input ListPackagesInput) ([]*ResponsePack
 			return nil, 0, err
 		}
 		if len(pkg) == 0 {
-			return nil, 0, ErrNoPackagesFound
+			return nil, 0, errors.New("no packages found")
 		}
 		total = int64(len(pkg))
 
@@ -108,11 +106,8 @@ func (uc *ListPackagesUseCase) Execute(input ListPackagesInput) ([]*ResponsePack
 				IsPaid:      cominfoEntity.IsPaid,
 			},
 			Sender: &related.SenderResponse{
-				Name:        senderEntity.Name,
-				Document:    senderEntity.Document,
-				Address:     senderEntity.Address,
-				PhoneNumber: senderEntity.PhoneNumber,
-				Email:       senderEntity.Email,
+				Name:  senderEntity.Name,
+				Email: senderEntity.Email,
 			},
 			Receiver: &related.ReceiverResponse{
 				Name:        receiverEntity.Name,

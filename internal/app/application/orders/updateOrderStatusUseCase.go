@@ -29,10 +29,10 @@ func NewUpdateOrderStatusUseCase(orderRepo repository.OrderRepository) *UpdateOr
 func (uc *UpdateOrderStatusUseCase) Execute(ctx context.Context, input UpdateOrderStatusInput) error {
 	// Validar que el estado es válido
 	validStatuses := map[string]bool{
-		"Pendiente": true,
-		"En camino": true,
-		"Entregado": true,
-		"Cancelado": true,
+		"pendiente": true,
+		"en camino": true,
+		"entregado": true,
+		"cancelado": true,
 	}
 
 	if !validStatuses[input.Status] {

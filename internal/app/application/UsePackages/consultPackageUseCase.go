@@ -112,11 +112,8 @@ func (uc *ConsultPackageUseCase) Execute(input CheckAccessInput) (*ResponsePacka
 			IsPaid:      cominfoEntity.IsPaid,
 		},
 		Sender: &related.SenderResponse{
-			Name:        senderEntity.Name,
-			Document:    senderEntity.Document,
-			Address:     senderEntity.Address,
-			PhoneNumber: senderEntity.PhoneNumber,
-			Email:       senderEntity.Email,
+			Name:  senderEntity.Name,
+			Email: senderEntity.Email,
 		},
 		Receiver: &related.ReceiverResponse{
 			Name:        receiverEntity.Name,

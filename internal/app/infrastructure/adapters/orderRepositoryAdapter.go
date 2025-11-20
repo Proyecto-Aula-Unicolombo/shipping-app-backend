@@ -26,9 +26,10 @@ func (r *OrderRepositoryPostgres) Create(ctx context.Context, tx *sql.Tx, order 
 			assigned_at,
 			observation,
 			status,
+			typeservice,
 			iddriver,
 			idvehicle
-		) VALUES ($1, $2, $3, $4, $5, $6)
+		) VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id
 	`
 
@@ -37,6 +38,7 @@ func (r *OrderRepositoryPostgres) Create(ctx context.Context, tx *sql.Tx, order 
 		order.AssignedAt,
 		order.Observation,
 		order.Status,
+		order.TypeService,
 		order.DriverID,
 		order.VehicleID,
 	}
@@ -66,14 +68,15 @@ func (r *OrderRepositoryPostgres) Create(ctx context.Context, tx *sql.Tx, order 
 func (r *OrderRepositoryPostgres) Update(ctx context.Context, order *entities.Order) error {
 	query := `
 		UPDATE orders 
-		SET assigned_at = $1, observation = $2, status = $3, iddriver = $4, idvehicle = $5
-		WHERE id = $6
+		SET assigned_at = $1, observation = $2, status = $3, typeservice = $4, iddriver = $5, idvehicle = $6
+		WHERE id = $7
 	`
 
 	result, err := r.db.ExecContext(ctx, query,
 		order.AssignedAt,
 		order.Observation,
 		order.Status,
+		order.TypeService,
 		order.DriverID,
 		order.VehicleID,
 		order.ID,
@@ -203,7 +206,7 @@ func (r *OrderRepositoryPostgres) DeleteWithTx(ctx context.Context, tx *sql.Tx, 
 
 func (r *OrderRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entities.Order, error) {
 	query := `
-		SELECT id, create_at, assigned_at, observation, status, iddriver, idvehicle
+		SELECT id, create_at, assigned_at, observation, status, typeservice, iddriver, idvehicle
 		FROM orders
 		WHERE id = $1
 	`
@@ -215,6 +218,7 @@ func (r *OrderRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entiti
 		&order.AssignedAt,
 		&order.Observation,
 		&order.Status,
+		&order.TypeService,
 		&order.DriverID,
 		&order.VehicleID,
 	)
@@ -229,15 +233,38 @@ func (r *OrderRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entiti
 	return &order, nil
 }
 
-func (r *OrderRepositoryPostgres) List(ctx context.Context, limit, offset int) ([]*entities.Order, error) {
+func (r *OrderRepositoryPostgres) List(ctx context.Context, orderID uint, limit, offset int, typeService, status string) ([]*entities.Order, error) {
 	query := `
-		SELECT id, create_at, assigned_at, observation, status, iddriver, idvehicle
+		SELECT id, create_at, assigned_at, observation, status, typeservice, iddriver, idvehicle
 		FROM orders
-		ORDER BY create_at DESC
-		LIMIT $1 OFFSET $2
+		WHERE 1=1
 	`
 
-	rows, err := r.db.QueryContext(ctx, query, limit, offset)
+	args := []interface{}{}
+	argPosition := 1
+
+	if typeService != "" {
+		query += fmt.Sprintf(" AND typeservice = $%d", argPosition)
+		args = append(args, typeService)
+		argPosition++
+	}
+
+	if status != "" {
+		query += fmt.Sprintf(" AND status = $%d", argPosition)
+		args = append(args, status)
+		argPosition++
+	}
+
+	if orderID != 0 {
+		query += fmt.Sprintf(" AND id = $%d", argPosition)
+		args = append(args, orderID)
+		argPosition++
+	}
+
+	query += fmt.Sprintf(" ORDER BY create_at DESC LIMIT $%d OFFSET $%d", argPosition, argPosition+1)
+	args = append(args, limit, offset)
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("list orders: %w", err)
 	}
@@ -252,6 +279,7 @@ func (r *OrderRepositoryPostgres) List(ctx context.Context, limit, offset int) (
 			&order.AssignedAt,
 			&order.Observation,
 			&order.Status,
+			&order.TypeService,
 			&order.DriverID,
 			&order.VehicleID,
 		); err != nil {
@@ -269,7 +297,7 @@ func (r *OrderRepositoryPostgres) List(ctx context.Context, limit, offset int) (
 
 func (r *OrderRepositoryPostgres) ListByDriver(ctx context.Context, driverID uint, limit, offset int) ([]*entities.Order, error) {
 	query := `
-		SELECT id, create_at, assigned_at, observation, status, iddriver, idvehicle
+		SELECT id, create_at, assigned_at, observation, status, typeservice, iddriver, idvehicle
 		FROM orders
 		WHERE iddriver = $1
 		ORDER BY create_at DESC
@@ -291,6 +319,7 @@ func (r *OrderRepositoryPostgres) ListByDriver(ctx context.Context, driverID uin
 			&order.AssignedAt,
 			&order.Observation,
 			&order.Status,
+			&order.TypeService,
 			&order.DriverID,
 			&order.VehicleID,
 		); err != nil {
@@ -304,4 +333,29 @@ func (r *OrderRepositoryPostgres) ListByDriver(ctx context.Context, driverID uin
 	}
 
 	return orders, nil
+}
+
+func (r *OrderRepositoryPostgres) Count(ctx context.Context, typeService, status string) (int64, error) {
+	query := `
+		SELECT COUNT(*) FROM orders WHERE typeservice ILIKE $1 AND status ILIKE $2
+	`
+	var count int64
+	err := r.db.QueryRowContext(ctx, query, "%"+typeService+"%", "%"+status+"%").Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("count orders: %w", err)
+	}
+
+	return count, nil
+}
+
+func (r *OrderRepositoryPostgres) CountByDriver(ctx context.Context, driverID uint) (int64, error) {
+	query := `
+		SELECT COUNT(*) FROM orders WHERE iddriver = $1
+		`
+	var count int64
+	err := r.db.QueryRowContext(ctx, query, driverID).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("count orders by driver: %w", err)
+	}
+	return count, nil
 }

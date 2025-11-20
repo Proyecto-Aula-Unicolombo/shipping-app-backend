@@ -22,11 +22,16 @@ func NewListOrdersByDriverUseCase(orderRepo repository.OrderRepository) *ListOrd
 	return &ListOrdersByDriverUseCase{orderRepo: orderRepo}
 }
 
-func (uc *ListOrdersByDriverUseCase) Execute(ctx context.Context, input ListOrdersByDriverInput) ([]*entities.Order, error) {
-	orders, err := uc.orderRepo.ListByDriver(ctx, input.DriverID, input.Limit, input.Offset)
+func (uc *ListOrdersByDriverUseCase) Execute(ctx context.Context, input ListOrdersByDriverInput) ([]*entities.Order, int64, error) {
+	total, err := uc.orderRepo.CountByDriver(ctx, input.DriverID)
 	if err != nil {
-		return nil, fmt.Errorf("list orders by driver: %w", err)
+		return nil, 0, fmt.Errorf("count orders by driver: %w", err)
 	}
 
-	return orders, nil
+	orders, err := uc.orderRepo.ListByDriver(ctx, input.DriverID, input.Limit, input.Offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list orders by driver: %w", err)
+	}
+
+	return orders, total, nil
 }

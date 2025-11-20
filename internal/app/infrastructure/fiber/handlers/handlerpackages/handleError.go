@@ -6,7 +6,6 @@ import (
 	usepackages "shipping-app/internal/app/application/UsePackages"
 	"shipping-app/internal/app/domain/ports/repository"
 	"shipping-app/internal/app/infrastructure/adapters"
-	"shipping-app/internal/utils"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -115,11 +114,6 @@ func (h *PackageHandler) handleErrorConsultOrList(c fiber.Ctx, err error) error 
 			"error":   "package_not_found",
 			"message": "Package not found",
 		})
-	case usepackages.ErrNoPackagesFound:
-		packages := []*usepackages.ResponsePackage{}
-		response := utils.NewPaginationResponse(packages, 0, 0, 0)
-		return c.Status(fiber.StatusNotFound).JSON(response)
-
 	case usepackages.ErrGetRelatedEntities:
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error":   "related_entities_retrieval_error",

@@ -82,8 +82,8 @@ func (uc *RegisterStopUseCase) Execute(ctx context.Context, input RegisterStopIn
 		return nil, ErrOrderNotFound
 	}
 
-	if order.Status != "En camino" && order.Status != "Pendiente" {
-		return nil, fmt.Errorf("order status must be 'En camino' or 'Pendiente', got: %s", order.Status)
+	if order.Status != "en camino" && order.Status != "pendiente" {
+		return nil, fmt.Errorf("order status must be 'en camino' or 'pendiente', got: %s", order.Status)
 	}
 
 	// Iniciar transacción

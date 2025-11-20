@@ -195,3 +195,36 @@ func (r *DriverRepositoryAdapter) UpdateDriverStatus(driverID uint, isActive boo
 
 	return nil
 }
+
+func (r *DriverRepositoryAdapter) ListDriversUnassigned() ([]*entities.Driver, error) {
+	query := `
+		SELECT 
+			d.id,
+			u.name,
+			u.lastname,
+			d.license
+			FROM drivers d
+			JOIN users u ON d.iduser = u.id
+			LEFT JOIN orders o ON d.id = o.iddriver 
+			WHERE o.id IS NULL AND d.is_active = false
+	`
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error to get drivers")
+	}
+	defer rows.Close()
+
+	var drivers []*entities.Driver
+	for rows.Next() {
+		driver := entities.Driver{
+			User: &entities.User{},
+		}
+		if err := rows.Scan(&driver.ID, &driver.User.Name, &driver.User.LastName, &driver.LicenseNo); err != nil {
+			return nil, fmt.Errorf("error scanning driver row: %w", err)
+		}
+
+		drivers = append(drivers, &driver)
+	}
+
+	return drivers, nil
+}

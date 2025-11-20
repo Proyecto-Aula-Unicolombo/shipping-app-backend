@@ -38,7 +38,7 @@ func (uc *DeleteOrderUseCase) Execute(ctx context.Context, id uint) error {
 	}
 
 	// Solo se pueden eliminar órdenes pendientes
-	if order.Status != "Pendiente" {
+	if order.Status != "pendiente" {
 		return ErrCannotDeleteOrder
 	}
 

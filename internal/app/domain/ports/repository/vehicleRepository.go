@@ -12,4 +12,5 @@ type VehicleRepository interface {
 	UpdateVehicle(vehicle *entities.Vehicle) error
 	ListVehicles(limit, offset int, PlateOrBrand string) ([]*entities.Vehicle, error)
 	CountVehicles(PlateOrBrand string) (int64, error)
+	ListVehiclesUnassigned() ([]*entities.Vehicle, error)
 }

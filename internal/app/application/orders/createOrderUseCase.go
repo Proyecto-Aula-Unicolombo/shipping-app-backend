@@ -9,13 +9,16 @@ import (
 
 	"shipping-app/internal/app/domain/entities"
 	"shipping-app/internal/app/domain/ports/repository"
+
+	"github.com/lib/pq"
 )
 
 type CreateOrderInput struct {
 	Observation *string
-	DriverID    uint
-	VehicleID   uint
+	DriverID    *uint
+	VehicleID   *uint
 	PackageIDs  []uint
+	TypeService string
 }
 
 type CreateOrderOutput struct {
@@ -63,15 +66,19 @@ func (uc *CreateOrderUseCase) Execute(ctx context.Context, input CreateOrderInpu
 	}
 
 	// Verificar que el conductor existe
-	driver, err := uc.driverRepo.GetByID(ctx, input.DriverID)
-	if err != nil || driver == nil {
-		return nil, ErrDriverNotFound
+	if input.DriverID != nil {
+		driver, err := uc.driverRepo.GetByID(ctx, *input.DriverID)
+		if err != nil || driver == nil {
+			return nil, ErrDriverNotFound
+		}
 	}
 
 	// Verificar que el vehículo existe
-	vehicle, err := uc.vehicleRepo.GetByID(ctx, input.VehicleID)
-	if err != nil || vehicle == nil {
-		return nil, ErrVehicleNotFound
+	if input.VehicleID != nil {
+		vehicle, err := uc.vehicleRepo.GetByID(ctx, *input.VehicleID)
+		if err != nil || vehicle == nil {
+			return nil, ErrVehicleNotFound
+		}
 	}
 
 	// Verificar que todos los paquetes existen y están disponibles (sin orden asignada)
@@ -93,11 +100,24 @@ func (uc *CreateOrderUseCase) Execute(ctx context.Context, input CreateOrderInpu
 
 	// Crear orden
 	now := time.Now()
+	var assignedAt *time.Time
+	var status string
+
+	if input.DriverID != nil && input.VehicleID != nil {
+		// Orden completa - asignada
+		status = "asignada"
+		assignedAt = &now
+	} else {
+		// Orden sin asignar
+		status = "pendiente"
+		assignedAt = nil
+	}
 	order := &entities.Order{
 		CreateAt:    now,
-		AssignedAt:  &now,
+		AssignedAt:  assignedAt,
 		Observation: input.Observation,
-		Status:      "Pendiente",
+		Status:      status,
+		TypeService: input.TypeService,
 		DriverID:    input.DriverID,
 		VehicleID:   input.VehicleID,
 	}
@@ -111,9 +131,17 @@ func (uc *CreateOrderUseCase) Execute(ctx context.Context, input CreateOrderInpu
 		return nil, fmt.Errorf("assign packages to order: %w", err)
 	}
 
+	packageStatus := "asignado"
+
 	for _, pkgID := range input.PackageIDs {
-		if err := uc.packageRepo.UpdatePackageStatusDelivery(ctx, tx, "asignado", pkgID); err != nil {
+		if err := uc.packageRepo.UpdatePackageStatusDelivery(ctx, tx, packageStatus, pkgID); err != nil {
 			return nil, fmt.Errorf("update package status delivery: %w", err)
+		}
+	}
+
+	if input.DriverID != nil {
+		if err := uc.driverRepo.UpdateDriverStatus(*input.DriverID, true); err != nil {
+			return nil, fmt.Errorf("update driver status: %w", err)
 		}
 	}
 
@@ -131,14 +159,11 @@ func (uc *CreateOrderUseCase) Execute(ctx context.Context, input CreateOrderInpu
 }
 
 func validateCreateOrderInput(input CreateOrderInput) error {
-	if input.DriverID == 0 {
-		return ErrInvalidOrderInput
-	}
-	if input.VehicleID == 0 {
-		return ErrInvalidOrderInput
-	}
 	if len(input.PackageIDs) == 0 {
 		return ErrNoPackagesProvided
+	}
+	if input.TypeService == "" {
+		return ErrInvalidOrderInput
 	}
 	return nil
 }
@@ -158,21 +183,15 @@ func (uc *CreateOrderUseCase) validatePackagesAvailability(ctx context.Context, 
 }
 
 func (uc *CreateOrderUseCase) assignPackagesToOrder(ctx context.Context, tx *sql.Tx, orderID uint, packageIDs []uint) error {
-	for _, pkgID := range packageIDs {
-		pkg, err := uc.packageRepo.GetByID(ctx, pkgID)
-		if err != nil {
-			return fmt.Errorf("get package %d: %w", pkgID, err)
-		}
-
-		// Asignar OrderID al paquete
-		pkg.OrderID = &orderID
-
-		// Aquí necesitarías un método Update en PackageRepository
-		// Por ahora, ejecutamos un UPDATE directo
-		query := `UPDATE packages SET idorder = $1 WHERE id = $2`
-		if _, err := tx.ExecContext(ctx, query, orderID, pkgID); err != nil {
-			return fmt.Errorf("update package %d with order: %w", pkgID, err)
-		}
+	if len(packageIDs) == 0 {
+		return nil
 	}
+
+	query := `UPDATE packages SET idorder = $1 WHERE id = ANY($2)`
+
+	if _, err := tx.ExecContext(ctx, query, orderID, pq.Array(packageIDs)); err != nil {
+		return fmt.Errorf("update packages with order: %w", err)
+	}
+
 	return nil
 }

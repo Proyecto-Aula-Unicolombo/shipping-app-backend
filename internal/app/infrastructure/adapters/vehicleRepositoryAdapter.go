@@ -193,3 +193,33 @@ func (r *VehicleRepositoryPostgres) UpdateVehicle(vehicle *entities.Vehicle) err
 
 	return nil
 }
+
+func (r *VehicleRepositoryPostgres) ListVehiclesUnassigned() ([]*entities.Vehicle, error) {
+	query := `
+		SELECT
+			v.id,
+			v.plate,
+			v.brand,
+			v.model,
+			v.vehicletype
+		FROM vehicles v
+		LEFT JOIN orders o ON v.id = o.idvehicle
+		WHERE o.id IS NULL
+	`
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error listing unassigned vehicles: %w", err)
+	}
+
+	defer rows.Close()
+
+	var vehicles []*entities.Vehicle
+	for rows.Next() {
+		var vehicle entities.Vehicle
+		if err := rows.Scan(&vehicle.ID, &vehicle.Plate, &vehicle.Brand, &vehicle.Model, &vehicle.VehicleType); err != nil {
+			return nil, fmt.Errorf("error scanning vehicle row: %w", err)
+		}
+		vehicles = append(vehicles, &vehicle)
+	}
+	return vehicles, nil
+}
