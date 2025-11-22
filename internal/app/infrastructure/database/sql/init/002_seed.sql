@@ -2,16 +2,16 @@
 
 -- Insert Users
 INSERT INTO users (name, lastname, email, password, role) VALUES
-('Ana María', 'González', 'ana.gonzalez@logistica.com', '$2a$10$example.hash.admin', 'admin'),
-('Roberto', 'Mendoza', 'roberto.mendoza@logistica.com', '$2a$10$example.hash.admin2', 'admin'),
-('Carlos', 'Ramírez', 'carlos.ramirez@logistica.com', '$2a$10$example.hash.driver1', 'driver'),
-('Sofía', 'García', 'sofia.garcia@logistica.com', '$2a$10$example.hash.driver2', 'driver'),
-('Diego', 'Martínez', 'diego.martinez@logistica.com', '$2a$10$example.hash.driver3', 'driver'),
-('Luisa', 'Hernández', 'luisa.hernandez@logistica.com', '$2a$10$example.hash.driver4', 'driver'),
-('Miguel', 'Torres', 'miguel.torres@logistica.com', '$2a$10$example.hash.driver5', 'driver'),
-('María Elena', 'Rodríguez', 'maria.rodriguez@logistica.com', '$2a$10$example.hash.coord1', 'coord'),
-('Alejandro', 'Vargas', 'alejandro.vargas@logistica.com', '$2a$10$example.hash.coord2', 'coord'),
-('Carmen', 'Jiménez', 'carmen.jimenez@logistica.com', '$2a$10$example.hash.coord3', 'coord');
+('Ana María', 'González', 'ana.gonzalez@logistica.com', '$2b$10$p.TlJMFkzr5hhRuLCwkbieRyghumVjForWM2bd/CaD30hbEizo.TS', 'admin'), -- password: Admin123!
+('Roberto', 'Mendoza', 'roberto.mendoza@logistica.com', '$2b$10$p.TlJMFkzr5hhRuLCwkbieRyghumVjForWM2bd/CaD30hbEizo.TS', 'admin'), -- password: Admin123!
+('Carlos', 'Ramírez', 'carlos.ramirez@logistica.com', '$2b$10$WZDY5pYi2H.nqUtFdJrTSO7GbwELhlUkVNuqzEEuJqs3c5QFcCnGC', 'driver'), -- password: Driver123!
+('Sofía', 'García', 'sofia.garcia@logistica.com', '$2b$10$WZDY5pYi2H.nqUtFdJrTSO7GbwELhlUkVNuqzEEuJqs3c5QFcCnGC', 'driver'), -- password: Driver123!
+('Diego', 'Martínez', 'diego.martinez@logistica.com', '$2b$10$WZDY5pYi2H.nqUtFdJrTSO7GbwELhlUkVNuqzEEuJqs3c5QFcCnGC', 'driver'), -- password: Driver123!
+('Luisa', 'Hernández', 'luisa.hernandez@logistica.com', '$2b$10$WZDY5pYi2H.nqUtFdJrTSO7GbwELhlUkVNuqzEEuJqs3c5QFcCnGC', 'driver'), -- password: Driver123!
+('Miguel', 'Torres', 'miguel.torres@logistica.com', '$2b$10$WZDY5pYi2H.nqUtFdJrTSO7GbwELhlUkVNuqzEEuJqs3c5QFcCnGC', 'driver'), -- password: Driver123!
+('María Elena', 'Rodríguez', 'maria.rodriguez@logistica.com', '$2b$10$6eWyzRrngpW1eJY7dqna.u0mKDfl4bK.8Ivu/PQBJNUpOc8DW4Ar.', 'coord'), -- password: Coord123!
+('Alejandro', 'Vargas', 'alejandro.vargas@logistica.com', '$2b$10$6eWyzRrngpW1eJY7dqna.u0mKDfl4bK.8Ivu/PQBJNUpOc8DW4Ar.', 'coord'), -- password: Coord123!
+('Carmen', 'Jiménez', 'carmen.jimenez@logistica.com', '$2b$10$6eWyzRrngpW1eJY7dqna.u0mKDfl4bK.8Ivu/PQBJNUpOc8DW4Ar.', 'coord'); -- password: Coord123!
 
 -- Insert Drivers (references users 3-7)
 INSERT INTO drivers (phonenumber, license, is_active, iduser) VALUES
@@ -115,18 +115,12 @@ INSERT INTO packages (numpackage, status, descriptioncontent, weight, dimension,
 ('PKG-2025-005', 'En tránsito', 'Equipos electrónicos', 5.50, '45x35x25 cm', 1200000.00, 'Electrónicos', true, 5, 5, 5, 5, 5),
 ('PKG-2025-006', 'Entregado', 'Productos de belleza', 2.00, '25x20x15 cm', 150000.00, 'Cosméticos', false, 6, 6, 6, 6, 6),
 ('PKG-2025-007', 'Pendiente', 'Repuestos automotrices', 12.00, '50x40x30 cm', 450000.00, 'Repuestos', false, 7, 7, 7, 7, 7),
-('PKG-2025-008', 'En tránsito', 'Artículos deportivos', 6.50, '55x35x25 cm', 320000.00, 'Deportes', false, 8, 12, 8, 2, 8),
-('PKG-2025-009', 'Cancelado', 'Muebles desmontados', 25.00, '120x80x15 cm', 680000.00, 'Muebles', false, 9, 9, 9, 3, 9),
-('PKG-2025-004', 'Pendiente', 'Libros educativos', 8.00, '35x25x30 cm', 180000.00, 'Libros', false, 4, 4, 4, 4, 4, 1),
-('PKG-2025-005', 'En tránsito', 'Equipos electrónicos', 5.50, '45x35x25 cm', 1200000.00, 'Electrónicos', true, 5, 5, 5, 5, 5, 4),
-('PKG-2025-006', 'Entregado', 'Productos de belleza', 2.00, '25x20x15 cm', 150000.00, 'Cosméticos', false, 6, 6, 6, 6, 6, 5),
-('PKG-2025-007', 'Pendiente', 'Repuestos automotrices', 12.00, '50x40x30 cm', 450000.00, 'Repuestos', false, 7, 7, 7, 7, 7, 6),
-('PKG-2025-008', 'En tránsito', 'Artículos deportivos', 6.50, '55x35x25 cm', 320000.00, 'Deportes', false, 8, 12, 8, 2, 8, 8),
-('PKG-2025-009', 'Cancelado', 'Muebles desmontados', 25.00, '120x80x15 cm', 680000.00, 'Muebles', false, 9, 9, 9, 3, 9, 9),
+('PKG-2025-008', 'En tránsito', 'Artículos deportivos', 6.50, '55x35x25 cm', 320000.00, 'Deportes', false, 8, 12, 1, 2, 8),
+('PKG-2025-009', 'Cancelado', 'Muebles desmontados', 25.00, '120x80x15 cm', 680000.00, 'Muebles', false, 9, 9, 2, 3, 9),
 ('PKG-2025-010', 'Entregado', 'Instrumentos musicales', 4.50, '90x30x20 cm', 950000.00, 'Instrumentos', true, 10, 10, 4, 10, 10),
-('PKG-2025-011', 'Pendiente', 'Alimentos no perecederos', 10.00, '40x35x30 cm', 120000.00, 'Alimentos', false, 11, 11, 11, 6, 1, 6),
-('PKG-2025-012', 'En tránsito', 'Piezas de computadora', 3.00, '35x30x20 cm', 780000.00, 'Electrónicos', true, 12, 12, 12, 7, 2, 8),
-('PKG-2025-013', 'Entregado', 'Juguetes infantiles', 4.00, '45x40x35 cm', 220000.00, 'Juguetes', false, 13,13, 1, 3, 7),
+('PKG-2025-011', 'Pendiente', 'Alimentos no perecederos', 10.00, '40x35x30 cm', 120000.00, 'Alimentos', false, 11, 11, 3, 6, 6),
+('PKG-2025-012', 'En tránsito', 'Piezas de computadora', 3.00, '35x30x20 cm', 780000.00, 'Electrónicos', true, 12, 12, 4, 7, 8),
+('PKG-2025-013', 'Entregado', 'Juguetes infantiles', 4.00, '45x40x35 cm', 220000.00, 'Juguetes', false, 13, 13, 1, 3, 7),
 ('PKG-2025-014', 'Pendiente', 'Herramientas de trabajo', 18.00, '60x45x35 cm', 540000.00, 'Herramientas', false, 14, 14, 2, 4, 6),
 ('PKG-2025-015', 'En tránsito', 'Accesorios de oficina', 5.00, '40x35x25 cm', 190000.00, 'Oficina', false, 15, 15, 5, 5, 1);
 
