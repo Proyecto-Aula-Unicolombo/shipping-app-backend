@@ -21,8 +21,12 @@ func SetPackageRouter(api fiber.Router, db *sql.DB) {
 		repoPackage, addressPackage, comercialInformation,
 		senderRepo, receiverRepo,
 	)
-	packageHandler := handlerpackages.NewPackageHandler(nil, nil, consultPackageUseCase, listPackagesUseCase)
+	listPackagesToCreateOrderUseCase := usepackages.NewListPackagesToCreateOrderUseCase(
+		repoPackage, addressPackage, receiverRepo,
+	)
+	packageHandler := handlerpackages.NewPackageHandler(nil, nil, consultPackageUseCase, listPackagesUseCase, listPackagesToCreateOrderUseCase)
 
-	api.Get("/packages/:id", packageHandler.ConsultPackageByID)
 	api.Get("/packages", packageHandler.ListPackages)
+	api.Get("/packages/to-create-order", packageHandler.ListPackagesToCreateOrder)
+	api.Get("/packages/:id", packageHandler.ConsultPackageByID)
 }

@@ -19,7 +19,9 @@ type PackageRepository interface {
 	GetStatusPackageToCancel(ctx context.Context, id uint) (*entities.Package, error)
 	ListPackagesBySenderID(ctx context.Context, senderID uint, limit, offset int) ([]*entities.Package, error)
 	ListPackages(ctx context.Context, limit, offset int) ([]*entities.Package, error)
+	ListPackagestoCreateOrder(ctx context.Context, limit, offset int) ([]*entities.Package, error)
 	DeletePackage(ctx context.Context, tx *sql.Tx, id uint) error
 	UnassignPackagesFromOrder(ctx context.Context, tx *sql.Tx, orderID uint) error
 	UpdatePackageStatusDelivery(ctx context.Context, tx *sql.Tx, newStatus string, packageID uint) error
+	CountPackagesToCreateOrder(ctx context.Context) (int64, error)
 }

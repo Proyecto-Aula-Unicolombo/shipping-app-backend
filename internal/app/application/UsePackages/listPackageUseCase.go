@@ -2,7 +2,6 @@ package usepackages
 
 import (
 	"context"
-	"errors"
 	related "shipping-app/internal/app/application/UsePackages/related"
 	"shipping-app/internal/app/domain/entities"
 	"shipping-app/internal/app/domain/ports/repository"
@@ -52,17 +51,11 @@ func (uc *ListPackagesUseCase) Execute(input ListPackagesInput) ([]*ResponsePack
 		if err != nil {
 			return nil, 0, err
 		}
-		if len(pkg) == 0 {
-			return nil, 0, errors.New("no packages found")
-		}
 		total = int64(len(pkg))
 	} else {
 		pkg, err = uc.packageRepo.ListPackagesBySenderID(input.Ctx, *input.SenderID, input.Limit, input.Offset)
 		if err != nil {
 			return nil, 0, err
-		}
-		if len(pkg) == 0 {
-			return nil, 0, errors.New("no packages found")
 		}
 		total = int64(len(pkg))
 

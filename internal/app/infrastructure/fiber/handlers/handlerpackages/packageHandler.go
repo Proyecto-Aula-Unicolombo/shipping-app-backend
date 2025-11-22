@@ -25,14 +25,27 @@ type CreatePackageRequest struct {
 }
 
 type PackageHandler struct {
-	createUC   *usepackages.CreatePackageUseCase
-	cancelleUC *usepackages.CancelPackageUseCase
-	consultUC  *usepackages.ConsultPackageUseCase
-	listPkgUC  *usepackages.ListPackagesUseCase
+	createUC               *usepackages.CreatePackageUseCase
+	cancelleUC             *usepackages.CancelPackageUseCase
+	consultUC              *usepackages.ConsultPackageUseCase
+	listPkgUC              *usepackages.ListPackagesUseCase
+	listPkgToCreateOrderUC *usepackages.ListPackagesToCreateOrderUseCase
 }
 
-func NewPackageHandler(createUC *usepackages.CreatePackageUseCase, cancelleUC *usepackages.CancelPackageUseCase, consultUC *usepackages.ConsultPackageUseCase, listPkgUC *usepackages.ListPackagesUseCase) *PackageHandler {
-	return &PackageHandler{createUC: createUC, cancelleUC: cancelleUC, consultUC: consultUC, listPkgUC: listPkgUC}
+func NewPackageHandler(
+	createUC *usepackages.CreatePackageUseCase,
+	cancelleUC *usepackages.CancelPackageUseCase,
+	consultUC *usepackages.ConsultPackageUseCase,
+	listPkgUC *usepackages.ListPackagesUseCase,
+	listPkgToCreateOrderUC *usepackages.ListPackagesToCreateOrderUseCase,
+) *PackageHandler {
+	return &PackageHandler{
+		createUC:               createUC,
+		cancelleUC:             cancelleUC,
+		consultUC:              consultUC,
+		listPkgUC:              listPkgUC,
+		listPkgToCreateOrderUC: listPkgToCreateOrderUC,
+	}
 }
 
 func (h *PackageHandler) CreatePackage(ctx fiber.Ctx) error {
@@ -179,6 +192,32 @@ func (h *PackageHandler) ListPackages(ctx fiber.Ctx) error {
 
 	if packages == nil {
 		packages = []*usepackages.ResponsePackage{}
+	}
+
+	response := utils.NewPaginationResponse(packages, int(total), params.Page, params.Limit)
+
+	return ctx.JSON(response)
+}
+
+func (h *PackageHandler) ListPackagesToCreateOrder(ctx fiber.Ctx) error {
+	params := utils.GetPaginationParams(ctx)
+
+	input := usepackages.ListPackagesToCreateOrderInput{
+		Ctx:    ctx.Context(),
+		Limit:  params.Limit,
+		Offset: params.Offset,
+	}
+
+	packages, total, err := h.listPkgToCreateOrderUC.Execute(input)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"Error":   "internal_error",
+			"Message": "Could not get packages",
+		})
+	}
+
+	if packages == nil {
+		packages = []*usepackages.ListPackagesToCreateOrderOutput{}
 	}
 
 	response := utils.NewPaginationResponse(packages, int(total), params.Page, params.Limit)

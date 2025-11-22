@@ -45,7 +45,10 @@ func SetExternalRouter(external fiber.Router, db *sql.DB, apiKeyService *api_key
 		repoPackage, addressPackage, comercialInformation,
 		senderRepo, receiverRepo,
 	)
-	packageHandler := handlerpackages.NewPackageHandler(createPackageUseCase, cancelPackageUseCase, consultPackageUseCase, listPackagesUseCase)
+	listPackagesToCreateOrderUseCase := usepackages.NewListPackagesToCreateOrderUseCase(
+		repoPackage, addressPackage, receiverRepo,
+	)
+	packageHandler := handlerpackages.NewPackageHandler(createPackageUseCase, cancelPackageUseCase, consultPackageUseCase, listPackagesUseCase, listPackagesToCreateOrderUseCase)
 
 	api.Post("/packages", packageHandler.CreatePackage)
 	api.Get("/packages/number/:numPackage", packageHandler.ConsultPackageByNumPackage)

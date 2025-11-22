@@ -241,25 +241,22 @@ func (r *PackageRepositoryPostgres) ListPackagesBySenderID(ctx context.Context, 
 func (r *PackageRepositoryPostgres) ListPackages(ctx context.Context, limit, offset int) ([]*entities.Package, error) {
 	query := `
 		 SELECT 
-			p.id, 
-			p.numpackage, 
-			p.status, 
-			p.descriptioncontent, 
-			p.weight, 
-			p.dimension, 
-			p.declared_value, 
-			p.type_package, 
-			p.is_fragile,
-			p.idaddresspackage, 
-			p.idcomercialinformation, 
-			p.idsender, 
-			p.idreceivers, 
-			p.created_at
-		FROM packages p
-		LEFT JOIN informationdeliveries id ON p.id = id.idpackage
-		WHERE id.idpackage IS NULL 
-		AND p.status NOT IN ('entregado', 'incidente', 'asignado')
-		ORDER BY p.created_at DESC
+			id, 
+			numpackage, 
+			status, 
+			descriptioncontent, 
+			weight, 
+			dimension, 
+			declared_value, 
+			type_package, 
+			is_fragile,
+			idaddresspackage, 
+			idcomercialinformation, 
+			idsender, 
+			idreceivers, 
+			created_at
+		FROM packages 
+		ORDER BY created_at DESC
 		LIMIT $1 OFFSET $2
 	`
 	rows, err := r.db.QueryContext(ctx, query, limit, offset)
@@ -286,6 +283,49 @@ func (r *PackageRepositoryPostgres) ListPackages(ctx context.Context, limit, off
 			&pkg.SenderID,
 			&pkg.ReceiverID,
 			&pkg.CreatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("list packages: %w", err)
+		}
+		packages = append(packages, &pkg)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list packages: %w", err)
+	}
+	return packages, nil
+}
+
+func (r *PackageRepositoryPostgres) ListPackagestoCreateOrder(ctx context.Context, limit, offset int) ([]*entities.Package, error) {
+	query := `
+		 SELECT 
+			p.id, 
+			p.numpackage, 
+			p.status,  
+			p.type_package, 
+			p.idaddresspackage,
+			p.idreceivers 
+		FROM packages p
+		LEFT JOIN informationdeliveries ind ON p.id = ind.idpackage
+		WHERE ind.idpackage IS NULL 
+		AND p.status NOT IN ('entregado', 'incidente', 'asignado')
+		ORDER BY p.created_at DESC
+		LIMIT $1 OFFSET $2
+	`
+	rows, err := r.db.QueryContext(ctx, query, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("list packages: %w", err)
+	}
+	defer rows.Close()
+
+	var packages []*entities.Package
+	for rows.Next() {
+		var pkg entities.Package
+		if err := rows.Scan(
+			&pkg.ID,
+			&pkg.NumPackage,
+			&pkg.Status,
+			&pkg.TypePackage,
+			&pkg.AddressPackageID,
+			&pkg.ReceiverID,
 		); err != nil {
 			return nil, fmt.Errorf("list packages: %w", err)
 		}
@@ -361,4 +401,13 @@ func (r *PackageRepositoryPostgres) UpdatePackageStatusDelivery(ctx context.Cont
 	}
 
 	return nil
+}
+
+func (r *PackageRepositoryPostgres) CountPackagesToCreateOrder(ctx context.Context) (int64, error) {
+	query := `SELECT COUNT(*) FROM packages WHERE status NOT IN ('entregado', 'incidente', 'asignado')`
+	var count int64
+	if err := r.db.QueryRowContext(ctx, query).Scan(&count); err != nil {
+		return 0, fmt.Errorf("count packages: %w", err)
+	}
+	return count, nil
 }
