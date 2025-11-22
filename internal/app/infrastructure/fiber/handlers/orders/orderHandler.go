@@ -28,13 +28,14 @@ type UpdateStatusRequest struct {
 }
 
 type OrderHandler struct {
-	createUC       *orders.CreateOrderUseCase
-	listUC         *orders.ListOrdersUseCase
-	getUC          *orders.GetOrderUseCase
-	assignUC       *orders.AssignOrderUseCase
-	updateStatusUC *orders.UpdateOrderStatusUseCase
-	deleteUC       *orders.DeleteOrderUseCase
-	listByDriverUC *orders.ListOrdersByDriverUseCase
+	createUC         *orders.CreateOrderUseCase
+	listUC           *orders.ListOrdersUseCase
+	getUC            *orders.GetOrderUseCase
+	assignUC         *orders.AssignOrderUseCase
+	updateStatusUC   *orders.UpdateOrderStatusUseCase
+	deleteUC         *orders.DeleteOrderUseCase
+	listByDriverUC   *orders.ListOrdersByDriverUseCase
+	listUnassignedUC *orders.ListOrdersUnassignedUseCase
 }
 
 func NewOrderHandler(
@@ -45,15 +46,17 @@ func NewOrderHandler(
 	updateStatusUC *orders.UpdateOrderStatusUseCase,
 	deleteUC *orders.DeleteOrderUseCase,
 	listByDriverUC *orders.ListOrdersByDriverUseCase,
+	listUnassignedUC *orders.ListOrdersUnassignedUseCase,
 ) *OrderHandler {
 	return &OrderHandler{
-		createUC:       createUC,
-		listUC:         listUC,
-		getUC:          getUC,
-		assignUC:       assignUC,
-		updateStatusUC: updateStatusUC,
-		deleteUC:       deleteUC,
-		listByDriverUC: listByDriverUC,
+		createUC:         createUC,
+		listUC:           listUC,
+		getUC:            getUC,
+		assignUC:         assignUC,
+		updateStatusUC:   updateStatusUC,
+		deleteUC:         deleteUC,
+		listByDriverUC:   listByDriverUC,
+		listUnassignedUC: listUnassignedUC,
 	}
 }
 
@@ -245,6 +248,36 @@ func (h *OrderHandler) ListOrdersByDriver(ctx fiber.Ctx) error {
 	}
 
 	ordersList, total, err := h.listByDriverUC.Execute(ctx.Context(), input)
+	if err != nil {
+		return h.handleError(ctx, err)
+	}
+
+	response := utils.NewPaginationResponse(ordersList, int(total), params.Page, params.Limit)
+	return ctx.JSON(response)
+}
+
+func (h *OrderHandler) ListOrdersUnassigned(ctx fiber.Ctx) error {
+	params := utils.GetPaginationParams(ctx)
+	idStr := ctx.Query("id")
+	id := uint64(0)
+	err := error(nil)
+	if idStr != "" {
+		id, err = strconv.ParseUint(idStr, 10, 32)
+		if err != nil {
+			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error":   "invalid_id",
+				"message": "ID must be a valid number",
+			})
+		}
+
+	}
+	input := orders.ListOrdersUnassignedInput{
+		Limit:  params.Limit,
+		Offset: params.Offset,
+		ID:     uint(id),
+	}
+
+	ordersList, total, err := h.listUnassignedUC.Execute(ctx.Context(), input)
 	if err != nil {
 		return h.handleError(ctx, err)
 	}

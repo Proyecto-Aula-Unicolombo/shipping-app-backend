@@ -35,6 +35,7 @@ func SetOrderRouter(apiv1 fiber.Router, db *sql.DB) {
 	updateStatusUC := application.NewUpdateOrderStatusUseCase(orderRepo)
 	deleteOrderUC := application.NewDeleteOrderUseCase(orderRepo, packageRepo, txProvider)
 	listByDriverUC := application.NewListOrdersByDriverUseCase(orderRepo)
+	listUnassignedUC := application.NewListOrdersUnassignedUseCase(orderRepo)
 
 	// Handler
 	orderHandler := handler.NewOrderHandler(
@@ -45,11 +46,13 @@ func SetOrderRouter(apiv1 fiber.Router, db *sql.DB) {
 		updateStatusUC,
 		deleteOrderUC,
 		listByDriverUC,
+		listUnassignedUC,
 	)
 
 	// Rutas
 	apiv1.Post("/orders", orderHandler.CreateOrder)
 	apiv1.Get("/orders", orderHandler.ListOrders)
+	apiv1.Get("/orders/unassigned", orderHandler.ListOrdersUnassigned)
 	apiv1.Get("/orders/:id", orderHandler.GetOrder)
 	apiv1.Put("/orders/:id/assign", orderHandler.AssignOrder)
 	apiv1.Put("/orders/:id/status", orderHandler.UpdateStatus)

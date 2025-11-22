@@ -381,3 +381,51 @@ func (r *OrderRepositoryPostgres) CountByDriver(ctx context.Context, driverID ui
 	}
 	return count, nil
 }
+
+func (r *OrderRepositoryPostgres) ListOrderUnassigned(ctx context.Context, limit, offset int, id uint) ([]*entities.Order, error) {
+	query := `
+		SELECT 
+			id, 
+			status,
+			typeservice
+		FROM orders
+		WHERE status = 'pendiente'
+		ORDER BY create_at DESC
+	`
+	args := []interface{}{}
+	argPosition := 1
+
+	if id != 0 {
+		query += fmt.Sprintf(" AND id = $%d", argPosition)
+		args = append(args, id)
+		argPosition++
+	}
+
+	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argPosition, argPosition+1)
+	args = append(args, limit, offset)
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("list orders unassigned: %w", err)
+	}
+	defer rows.Close()
+
+	var orders []*entities.Order
+	for rows.Next() {
+		var order entities.Order
+		if err := rows.Scan(
+			&order.ID,
+			&order.Status,
+			&order.TypeService,
+		); err != nil {
+			return nil, fmt.Errorf("scan order: %w", err)
+		}
+		orders = append(orders, &order)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate orders: %w", err)
+	}
+
+	return orders, nil
+}
