@@ -74,23 +74,6 @@ INSERT INTO comercialinformations (cost_sending, is_paid) VALUES
 (29000.00, false),
 (36000.00, true);
 
--- Insert Status Delivery
-INSERT INTO statusdelivery (status, priority, date_estimated_delivery, date_real_delivery) VALUES
-('Pendiente', 'Alta', '2025-11-17 10:00:00', NULL),
-('En tránsito', 'Alta', '2025-11-16 18:00:00', NULL),
-('Entregado', 'Media', '2025-11-15 14:30:00', '2025-11-15 14:25:00'),
-('Pendiente', 'Media', '2025-11-18 12:00:00', NULL),
-('En tránsito', 'Alta', '2025-11-16 16:00:00', NULL),
-('Entregado', 'Baja', '2025-11-14 11:00:00', '2025-11-14 11:15:00'),
-('Pendiente', 'Media', '2025-11-17 15:00:00', NULL),
-('En tránsito', 'Alta', '2025-11-16 20:00:00', NULL),
-('Cancelado', 'Baja', '2025-11-13 09:00:00', NULL),
-('Entregado', 'Alta', '2025-11-15 16:00:00', '2025-11-15 15:50:00'),
-('Pendiente', 'Media', '2025-11-19 10:00:00', NULL),
-('En tránsito', 'Alta', '2025-11-16 19:00:00', NULL),
-('Entregado', 'Media', '2025-11-14 13:00:00', '2025-11-14 13:10:00'),
-('Pendiente', 'Baja', '2025-11-20 14:00:00', NULL),
-('En tránsito', 'Media', '2025-11-16 17:00:00', NULL);
 
 -- Insert Address Packages
 INSERT INTO addresspackages (origin, destination, delivery_instructions) VALUES
@@ -124,22 +107,22 @@ INSERT INTO orders (create_at, assigned_at, observation, status, iddriver, idveh
 ('2025-11-14 13:00:00', '2025-11-14 13:20:00', 'Entregado en tiempo récord', 'Entregado', 5, 5);
 
 -- Insert Packages
-INSERT INTO packages (numpackage, startstatus, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile, idaddresspackage, idstatusdelivery, idcomercialinformation, idsender, idreceivers, idorder) VALUES
-('PKG-2025-001', 'En tránsito', 'Documentos legales', 0.50, '30x20x5 cm', 100000.00, 'Documentos', false, 1, 2, 1, 1, 1, 1),
-('PKG-2025-002', 'En tránsito', 'Electrodomésticos', 15.00, '60x50x40 cm', 850000.00, 'Electrodomésticos', true, 2, 5, 2, 2, 2, 2),
+INSERT INTO packages (numpackage, status, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile, idaddresspackage, idcomercialinformation, idsender, idreceivers, idorder) VALUES
+('PKG-2025-001', 'En tránsito', 'Documentos legales', 0.50, '30x20x5 cm', 100000.00, 'Documentos', false, 1, 1, 1, 1, 1),
+('PKG-2025-002', 'En tránsito', 'Electrodomésticos', 15.00, '60x50x40 cm', 850000.00, 'Electrodomésticos', true, 2, 2, 2, 2, 2),
 ('PKG-2025-003', 'Entregado', 'Ropa y textiles', 3.50, '40x30x20 cm', 250000.00, 'Textiles', false, 3, 3, 3, 3, 3, 3),
-('PKG-2025-004', 'Pendiente', 'Libros educativos', 8.00, '35x25x30 cm', 180000.00, 'Libros', false, 4, 1, 4, 4, 4, 1),
-('PKG-2025-005', 'En tránsito', 'Equipos electrónicos', 5.50, '45x35x25 cm', 1200000.00, 'Electrónicos', true, 5, 8, 5, 7, 5, 4),
-('PKG-2025-006', 'Entregado', 'Productos de belleza', 2.00, '25x20x15 cm', 150000.00, 'Cosméticos', false, 6, 6, 6, 5, 6, 5),
-('PKG-2025-007', 'Pendiente', 'Repuestos automotrices', 12.00, '50x40x30 cm', 450000.00, 'Repuestos', false, 7, 7, 7, 1, 7, 6),
+('PKG-2025-004', 'Pendiente', 'Libros educativos', 8.00, '35x25x30 cm', 180000.00, 'Libros', false, 4, 4, 4, 4, 4, 1),
+('PKG-2025-005', 'En tránsito', 'Equipos electrónicos', 5.50, '45x35x25 cm', 1200000.00, 'Electrónicos', true, 5, 5, 5, 5, 5, 4),
+('PKG-2025-006', 'Entregado', 'Productos de belleza', 2.00, '25x20x15 cm', 150000.00, 'Cosméticos', false, 6, 6, 6, 6, 6, 5),
+('PKG-2025-007', 'Pendiente', 'Repuestos automotrices', 12.00, '50x40x30 cm', 450000.00, 'Repuestos', false, 7, 7, 7, 7, 7, 6),
 ('PKG-2025-008', 'En tránsito', 'Artículos deportivos', 6.50, '55x35x25 cm', 320000.00, 'Deportes', false, 8, 12, 8, 2, 8, 8),
 ('PKG-2025-009', 'Cancelado', 'Muebles desmontados', 25.00, '120x80x15 cm', 680000.00, 'Muebles', false, 9, 9, 9, 3, 9, 9),
-('PKG-2025-010', 'Entregado', 'Instrumentos musicales', 4.50, '90x30x20 cm', 950000.00, 'Instrumentos', true, 10, 10, 10, 4, 10, 10),
+('PKG-2025-010', 'Entregado', 'Instrumentos musicales', 4.50, '90x30x20 cm', 950000.00, 'Instrumentos', true, 10, 10, 4, 10, 10),
 ('PKG-2025-011', 'Pendiente', 'Alimentos no perecederos', 10.00, '40x35x30 cm', 120000.00, 'Alimentos', false, 11, 11, 11, 6, 1, 6),
-('PKG-2025-012', 'En tránsito', 'Piezas de computadora', 3.00, '35x30x20 cm', 780000.00, 'Electrónicos', true, 12, 15, 12, 7, 2, 8),
-('PKG-2025-013', 'Entregado', 'Juguetes infantiles', 4.00, '45x40x35 cm', 220000.00, 'Juguetes', false, 13, 13, 13, 1, 3, 7),
-('PKG-2025-014', 'Pendiente', 'Herramientas de trabajo', 18.00, '60x45x35 cm', 540000.00, 'Herramientas', false, 14, 14, 14, 2, 4, 6),
-('PKG-2025-015', 'En tránsito', 'Accesorios de oficina', 5.00, '40x35x25 cm', 190000.00, 'Oficina', false, 15, 2, 15, 5, 5, 1);
+('PKG-2025-012', 'En tránsito', 'Piezas de computadora', 3.00, '35x30x20 cm', 780000.00, 'Electrónicos', true, 12, 12, 12, 7, 2, 8),
+('PKG-2025-013', 'Entregado', 'Juguetes infantiles', 4.00, '45x40x35 cm', 220000.00, 'Juguetes', false, 13,13, 1, 3, 7),
+('PKG-2025-014', 'Pendiente', 'Herramientas de trabajo', 18.00, '60x45x35 cm', 540000.00, 'Herramientas', false, 14, 14, 2, 4, 6),
+('PKG-2025-015', 'En tránsito', 'Accesorios de oficina', 5.00, '40x35x25 cm', 190000.00, 'Oficina', false, 15, 15, 5, 5, 1);
 
 -- Insert Information Deliveries (only for delivered and cancelled packages)
 INSERT INTO informationdeliveries (observations, signature_received, photo_delivery, reason_cancellation, idpackage) VALUES
