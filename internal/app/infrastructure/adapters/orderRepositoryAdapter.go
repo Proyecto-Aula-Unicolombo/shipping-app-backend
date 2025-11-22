@@ -9,6 +9,8 @@ import (
 
 	"shipping-app/internal/app/domain/entities"
 	"shipping-app/internal/app/domain/ports/repository"
+
+	"github.com/lib/pq"
 )
 
 type OrderRepositoryPostgres struct {
@@ -206,12 +208,25 @@ func (r *OrderRepositoryPostgres) DeleteWithTx(ctx context.Context, tx *sql.Tx, 
 
 func (r *OrderRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entities.Order, error) {
 	query := `
-		SELECT id, create_at, assigned_at, observation, status, typeservice, iddriver, idvehicle
-		FROM orders
-		WHERE id = $1
+		SELECT 
+			o.id, 
+			o.create_at, 
+			o.assigned_at, 
+			o.observation, 
+			o.status, 
+			o.typeservice, 
+			o.iddriver, 
+			o.idvehicle,
+			COALESCE(array_agg(p.id) FILTER (WHERE p.id IS NOT NULL), '{}') as package_ids
+		FROM orders o
+		LEFT JOIN packages p ON o.id = p.idorder
+		WHERE o.id = $1
+		GROUP BY o.id, o.create_at, o.assigned_at, o.observation, o.status, o.typeservice, o.iddriver, o.idvehicle
 	`
 
 	var order entities.Order
+	var packageIDs []int64
+
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&order.ID,
 		&order.CreateAt,
@@ -221,6 +236,7 @@ func (r *OrderRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entiti
 		&order.TypeService,
 		&order.DriverID,
 		&order.VehicleID,
+		(*pq.Int64Array)(&packageIDs),
 	)
 
 	if err != nil {
@@ -228,6 +244,12 @@ func (r *OrderRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entiti
 			return nil, repository.ErrOrderNotFound
 		}
 		return nil, fmt.Errorf("get order by id: %w", err)
+	}
+
+	// Convert []int64 to []uint
+	order.PackageIDs = make([]uint, len(packageIDs))
+	for i, id := range packageIDs {
+		order.PackageIDs[i] = uint(id)
 	}
 
 	return &order, nil

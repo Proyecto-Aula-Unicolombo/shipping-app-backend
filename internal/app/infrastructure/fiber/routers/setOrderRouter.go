@@ -17,6 +17,9 @@ func SetOrderRouter(apiv1 fiber.Router, db *sql.DB) {
 	vehicleRepo := adapters.NewVehicleRepositoryPostgres(db)
 	packageRepo := adapters.NewPackageRepositoryPostgres(db)
 	txProvider := adapters.NewSQLTxProvider(db)
+	addressPackage := adapters.NewAddressPackageRepositoryPostgres(db)
+	comercialInformation := adapters.NewComercialInformationRepositoryPostgres(db)
+	receiverRepo := adapters.NewReceiverRepositoryPostgres(db)
 
 	// Casos de uso
 	createOrderUC := application.NewCreateOrderUseCase(
@@ -27,7 +30,7 @@ func SetOrderRouter(apiv1 fiber.Router, db *sql.DB) {
 		txProvider,
 	)
 	listOrdersUC := application.NewListOrdersUseCase(orderRepo)
-	getOrderUC := application.NewGetOrderUseCase(orderRepo)
+	getOrderUC := application.NewGetOrderUseCase(orderRepo, packageRepo, addressPackage, comercialInformation, receiverRepo, driverRepo, vehicleRepo)
 	assignOrderUC := application.NewAssignOrderUseCase(orderRepo, driverRepo, vehicleRepo)
 	updateStatusUC := application.NewUpdateOrderStatusUseCase(orderRepo)
 	deleteOrderUC := application.NewDeleteOrderUseCase(orderRepo, packageRepo, txProvider)

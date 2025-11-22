@@ -13,4 +13,5 @@ type Order struct {
 	VehicleID   *uint
 	Driver      *Driver
 	Vehicle     *Vehicle
+	PackageIDs  []uint
 }
