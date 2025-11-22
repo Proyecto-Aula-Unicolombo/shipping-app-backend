@@ -258,7 +258,7 @@ func (h *OrderHandler) ListOrdersByDriver(ctx fiber.Ctx) error {
 
 func (h *OrderHandler) ListOrdersUnassigned(ctx fiber.Ctx) error {
 	params := utils.GetPaginationParams(ctx)
-	idStr := ctx.Query("id")
+	idStr := ctx.Query("order_id")
 	id := uint64(0)
 	err := error(nil)
 	if idStr != "" {

@@ -13,7 +13,7 @@ type ListOrdersUnassignedInput struct {
 type ListOrdersUnassignedOutput struct {
 	ID          uint
 	Status      string
-	Typeservice string
+	TypeService string
 }
 
 type ListOrdersUnassignedUseCase struct {
@@ -39,7 +39,7 @@ func (uc *ListOrdersUnassignedUseCase) Execute(ctx context.Context, input ListOr
 		outputs = append(outputs, ListOrdersUnassignedOutput{
 			ID:          order.ID,
 			Status:      order.Status,
-			Typeservice: order.TypeService,
+			TypeService: order.TypeService,
 		})
 	}
 

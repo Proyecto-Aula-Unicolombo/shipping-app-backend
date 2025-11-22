@@ -390,7 +390,6 @@ func (r *OrderRepositoryPostgres) ListOrderUnassigned(ctx context.Context, limit
 			typeservice
 		FROM orders
 		WHERE status = 'pendiente'
-		ORDER BY create_at DESC
 	`
 	args := []interface{}{}
 	argPosition := 1
@@ -401,7 +400,7 @@ func (r *OrderRepositoryPostgres) ListOrderUnassigned(ctx context.Context, limit
 		argPosition++
 	}
 
-	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argPosition, argPosition+1)
+	query += fmt.Sprintf(" ORDER BY create_at DESC LIMIT $%d OFFSET $%d", argPosition, argPosition+1)
 	args = append(args, limit, offset)
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
