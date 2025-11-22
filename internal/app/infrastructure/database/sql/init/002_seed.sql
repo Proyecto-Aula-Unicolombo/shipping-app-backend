@@ -94,23 +94,29 @@ INSERT INTO addresspackages (origin, destination, delivery_instructions) VALUES
 ('Calle 50 #45-30, Medellín', 'Carrera 65 #48-15, Medellín', 'Llamar al llegar');
 
 -- Insert Orders
-INSERT INTO orders (create_at, assigned_at, observation, status, iddriver, idvehicle) VALUES
-('2025-11-16 08:00:00', '2025-11-16 08:30:00', 'Entrega urgente', 'En camino', 1, 1),
-('2025-11-16 09:00:00', '2025-11-16 09:15:00', 'Frágil, manejar con cuidado', 'En camino', 2, 2),
-('2025-11-15 10:00:00', '2025-11-15 10:20:00', 'Entrega exitosa', 'Entregado', 3, 3),
-('2025-11-16 07:30:00', '2025-11-16 08:00:00', 'Cliente solicitó entrega en la mañana', 'En camino', 4, 4),
-('2025-11-14 11:00:00', '2025-11-14 11:15:00', 'Sin novedades', 'Entregado', 5, 5),
-('2025-11-16 12:00:00', NULL, 'Pendiente de asignación', 'Pendiente', 1, 1),
-('2025-11-15 14:00:00', '2025-11-15 14:30:00', 'Entregado correctamente', 'Entregado', 2, 2),
-('2025-11-16 10:00:00', '2025-11-16 10:45:00', 'Ruta con múltiples paradas', 'En camino', 3, 3),
-('2025-11-13 09:00:00', '2025-11-13 09:30:00', 'Cliente no disponible, cancelado', 'Cancelado', 4, 4),
-('2025-11-14 13:00:00', '2025-11-14 13:20:00', 'Entregado en tiempo récord', 'Entregado', 5, 5);
+INSERT INTO orders (create_at, assigned_at, observation, status, typeservice, iddriver, idvehicle) VALUES
+('2025-11-16 08:00:00', '2025-11-16 08:30:00', 'Entrega urgente', 'En camino', 'express delivery', 1, 1),
+('2025-11-16 09:00:00', '2025-11-16 09:15:00', 'Frágil, manejar con cuidado', 'En camino', 'standard delivery', 2, 2),
+('2025-11-15 10:00:00', '2025-11-15 10:20:00', 'Entrega exitosa', 'Entregado', 'standard delivery', 3, 3),
+('2025-11-16 07:30:00', '2025-11-16 08:00:00', 'Cliente solicitó entrega en la mañana', 'En camino', 'express delivery', 4, 4),
+('2025-11-14 11:00:00', '2025-11-14 11:15:00', 'Sin novedades', 'Entregado', 'standard delivery', 5, 5),
+('2025-11-16 12:00:00', NULL, 'Pendiente de asignación', 'Pendiente', 'standard delivery', 1, 1),
+('2025-11-15 14:00:00', '2025-11-15 14:30:00', 'Entregado correctamente', 'Entregado', 'standard delivery', 2, 2),
+('2025-11-16 10:00:00', '2025-11-16 10:45:00', 'Ruta con múltiples paradas', 'En camino', 'standard delivery', 3, 3),
+('2025-11-13 09:00:00', '2025-11-13 09:30:00', 'Cliente no disponible, cancelado', 'Cancelado', 'express delivery', 4, 4),
+('2025-11-14 13:00:00', '2025-11-14 13:20:00', 'Entregado en tiempo récord', 'Entregado', 'express delivery', 5, 5);
 
 -- Insert Packages
 INSERT INTO packages (numpackage, status, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile, idaddresspackage, idcomercialinformation, idsender, idreceivers, idorder) VALUES
 ('PKG-2025-001', 'En tránsito', 'Documentos legales', 0.50, '30x20x5 cm', 100000.00, 'Documentos', false, 1, 1, 1, 1, 1),
 ('PKG-2025-002', 'En tránsito', 'Electrodomésticos', 15.00, '60x50x40 cm', 850000.00, 'Electrodomésticos', true, 2, 2, 2, 2, 2),
-('PKG-2025-003', 'Entregado', 'Ropa y textiles', 3.50, '40x30x20 cm', 250000.00, 'Textiles', false, 3, 3, 3, 3, 3, 3),
+('PKG-2025-003', 'Entregado', 'Ropa y textiles', 3.50, '40x30x20 cm', 250000.00, 'Textiles', false, 3, 3, 3, 3, 3),
+('PKG-2025-004', 'Pendiente', 'Libros educativos', 8.00, '35x25x30 cm', 180000.00, 'Libros', false, 4, 4, 4, 4, 4),
+('PKG-2025-005', 'En tránsito', 'Equipos electrónicos', 5.50, '45x35x25 cm', 1200000.00, 'Electrónicos', true, 5, 5, 5, 5, 5),
+('PKG-2025-006', 'Entregado', 'Productos de belleza', 2.00, '25x20x15 cm', 150000.00, 'Cosméticos', false, 6, 6, 6, 6, 6),
+('PKG-2025-007', 'Pendiente', 'Repuestos automotrices', 12.00, '50x40x30 cm', 450000.00, 'Repuestos', false, 7, 7, 7, 7, 7),
+('PKG-2025-008', 'En tránsito', 'Artículos deportivos', 6.50, '55x35x25 cm', 320000.00, 'Deportes', false, 8, 12, 8, 2, 8),
+('PKG-2025-009', 'Cancelado', 'Muebles desmontados', 25.00, '120x80x15 cm', 680000.00, 'Muebles', false, 9, 9, 9, 3, 9),
 ('PKG-2025-004', 'Pendiente', 'Libros educativos', 8.00, '35x25x30 cm', 180000.00, 'Libros', false, 4, 4, 4, 4, 4, 1),
 ('PKG-2025-005', 'En tránsito', 'Equipos electrónicos', 5.50, '45x35x25 cm', 1200000.00, 'Electrónicos', true, 5, 5, 5, 5, 5, 4),
 ('PKG-2025-006', 'Entregado', 'Productos de belleza', 2.00, '25x20x15 cm', 150000.00, 'Cosméticos', false, 6, 6, 6, 6, 6, 5),
