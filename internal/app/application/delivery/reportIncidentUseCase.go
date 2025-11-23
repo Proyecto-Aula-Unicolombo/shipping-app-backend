@@ -12,9 +12,9 @@ import (
 
 type ReportIncidentInput struct {
 	PackageID          uint
-	ReasonCancellation string
+	ReasonCancellation *string
 	Observation        *string
-	PhotoEvidence      string
+	PhotoEvidence      *string
 	Status             string
 }
 
@@ -48,13 +48,13 @@ func NewReportIncidentUseCase(
 }
 
 func (uc *ReportIncidentUseCase) Execute(ctx context.Context, input ReportIncidentInput) (*ReportIncidentOutput, error) {
-	// Validar input
-	if input.PackageID == 0 || input.ReasonCancellation == "" {
-		return nil, ErrInvalidIncidentInput
+	// Validar input - solo campos obligatorios
+	if input.PackageID == 0 {
+		return nil, fmt.Errorf("%w: package_id is required", ErrInvalidIncidentInput)
 	}
 
-	if input.PhotoEvidence == "" {
-		return nil, fmt.Errorf("%w: photo evidence is required", ErrInvalidIncidentInput)
+	if input.Status == "" {
+		return nil, fmt.Errorf("%w: status is required", ErrInvalidIncidentInput)
 	}
 
 	// Verificar que el paquete existe
@@ -84,9 +84,13 @@ func (uc *ReportIncidentUseCase) Execute(ctx context.Context, input ReportIncide
 	// Crear o actualizar información de incidente
 	if existingInfo != nil {
 		// Actualizar existente
-		existingInfo.ReasonCancellation = &input.ReasonCancellation
+		existingInfo.ReasonCancellation = input.ReasonCancellation
 		existingInfo.Observation = input.Observation
-		existingInfo.PhotoDelivery = input.PhotoEvidence
+		if input.PhotoEvidence != nil {
+			existingInfo.PhotoDelivery = *input.PhotoEvidence
+		} else {
+			existingInfo.PhotoDelivery = ""
+		}
 
 		if err := uc.infoDeliveryRepo.Update(ctx, existingInfo); err != nil {
 			return nil, fmt.Errorf("update incident information: %w", err)
@@ -105,10 +109,15 @@ func (uc *ReportIncidentUseCase) Execute(ctx context.Context, input ReportIncide
 	}
 
 	// Crear nueva información de incidente
+	photoDelivery := ""
+	if input.PhotoEvidence != nil {
+		photoDelivery = *input.PhotoEvidence
+	}
+
 	infoDelivery := &entities.InformationDelivery{
-		ReasonCancellation: &input.ReasonCancellation,
+		ReasonCancellation: input.ReasonCancellation,
 		Observation:        input.Observation,
-		PhotoDelivery:      input.PhotoEvidence,
+		PhotoDelivery:      photoDelivery,
 		PackageID:          input.PackageID,
 	}
 

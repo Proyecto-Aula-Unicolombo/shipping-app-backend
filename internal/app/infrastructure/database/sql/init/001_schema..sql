@@ -177,7 +177,84 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+
+CREATE OR REPLACE FUNCTION check_order_completion()
+RETURNS TRIGGER AS $$
+DECLARE
+    total_paquetes INTEGER;
+    paquetes_entregados INTEGER;
+    paquetes_en_camino INTEGER;
+    paquetes_cancelados INTEGER;
+    paquetes_incidente INTEGER;
+    estado_final VARCHAR(50);
+BEGIN
+    -- Ejecutar si el paquete cambió a un estado final (entregado, cancelado o incidente)
+    IF NEW.status IN ('entregado', 'cancelado', 'incidente') 
+       AND OLD.status = 'en camino' THEN
+        
+        -- Contar todos los paquetes de la orden
+        SELECT COUNT(*) INTO total_paquetes
+        FROM packages
+        WHERE idorder = NEW.idorder;
+        
+        -- Contar paquetes por estado
+        SELECT 
+            COUNT(*) FILTER (WHERE status = 'entregado') AS entregados,
+            COUNT(*) FILTER (WHERE status = 'en camino') AS en_camino,
+            COUNT(*) FILTER (WHERE status = 'cancelado') AS cancelados,
+            COUNT(*) FILTER (WHERE status = 'incidente') AS incidentes
+        INTO 
+            paquetes_entregados,
+            paquetes_en_camino,
+            paquetes_cancelados,
+            paquetes_incidente
+        FROM packages
+        WHERE idorder = NEW.idorder;
+        
+        -- Solo actualizar la orden si NO quedan paquetes "en camino"
+        IF paquetes_en_camino = 0 THEN
+            
+            -- Decidir el estado final según lo que haya pasado
+            IF paquetes_entregados = total_paquetes THEN
+                -- Todos entregados exitosamente
+                estado_final := 'completada';
+                
+            ELSIF paquetes_cancelados = total_paquetes THEN
+                estado_final := 'cancelada';
+                
+            ELSIF paquetes_incidente = total_paquetes THEN
+                estado_final := 'incidente';
+                
+            ELSIF paquetes_entregados > 0 AND (paquetes_cancelados > 0 OR paquetes_incidente > 0) THEN
+                -- Mix: algunos entregados y otros con problemas
+                estado_final := 'parcialmente_completada';
+                
+            ELSE
+                estado_final := 'finalizada';
+            END IF;
+            
+            UPDATE orders
+            SET status = estado_final
+            WHERE id = NEW.idorder;
+            
+        END IF;
+        
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+
+CREATE TRIGGER trigger_check_order_completion
+AFTER UPDATE ON packages
+FOR EACH ROW
+EXECUTE FUNCTION check_order_completion();
+
 CREATE TRIGGER trigger_update_status_order_and_package
 AFTER INSERT ON tracks 
 FOR EACH ROW
 EXECUTE FUNCTION update_status_order_and_package();
+

@@ -16,9 +16,9 @@ type ReportDeliveryRequest struct {
 
 type ReportIncidentRequest struct {
 	PackageID          uint    `json:"package_id"`
-	ReasonCancellation string  `json:"reason_cancellation"`
+	ReasonCancellation *string  `json:"reason_cancellation"`
 	Observation        *string `json:"observation"`
-	PhotoEvidence      string  `json:"photo_evidence"`
+	PhotoEvidence      *string  `json:"photo_evidence"`
 	Status             string  `json:"status"`
 }
 
