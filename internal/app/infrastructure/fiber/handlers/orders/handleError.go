@@ -54,10 +54,10 @@ func (h *OrderHandler) handleError(ctx fiber.Ctx, err error) error {
 			"error":   "order_not_found",
 			"message": "Order not found",
 		})
-	case errors.Is(err, orders.ErrOrderAlreadyAssigned):
+	case errors.Is(err, orders.ErrOrderCannotBeReassigned):
 		return ctx.Status(fiber.StatusConflict).JSON(fiber.Map{
-			"error":   "order_already_assigned",
-			"message": "Order already assigned",
+			"error":   "order_cannot_be_reassigned",
+			"message": "Order cannot be reassigned",
 		})
 	case errors.Is(err, orders.ErrInvalidStatus):
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{

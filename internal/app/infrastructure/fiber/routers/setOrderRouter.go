@@ -31,7 +31,7 @@ func SetOrderRouter(apiv1 fiber.Router, db *sql.DB) {
 	)
 	listOrdersUC := application.NewListOrdersUseCase(orderRepo)
 	getOrderUC := application.NewGetOrderUseCase(orderRepo, packageRepo, addressPackage, comercialInformation, receiverRepo, driverRepo, vehicleRepo)
-	assignOrderUC := application.NewAssignOrderUseCase(orderRepo, driverRepo, vehicleRepo)
+	assignOrderUC := application.NewAssignOrderUseCase(orderRepo, driverRepo, vehicleRepo, txProvider)
 	updateStatusUC := application.NewUpdateOrderStatusUseCase(orderRepo)
 	deleteOrderUC := application.NewDeleteOrderUseCase(orderRepo, packageRepo, txProvider)
 	listByDriverUC := application.NewListOrdersByDriverUseCase(orderRepo)

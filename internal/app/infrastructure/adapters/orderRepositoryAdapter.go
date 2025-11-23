@@ -135,7 +135,7 @@ func (r *OrderRepositoryPostgres) AssignDriverAndVehicle(ctx context.Context, id
 		WHERE id = $4
 	`
 
-	result, err := r.db.ExecContext(ctx, query, driverID, vehicleID, "En camino", id)
+	result, err := r.db.ExecContext(ctx, query, driverID, vehicleID, "asignada", id)
 	if err != nil {
 		log.Printf("ERROR assigning driver/vehicle to order %d: %v", id, err)
 		return fmt.Errorf("assign driver and vehicle: %w", err)
