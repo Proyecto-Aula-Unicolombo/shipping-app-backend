@@ -15,7 +15,8 @@ import (
 func SetupRouters(app *fiber.App, db *sql.DB) {
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"*"},
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:8000"},
+		AllowCredentials: true,
 		AllowHeaders: []string{
 			"Origin",
 			"Content-Type",
@@ -26,6 +27,7 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 			"Sec-WebSocket-Key",
 			"Sec-WebSocket-Version",
 			"Sec-WebSocket-Protocol",
+			"Sec-WebSocket-Extensions",
 		},
 		AllowMethods: []string{
 			fiber.MethodGet,
@@ -36,10 +38,18 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 			fiber.MethodPatch,
 			fiber.MethodOptions,
 		},
+		ExposeHeaders: []string{
+			"Upgrade",
+			"Connection",
+			"Sec-WebSocket-Accept",
+		},
 	}))
 
+	// WebSocket Hub
 	hub := ws.NewHub()
 	go hub.Run()
+
+	// WebSocket endpoint - ANTES de otros middlewares
 	app.Get("/api/v1/ws", hub.HandleWebSocketConnection)
 
 	// Configurar servicios de autenticación
@@ -57,10 +67,11 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 	// Rutas públicas (sin autenticación)
 	apiv1 := app.Group("/api/v1")
 	SetAuthRouter(apiv1, db, jwtService)
+	SetPublicTrackingRouter(apiv1, db) // Tracking público para clientes
 
 	// Rutas protegidas (requieren JWT)
 	protected := apiv1.Group("", middleware.JWTAuth(jwtService))
-	SetUserRouter(protected, db)
+	SetUserRouter(apiv1, db, jwtService)
 	SetPackageRouter(protected, db)
 	SetTrackRouter(protected, db, hub)
 	SetVehicleRouter(protected, db)

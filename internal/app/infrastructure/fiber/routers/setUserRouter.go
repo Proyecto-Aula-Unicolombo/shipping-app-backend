@@ -6,11 +6,13 @@ import (
 	application "shipping-app/internal/app/application/users"
 	"shipping-app/internal/app/infrastructure/adapters"
 	handler "shipping-app/internal/app/infrastructure/fiber/handlers/users"
+	"shipping-app/internal/middleware"
+	"shipping-app/internal/externalServices/auth"
 
 	"github.com/gofiber/fiber/v3"
 )
 
-func SetUserRouter(apiv1 fiber.Router, db *sql.DB) {
+func SetUserRouter(apiv1 fiber.Router, db *sql.DB, jwtService *auth.JWTService) {
 	repoUser := adapters.NewUserRepositoryPostgres(db)
 	driverRepo := adapters.NewDriverRepositoryAdapter(db)
 	txProvider := adapters.NewSQLTxProvider(db)
@@ -32,8 +34,9 @@ func SetUserRouter(apiv1 fiber.Router, db *sql.DB) {
 	)
 
 	apiv1.Post("/users", userHandler.CreateUser)
-	apiv1.Get("/users/:id", userHandler.GetUser)
-	apiv1.Get("/users", userHandler.ListUsersPaginated)
-	apiv1.Put("/users/:id", userHandler.UpdateUser)
-	apiv1.Delete("/users/:id", userHandler.DeleteUser)
+	protected := apiv1.Group("", middleware.JWTAuth(jwtService))
+	protected.Get("/users/:id", userHandler.GetUser)
+	protected.Get("/users", userHandler.ListUsersPaginated)
+	protected.Put("/users/:id", userHandler.UpdateUser)
+	protected.Delete("/users/:id", userHandler.DeleteUser)
 }

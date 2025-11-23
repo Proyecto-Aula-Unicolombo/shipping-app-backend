@@ -2,16 +2,16 @@
 
 -- Insert Users
 INSERT INTO users (name, lastname, email, password, role) VALUES
-('Ana María', 'González', 'ana.gonzalez@logistica.com', '$2b$10$p.TlJMFkzr5hhRuLCwkbieRyghumVjForWM2bd/CaD30hbEizo.TS', 'admin'), -- password: Admin123!
-('Roberto', 'Mendoza', 'roberto.mendoza@logistica.com', '$2b$10$p.TlJMFkzr5hhRuLCwkbieRyghumVjForWM2bd/CaD30hbEizo.TS', 'admin'), -- password: Admin123!
-('Carlos', 'Ramírez', 'carlos.ramirez@logistica.com', '$2b$10$WZDY5pYi2H.nqUtFdJrTSO7GbwELhlUkVNuqzEEuJqs3c5QFcCnGC', 'driver'), -- password: Driver123!
-('Sofía', 'García', 'sofia.garcia@logistica.com', '$2b$10$WZDY5pYi2H.nqUtFdJrTSO7GbwELhlUkVNuqzEEuJqs3c5QFcCnGC', 'driver'), -- password: Driver123!
-('Diego', 'Martínez', 'diego.martinez@logistica.com', '$2b$10$WZDY5pYi2H.nqUtFdJrTSO7GbwELhlUkVNuqzEEuJqs3c5QFcCnGC', 'driver'), -- password: Driver123!
-('Luisa', 'Hernández', 'luisa.hernandez@logistica.com', '$2b$10$WZDY5pYi2H.nqUtFdJrTSO7GbwELhlUkVNuqzEEuJqs3c5QFcCnGC', 'driver'), -- password: Driver123!
-('Miguel', 'Torres', 'miguel.torres@logistica.com', '$2b$10$WZDY5pYi2H.nqUtFdJrTSO7GbwELhlUkVNuqzEEuJqs3c5QFcCnGC', 'driver'), -- password: Driver123!
-('María Elena', 'Rodríguez', 'maria.rodriguez@logistica.com', '$2b$10$6eWyzRrngpW1eJY7dqna.u0mKDfl4bK.8Ivu/PQBJNUpOc8DW4Ar.', 'coord'), -- password: Coord123!
-('Alejandro', 'Vargas', 'alejandro.vargas@logistica.com', '$2b$10$6eWyzRrngpW1eJY7dqna.u0mKDfl4bK.8Ivu/PQBJNUpOc8DW4Ar.', 'coord'), -- password: Coord123!
-('Carmen', 'Jiménez', 'carmen.jimenez@logistica.com', '$2b$10$6eWyzRrngpW1eJY7dqna.u0mKDfl4bK.8Ivu/PQBJNUpOc8DW4Ar.', 'coord'); -- password: Coord123!
+('Ana María', 'González', 'ana.gonzalez@logistica.com', '$2a$12$ww0.0uNfgxkjHQxAT8jNKepZJVZyCsa772VB4LmHg8KU.kctUDudi', 'admin'), -- password: Admin123!
+('Roberto', 'Mendoza', 'roberto.mendoza@logistica.com', '$2a$12$ww0.0uNfgxkjHQxAT8jNKepZJVZyCsa772VB4LmHg8KU.kctUDudi', 'admin'), -- password: Admin123!
+('Carlos', 'Ramírez', 'carlos.ramirez@logistica.com', '$2a$12$4gnMHjRl5OWP2f53oDWqe.oBHEDTN1ClZuLIW5WjGKCmvaAh2Uywy', 'driver'), -- password: Driver123!
+('Sofía', 'García', 'sofia.garcia@logistica.com', '$2a$12$4gnMHjRl5OWP2f53oDWqe.oBHEDTN1ClZuLIW5WjGKCmvaAh2Uywy', 'driver'), -- password: Driver123!
+('Diego', 'Martínez', 'diego.martinez@logistica.com', '$2a$12$4gnMHjRl5OWP2f53oDWqe.oBHEDTN1ClZuLIW5WjGKCmvaAh2Uywy', 'driver'), -- password: Driver123!
+('Luisa', 'Hernández', 'luisa.hernandez@logistica.com', '$2a$12$4gnMHjRl5OWP2f53oDWqe.oBHEDTN1ClZuLIW5WjGKCmvaAh2Uywy', 'driver'), -- password: Driver123!
+('Miguel', 'Torres', 'miguel.torres@logistica.com', '$2a$12$4gnMHjRl5OWP2f53oDWqe.oBHEDTN1ClZuLIW5WjGKCmvaAh2Uywy', 'driver'), -- password: Driver123!
+('María Elena', 'Rodríguez', 'maria.rodriguez@logistica.com', '$2a$12$TjR0P.AIWyiyqDCjgPbO0up9O8kRqKLl9t1bZbAkzn28HWDlNtqQS', 'coord'), -- password: Coord123!
+('Alejandro', 'Vargas', 'alejandro.vargas@logistica.com', '$2a$12$TjR0P.AIWyiyqDCjgPbO0up9O8kRqKLl9t1bZbAkzn28HWDlNtqQS', 'coord'), -- password: Coord123!
+('Carmen', 'Jiménez', 'carmen.jimenez@logistica.com', '$2a$12$TjR0P.AIWyiyqDCjgPbO0up9O8kRqKLl9t1bZbAkzn28HWDlNtqQS', 'coord'); -- password: Coord123!
 
 -- Insert Drivers (references users 3-7)
 INSERT INTO drivers (phonenumber, license, is_active, iduser) VALUES
@@ -135,10 +135,10 @@ INSERT INTO informationdeliveries (observations, signature_received, photo_deliv
 -- Insert Tracks (GPS tracking for active orders)
 INSERT INTO tracks (timestamp, location, idorder) VALUES
 -- Order 1 (Driver 1)
-('2025-11-16 08:35:00', ST_SetSRID(ST_MakePoint(-75.5812, 6.2442), 4326), 1),
-('2025-11-16 09:00:00', ST_SetSRID(ST_MakePoint(-75.5750, 6.2480), 4326), 1),
-('2025-11-16 09:30:00', ST_SetSRID(ST_MakePoint(-75.5690, 6.2520), 4326), 1),
-('2025-11-16 10:00:00', ST_SetSRID(ST_MakePoint(-75.5630, 6.2560), 4326), 1),
+('2025-11-16 08:35:00', ST_SetSRID(ST_MakePoint(-75.4794, 10.3910), 4326), 1),
+('2025-11-16 09:00:00', ST_SetSRID(ST_MakePoint(-75.4820, 10.3950), 4326), 1),
+('2025-11-16 09:30:00', ST_SetSRID(ST_MakePoint(-75.4850, 10.4000), 4326), 1),
+('2025-11-16 10:00:00', ST_SetSRID(ST_MakePoint(-75.4900, 10.4100), 4326), 1),
 -- Order 2 (Driver 2)
 ('2025-11-16 09:20:00', ST_SetSRID(ST_MakePoint(-74.7964, 10.9639), 4326), 2),
 ('2025-11-16 10:00:00', ST_SetSRID(ST_MakePoint(-74.8020, 10.9700), 4326), 2),
