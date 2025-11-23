@@ -32,10 +32,22 @@ func SetTrackingRouter(apiv1 fiber.Router, db *sql.DB) {
 		txProvider,
 	)
 
+	listIncidentsUC := trackingApp.NewListIncidentsUseCase(
+		stopRepo,
+		orderRepo,
+	)
+
+	listActiveOrdersUC := trackingApp.NewListActiveOrdersUseCase(
+		orderRepo,
+		trackRepo,
+	)
+
 	// Handler
 	handler := trackingHandler.NewTrackingHandler(
 		trackPackageUC,
 		registerStopUC,
+		listIncidentsUC,
+		listActiveOrdersUC,
 	)
 
 	// Rutas públicas de tracking (para destinatarios)
@@ -53,5 +65,19 @@ func SetTrackingRouter(apiv1 fiber.Router, db *sql.DB) {
 	{
 		// Registrar parada durante entrega
 		stops.Post("/register", handler.RegisterStop)
+	}
+
+	// Rutas de incidentes (acceso para admins/coordinadores)
+	incidents := apiv1.Group("/incidents")
+	{
+		// Listar incidentes con filtros
+		incidents.Get("/", handler.ListIncidents)
+	}
+
+	// Rutas de tracking para admin/coordinador
+	adminTracking := apiv1.Group("/admin/tracking")
+	{
+		// Listar todas las órdenes activas con ubicación
+		adminTracking.Get("/active-orders", handler.ListActiveOrders)
 	}
 }

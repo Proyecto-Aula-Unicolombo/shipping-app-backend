@@ -22,17 +22,23 @@ type RegisterStopRequest struct {
 }
 
 type TrackingHandler struct {
-	trackPackageUC *tracking.TrackPackageUseCase
-	registerStopUC *tracking.RegisterStopUseCase
+	trackPackageUC     *tracking.TrackPackageUseCase
+	registerStopUC     *tracking.RegisterStopUseCase
+	listIncidentsUC    *tracking.ListIncidentsUseCase
+	listActiveOrdersUC *tracking.ListActiveOrdersUseCase
 }
 
 func NewTrackingHandler(
 	trackPackageUC *tracking.TrackPackageUseCase,
 	registerStopUC *tracking.RegisterStopUseCase,
+	listIncidentsUC *tracking.ListIncidentsUseCase,
+	listActiveOrdersUC *tracking.ListActiveOrdersUseCase,
 ) *TrackingHandler {
 	return &TrackingHandler{
-		trackPackageUC: trackPackageUC,
-		registerStopUC: registerStopUC,
+		trackPackageUC:     trackPackageUC,
+		registerStopUC:     registerStopUC,
+		listIncidentsUC:    listIncidentsUC,
+		listActiveOrdersUC: listActiveOrdersUC,
 	}
 }
 
@@ -124,6 +130,84 @@ func (h *TrackingHandler) RegisterStop(ctx fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "stop registered successfully",
 		"data":    output,
+	})
+}
+
+func (h *TrackingHandler) ListIncidents(ctx fiber.Ctx) error {
+	// Parse query parameters for filters
+	var status *string
+	statusStr := ctx.Query("status")
+	if statusStr != "" {
+		status = &statusStr
+	}
+
+	var driverID *uint
+	driverIDStr := ctx.Query("driver_id")
+	if driverIDStr != "" {
+		id, err := strconv.ParseUint(driverIDStr, 10, 32)
+		if err == nil {
+			driverIDUint := uint(id)
+			driverID = &driverIDUint
+		}
+	}
+
+	var orderID *uint
+	orderIDStr := ctx.Query("order_id")
+	if orderIDStr != "" {
+		id, err := strconv.ParseUint(orderIDStr, 10, 32)
+		if err == nil {
+			orderIDUint := uint(id)
+			orderID = &orderIDUint
+		}
+	}
+
+	// Pagination
+	limit := 50 // default
+	limitStr := ctx.Query("limit")
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	offset := 0
+	offsetStr := ctx.Query("offset")
+	if offsetStr != "" {
+		if o, err := strconv.Atoi(offsetStr); err == nil && o >= 0 {
+			offset = o
+		}
+	}
+
+	input := tracking.ListIncidentsInput{
+		Status:   status,
+		DriverID: driverID,
+		OrderID:  orderID,
+		Limit:    limit,
+		Offset:   offset,
+	}
+
+	incidents, err := h.listIncidentsUC.Execute(ctx.Context(), input)
+	if err != nil {
+		return h.handleError(ctx, err)
+	}
+
+	return ctx.JSON(fiber.Map{
+		"data":  incidents,
+		"count": len(incidents),
+	})
+}
+
+func (h *TrackingHandler) ListActiveOrders(ctx fiber.Ctx) error {
+	// Este endpoint devuelve todas las órdenes activas con su última ubicación
+	// Solo accesible para admin/coordinador
+	orders, err := h.listActiveOrdersUC.Execute(ctx.Context())
+	if err != nil {
+		return h.handleError(ctx, err)
+	}
+
+	return ctx.JSON(fiber.Map{
+		"data":  orders,
+		"count": len(orders),
 	})
 }
 
