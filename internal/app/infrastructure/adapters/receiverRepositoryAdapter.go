@@ -33,6 +33,10 @@ func (r *ReceiverRepositoryPostgres) GetByID(ctx context.Context, id uint) (*ent
 }
 
 func (r *ReceiverRepositoryPostgres) FindByEmail(ctx context.Context, email string) (*entities.Receiver, error) {
+	return r.FindByEmailWithTx(ctx, nil, email)
+}
+
+func (r *ReceiverRepositoryPostgres) FindByEmailWithTx(ctx context.Context, tx *sql.Tx, email string) (*entities.Receiver, error) {
 	query := `
 		SELECT id, name, lastname, phonenumber, email
 		FROM receivers
@@ -41,14 +45,25 @@ func (r *ReceiverRepositoryPostgres) FindByEmail(ctx context.Context, email stri
 	`
 
 	var receiver entities.Receiver
+	var err error
 
-	err := r.db.QueryRowContext(ctx, query, email).Scan(
-		&receiver.ID,
-		&receiver.Name,
-		&receiver.LastName,
-		&receiver.PhoneNumber,
-		&receiver.Email,
-	)
+	if tx != nil {
+		err = tx.QueryRowContext(ctx, query, email).Scan(
+			&receiver.ID,
+			&receiver.Name,
+			&receiver.LastName,
+			&receiver.PhoneNumber,
+			&receiver.Email,
+		)
+	} else {
+		err = r.db.QueryRowContext(ctx, query, email).Scan(
+			&receiver.ID,
+			&receiver.Name,
+			&receiver.LastName,
+			&receiver.PhoneNumber,
+			&receiver.Email,
+		)
+	}
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

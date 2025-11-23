@@ -1,6 +1,7 @@
 package handlerpackages
 
 import (
+	"fmt"
 	usepackages "shipping-app/internal/app/application/UsePackages"
 	related "shipping-app/internal/app/application/UsePackages/related"
 	"shipping-app/internal/utils"
@@ -49,13 +50,24 @@ func NewPackageHandler(
 }
 
 func (h *PackageHandler) CreatePackage(ctx fiber.Ctx) error {
+	var reqArray []CreatePackageRequest
+	if err := ctx.Bind().Body(&reqArray); err == nil && len(reqArray) > 0 {
+		return h.createMultiplePackages(ctx, reqArray)
+	}
+
+	// Si falla, intentar como objeto único
 	var req CreatePackageRequest
 	if err := ctx.Bind().Body(&req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "invalid request",
+			"message": "invalid request format",
 		})
 	}
 
+	// Es un solo paquete
+	return h.createSinglePackage(ctx, req)
+}
+
+func (h *PackageHandler) createSinglePackage(ctx fiber.Ctx, req CreatePackageRequest) error {
 	input := usepackages.CreatePackageInput{
 		NumPackage:           req.NumPackage,
 		DescriptionContent:   req.DescriptionContent,
@@ -80,6 +92,45 @@ func (h *PackageHandler) CreatePackage(ctx fiber.Ctx) error {
 		"message":    "package created successfully",
 		"id":         output.ID,
 		"numpackage": output.NumPackage,
+	})
+}
+
+func (h *PackageHandler) createMultiplePackages(ctx fiber.Ctx, requests []CreatePackageRequest) error {
+	inputs := make([]usepackages.CreatePackageInput, len(requests))
+	for i, req := range requests {
+		inputs[i] = usepackages.CreatePackageInput{
+			NumPackage:           req.NumPackage,
+			DescriptionContent:   req.DescriptionContent,
+			Weight:               req.Weight,
+			Dimension:            req.Dimension,
+			DeclaredValue:        req.DeclaredValue,
+			TypePackage:          req.TypePackage,
+			IsFragile:            req.IsFragile,
+			AddressPackage:       req.AddressPackage,
+			StatusDelivery:       req.StatusDelivery,
+			ComercialInformation: req.ComercialInformation,
+			Sender:               req.Sender,
+			Receiver:             req.Receiver,
+		}
+	}
+
+	outputs, err := h.createUC.ExecuteBulk(ctx.Context(), inputs)
+	if err != nil {
+		return h.handleErrorCreate(ctx, err)
+	}
+
+	// Construir respuesta con todos los paquetes creados
+	packagesCreated := make([]fiber.Map, len(outputs))
+	for i, output := range outputs {
+		packagesCreated[i] = fiber.Map{
+			"id":         output.ID,
+			"numpackage": output.NumPackage,
+		}
+	}
+
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message":  fmt.Sprintf("%d packages created successfully", len(outputs)),
+		"packages": packagesCreated,
 	})
 }
 

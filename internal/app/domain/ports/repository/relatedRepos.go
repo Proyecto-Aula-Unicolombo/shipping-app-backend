@@ -28,6 +28,7 @@ type SenderRepository interface {
 type ReceiverRepository interface {
 	GetByID(ctx context.Context, id uint) (*entities.Receiver, error)
 	FindByEmail(ctx context.Context, email string) (*entities.Receiver, error)
+	FindByEmailWithTx(ctx context.Context, tx *sql.Tx, email string) (*entities.Receiver, error)
 	Create(ctx context.Context, tx *sql.Tx, r *entities.Receiver) error
 }
 

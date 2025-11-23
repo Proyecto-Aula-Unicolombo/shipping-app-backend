@@ -82,7 +82,7 @@ func CreateOrFetchRelatedEntitiesFromDTOs(
 		return nil, nil, nil, nil, fmt.Errorf("%w: receiver", ErrMissingRelatedInput)
 	}
 
-	receiverEntity, err := receiverRepo.FindByEmail(ctx, input.Receiver.Email)
+	receiverEntity, err := receiverRepo.FindByEmailWithTx(ctx, tx, input.Receiver.Email)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, nil, nil, nil, fmt.Errorf("find receiver: %w", err)
 	}

@@ -124,3 +124,85 @@ func (uc *CreatePackageUseCase) Execute(ctx context.Context, input CreatePackage
 		NumPackage: pkg.NumPackage,
 	}, nil
 }
+
+// ExecuteBulk crea múltiples paquetes en una sola transacción
+func (uc *CreatePackageUseCase) ExecuteBulk(ctx context.Context, inputs []CreatePackageInput) ([]*CreatePackageOutput, error) {
+	if len(inputs) == 0 {
+		return nil, fmt.Errorf("no packages provided")
+	}
+
+	// Validar todos los inputs primero
+	for i, input := range inputs {
+		if err := ValidateCreateInput(input); err != nil {
+			return nil, fmt.Errorf("package %d validation error: %w", i+1, err)
+		}
+		if err := ValidateBusinessRules(uc.domainSvc, input); err != nil {
+			return nil, fmt.Errorf("package %d business rules error: %w", i+1, err)
+		}
+	}
+
+	// Iniciar transacción única para todos los paquetes
+	tx, err := uc.txProvider.BeginTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("begin tx: %w", err)
+	}
+	committed := false
+	defer func() {
+		if !committed {
+			_ = uc.txProvider.RollbackTx(ctx, tx)
+		}
+	}()
+
+	outputs := make([]*CreatePackageOutput, 0, len(inputs))
+
+	// Crear cada paquete dentro de la misma transacción
+	for i, input := range inputs {
+		// Crear o verificar entidades relacionadas
+		addr, cominfo, sender, receiver, err := CreateOrFetchRelatedEntitiesFromDTOs(
+			ctx,
+			tx,
+			uc.addressRepo,
+			uc.comercialRepo,
+			uc.senderRepo,
+			uc.receiverRepo,
+			input,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("package %d related entities error: %w", i+1, err)
+		}
+
+		// Preparar entidad Package
+		pkg := &entities.Package{
+			NumPackage:             input.NumPackage,
+			Status:                 "pendiente",
+			DescriptionContent:     input.DescriptionContent,
+			Weight:                 input.Weight,
+			Dimension:              input.Dimension,
+			DeclaredValue:          input.DeclaredValue,
+			TypePackage:            input.TypePackage,
+			IsFragile:              input.IsFragile,
+			AddressPackageID:       addr.ID,
+			ComercialInformationID: cominfo.ID,
+			SenderID:               sender.ID,
+			ReceiverID:             receiver.ID,
+		}
+
+		// Persistir paquete
+		if err := uc.packageRepo.Create(ctx, tx, pkg); err != nil {
+			return nil, fmt.Errorf("package %d create error: %w", i+1, err)
+		}
+
+		outputs = append(outputs, &CreatePackageOutput{
+			ID:         pkg.ID,
+			NumPackage: pkg.NumPackage,
+		})
+	}
+
+	// Commit de la transacción
+	if err := uc.txProvider.CommitTx(ctx, tx); err != nil {
+		return nil, fmt.Errorf("commit tx: %w", err)
+	}
+	committed = true
+
+	return outputs, nil
+}
