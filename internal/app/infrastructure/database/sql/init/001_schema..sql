@@ -142,3 +142,42 @@ CREATE INDEX IF NOT EXISTS idx_senders_email ON senders(email);
 CREATE INDEX IF NOT EXISTS idx_senders_document ON senders(document);
 CREATE INDEX IF NOT EXISTS idx_receivers_email ON receivers(email);
 CREATE INDEX IF NOT EXISTS idx_senders_api_key ON senders(api_key) WHERE api_key IS NOT NULL;
+
+
+
+-- trigger to update status of package when status of order is updated
+
+CREATE OR REPLACE FUNCTION update_status_order_and_package()
+RETURNS TRIGGER AS $$
+DECLARE  
+	status_order VARCHAR(50);
+BEGIN	
+	
+	SELECT status INTO status_order
+	FROM orders
+	WHERE id = NEW.idorder;
+
+	IF status_order = 'asignada' THEN
+		
+		UPDATE orders
+		SET status = 'en camino'
+		WHERE id = NEW.idorder;
+	
+		UPDATE packages 
+		SET status = 'en camino',
+			updated_at = CURRENT_TIMESTAMP
+		WHERE idorder = NEW.idorder 
+			AND status = 'asignado';
+
+	END IF;
+
+		RETURN NEW;
+	 
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trigger_update_status_order_and_package
+AFTER INSERT ON tracks 
+FOR EACH ROW
+EXECUTE FUNCTION update_status_order_and_package();
