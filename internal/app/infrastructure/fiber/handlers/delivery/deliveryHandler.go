@@ -19,6 +19,7 @@ type ReportIncidentRequest struct {
 	ReasonCancellation string  `json:"reason_cancellation"`
 	Observation        *string `json:"observation"`
 	PhotoEvidence      string  `json:"photo_evidence"`
+	Status             string  `json:"status"`
 }
 
 type DeliveryHandler struct {
@@ -80,6 +81,7 @@ func (h *DeliveryHandler) ReportIncident(ctx fiber.Ctx) error {
 		ReasonCancellation: req.ReasonCancellation,
 		Observation:        req.Observation,
 		PhotoEvidence:      req.PhotoEvidence,
+		Status:             req.Status,
 	}
 
 	output, err := h.reportIncidentUC.Execute(ctx.Context(), input)

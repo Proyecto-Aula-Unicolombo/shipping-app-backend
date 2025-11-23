@@ -159,7 +159,7 @@ func (r *PackageRepositoryPostgres) DeletePackage(ctx context.Context, tx *sql.T
 
 func (r *PackageRepositoryPostgres) GetByID(ctx context.Context, id uint) (*entities.Package, error) {
 	query := `
-		SELECT id, numpackage, status, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
+		SELECT id, numpackage, status, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile, idorder,
 		       idaddresspackage, idcomercialinformation, idsender, idreceivers, created_at, updated_at
 		FROM packages
 		WHERE id = $1
@@ -176,6 +176,7 @@ func (r *PackageRepositoryPostgres) GetByID(ctx context.Context, id uint) (*enti
 		&pkg.DeclaredValue,
 		&pkg.TypePackage,
 		&pkg.IsFragile,
+		&pkg.OrderID,
 		&pkg.AddressPackageID,
 		&pkg.ComercialInformationID,
 		&pkg.SenderID,

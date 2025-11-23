@@ -5,6 +5,7 @@ import (
 	related "shipping-app/internal/app/application/UsePackages/related"
 	"shipping-app/internal/app/domain/entities"
 	"shipping-app/internal/app/domain/ports/repository"
+	"time"
 )
 
 type ResponsePackage struct {
@@ -17,17 +18,29 @@ type ResponsePackage struct {
 	DeclaredValue        *float64
 	TypePackage          *string
 	IsFragile            bool
+	IdOrder              *uint
+	CreatedAt            time.Time
 	AddressPackage       *related.AdressPackageResponse
 	ComercialInformation *related.ComercialInformationResponse
 	Sender               *related.SenderResponse
 	Receiver             *related.ReceiverResponse
+	DeliveryInformation  *DeliveryInformationResponse
+}
+
+type DeliveryInformationResponse struct {
+	ID                 uint
+	Observation        *string
+	SignatureReceived  *string
+	PhotoDelivery      string
+	ReasonCancellation *string
 }
 type ConsultPackageUseCase struct {
-	packageRepo   repository.PackageRepository
-	addressRepo   repository.AddressPackageRepository
-	comercialRepo repository.ComercialInformationRepository
-	senderRepo    repository.SenderRepository
-	receiverRepo  repository.ReceiverRepository
+	packageRepo      repository.PackageRepository
+	addressRepo      repository.AddressPackageRepository
+	comercialRepo    repository.ComercialInformationRepository
+	senderRepo       repository.SenderRepository
+	receiverRepo     repository.ReceiverRepository
+	infoDeliveryRepo repository.InformationDeliveryRepository
 }
 
 func NewConsultPackageUseCase(
@@ -36,13 +49,15 @@ func NewConsultPackageUseCase(
 	comercialRepo repository.ComercialInformationRepository,
 	senderRepo repository.SenderRepository,
 	receiverRepo repository.ReceiverRepository,
+	infoDeliveryRepo repository.InformationDeliveryRepository,
 ) *ConsultPackageUseCase {
 	return &ConsultPackageUseCase{
-		packageRepo:   packageRepo,
-		addressRepo:   addressRepo,
-		comercialRepo: comercialRepo,
-		senderRepo:    senderRepo,
-		receiverRepo:  receiverRepo,
+		packageRepo:      packageRepo,
+		addressRepo:      addressRepo,
+		comercialRepo:    comercialRepo,
+		senderRepo:       senderRepo,
+		receiverRepo:     receiverRepo,
+		infoDeliveryRepo: infoDeliveryRepo,
 	}
 }
 
@@ -102,6 +117,8 @@ func (uc *ConsultPackageUseCase) Execute(input CheckAccessInput) (*ResponsePacka
 		DeclaredValue:      pkg.DeclaredValue,
 		TypePackage:        pkg.TypePackage,
 		IsFragile:          pkg.IsFragile,
+		IdOrder:            pkg.OrderID,
+		CreatedAt:          pkg.CreatedAt,
 		AddressPackage: &related.AdressPackageResponse{
 			Origin:               addrEntity.Origin,
 			Destination:          addrEntity.Destination,
@@ -121,6 +138,23 @@ func (uc *ConsultPackageUseCase) Execute(input CheckAccessInput) (*ResponsePacka
 			PhoneNumber: receiverEntity.PhoneNumber,
 			Email:       receiverEntity.Email,
 		},
+	}
+
+	if input.PackageID != nil {
+		infoDeliveryEntity, err := uc.infoDeliveryRepo.GetByPackageID(input.Ctx, *input.PackageID)
+		if err != nil {
+			if !errors.Is(err, repository.ErrInformationDeliveryNotFound) {
+				return nil, err
+			}
+		} else {
+			response.DeliveryInformation = &DeliveryInformationResponse{
+				ID:                 infoDeliveryEntity.ID,
+				Observation:        infoDeliveryEntity.Observation,
+				SignatureReceived:  infoDeliveryEntity.SignatureReceived,
+				PhotoDelivery:      infoDeliveryEntity.PhotoDelivery,
+				ReasonCancellation: infoDeliveryEntity.ReasonCancellation,
+			}
+		}
 	}
 
 	return response, nil
