@@ -187,6 +187,7 @@ DECLARE
     paquetes_cancelados INTEGER;
     paquetes_incidente INTEGER;
     estado_final VARCHAR(50);
+    id_conductor INTEGER;
 BEGIN
     -- Ejecutar si el paquete cambió a un estado final (entregado, cancelado o incidente)
     IF NEW.status IN ('entregado', 'cancelado', 'incidente') 
@@ -233,10 +234,22 @@ BEGIN
                 estado_final := 'finalizada';
             END IF;
             
+            SELECT iddriver 
+           	INTO id_conductor
+            FROM orders
+            WHERE id = NEW.idorder;
+
             UPDATE orders
-            SET status = estado_final
+            SET status = estado_final,
+                idvehicle = NULL
             WHERE id = NEW.idorder;
             
+			IF id_conductor IS NOT NULL THEN
+                UPDATE drivers
+                SET is_active = false
+                WHERE id = id_conductor;
+            END IF;
+
         END IF;
         
     END IF;

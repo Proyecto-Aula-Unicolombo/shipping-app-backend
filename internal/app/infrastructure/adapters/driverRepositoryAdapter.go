@@ -205,8 +205,7 @@ func (r *DriverRepositoryAdapter) ListDriversUnassigned() ([]*entities.Driver, e
 			d.license
 			FROM drivers d
 			JOIN users u ON d.iduser = u.id
-			LEFT JOIN orders o ON d.id = o.iddriver 
-			WHERE o.id IS NULL AND d.is_active = false
+			WHERE d.is_active = false
 	`
 	rows, err := r.db.Query(query)
 	if err != nil {
