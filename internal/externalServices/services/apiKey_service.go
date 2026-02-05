@@ -2,6 +2,7 @@ package services
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
 	"errors"
@@ -19,6 +20,9 @@ func NewAPIKeyService(db *sql.DB) *APIKeyService {
 
 // valida la API key y retorna el sender
 func (s *APIKeyService) ValidateAPIKey(apiKey string) (*entities.Sender, error) {
+
+	hashedKey := hashAPIKey(apiKey)
+
 	query := `
 		SELECT id, name, document, email, api_key, is_active
 		FROM senders
@@ -26,7 +30,7 @@ func (s *APIKeyService) ValidateAPIKey(apiKey string) (*entities.Sender, error) 
 	`
 
 	var sender entities.Sender
-	err := s.db.QueryRow(query, apiKey).Scan(
+	err := s.db.QueryRow(query, hashedKey).Scan(
 		&sender.ID,
 		&sender.Name,
 		&sender.Document,
@@ -48,7 +52,12 @@ func (s *APIKeyService) ValidateAPIKey(apiKey string) (*entities.Sender, error) 
 // crea un sender y le asigna una API Key
 func (s *APIKeyService) CreateSenderWithAPIKey(name, document, address, phoneNumber, email string) (*entities.Sender, string, error) {
 	// Generar API key
-	apiKey := generateAPIKey()
+	apiKey, err := generateAPIKey()
+	if err != nil {
+		return nil, "", err
+	}
+
+	hashedKey := hashAPIKey(apiKey)
 
 	query := `
 		INSERT INTO senders (name, document, address, phonenumber, email, api_key, is_active)
@@ -63,7 +72,7 @@ func (s *APIKeyService) CreateSenderWithAPIKey(name, document, address, phoneNum
 	sender.APIKey = apiKey
 	sender.IsActive = true
 
-	err := s.db.QueryRow(query, name, document, address, phoneNumber, email, apiKey).Scan(&sender.ID)
+	err = s.db.QueryRow(query, name, document, address, phoneNumber, email, hashedKey).Scan(&sender.ID)
 	if err != nil {
 		return nil, "", fmt.Errorf("error creating sender: %w", err)
 	}
@@ -71,8 +80,18 @@ func (s *APIKeyService) CreateSenderWithAPIKey(name, document, address, phoneNum
 	return &sender, apiKey, nil
 }
 
-func generateAPIKey() string {
+func generateAPIKey() (string, error) {
 	bytes := make([]byte, 32)
-	rand.Read(bytes)
-	return "sk_" + hex.EncodeToString(bytes)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", fmt.Errorf("error generando API key: %w", err)
+	}
+
+	plainKey := "sk_" + hex.EncodeToString(bytes)
+
+	return plainKey, nil
+}
+
+func hashAPIKey(apiKey string) string {
+	hash := sha256.Sum256([]byte(apiKey))
+	return hex.EncodeToString(hash[:])
 }
