@@ -33,11 +33,19 @@ func NewCreateDriverUseCase(userRepo repository.UserRepository, driver repositor
 	}
 }
 
-var ErrInvalidInput = errors.New("invalid input")
+var (
+	ErrInvalidInput      = errors.New("invalid input")
+	ErrUserAlreadyExists = errors.New("user already exists")
+)
 
 func (uc *CreateDriverUseCase) Execute(ctx context.Context, input CreateDriverInput) error {
 	if input.Name == "" || input.LastName == "" || input.Email == "" || input.Phone == "" || input.NumLicence == "" {
 		return ErrInvalidInput
+	}
+
+	userAlreadyExist, err := uc.userRepo.GetUserByEmail(input.Email)
+	if userAlreadyExist != nil {
+		return ErrUserAlreadyExists
 	}
 
 	passwordRandom, err := randomString(10)

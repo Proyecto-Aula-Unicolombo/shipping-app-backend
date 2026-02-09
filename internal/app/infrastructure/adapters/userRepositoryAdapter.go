@@ -5,13 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"shipping-app/internal/app/domain/entities"
-
-	"github.com/lib/pq"
 )
 
 var (
-	ErrUserNotFound      = errors.New("user not found")
-	ErrUserAlreadyExists = errors.New("user already exists")
+	ErrUserNotFound = errors.New("user not found")
 )
 
 type UserRepositoryPostgres struct {
@@ -34,11 +31,6 @@ func (r *UserRepositoryPostgres) CreateUserTx(tx *sql.Tx, user *entities.User) e
 		err = tx.QueryRow(query, user.Name, user.LastName, user.Email, user.Password, user.Role).Scan(&user.ID)
 	}
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			if pqErr.Code == "23505" {
-				return ErrUserAlreadyExists
-			}
-		}
 		return fmt.Errorf("error creating user: %w", err)
 	}
 

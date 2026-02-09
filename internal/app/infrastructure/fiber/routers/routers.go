@@ -70,8 +70,8 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 	SetPublicTrackingRouter(apiv1, db) // Tracking público para clientes
 
 	// Rutas protegidas (requieren JWT)
-	protected := apiv1.Group("", middleware.JWTAuth(jwtService))
 	SetUserRouter(apiv1, db, jwtService)
+	protected := apiv1.Group("", middleware.JWTAuth(jwtService))
 	SetPackageRouter(protected, db)
 	SetTrackRouter(protected, db, hub)
 	SetVehicleRouter(protected, db)

@@ -126,6 +126,7 @@ func (h *HandlerVehicle) DeleteVehicle(ctx fiber.Ctx) error {
 		"message": "Vehículo eliminado correctamente",
 	})
 }
+
 func (h *HandlerVehicle) ListVehiclesSimple(ctx fiber.Ctx) error {
 	params := utils.GetPaginationParams(ctx)
 	plateBrandOrModel := ctx.Query("plate_brand_or_model")
@@ -154,10 +155,15 @@ func (h *HandlerVehicle) ListVehiclesSimple(ctx fiber.Ctx) error {
 
 func (h *HandlerVehicle) handleDeleteVehicleError(ctx fiber.Ctx, err error) error {
 	switch {
-	case errors.Is(err, vehicles.ErrVehicleNotFound):
+	case errors.Is(err, vehicles.ErrVehicleNotFoundDelete):
 		return ctx.Status(fiber.StatusNotFound).JSON(ErrorResponse{
 			Error:   "vehicle_not_found",
 			Message: "Vehículo no registrado",
+		})
+	case errors.Is(err, vehicles.ErrVehicleHasActiveOrders):
+		return ctx.Status(fiber.StatusConflict).JSON(ErrorResponse{
+			Error:   "vehicle_is_actve_in_order",
+			Message: "vehicle has active orders and cannot be deleted",
 		})
 	default:
 		return ctx.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{

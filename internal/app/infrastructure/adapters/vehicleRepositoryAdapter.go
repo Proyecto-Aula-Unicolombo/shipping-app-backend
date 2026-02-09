@@ -80,6 +80,20 @@ func (r *VehicleRepositoryPostgres) GetByID(ctx context.Context, id uint) (*enti
 	return &v, nil
 }
 
+func (r *VehicleRepositoryPostgres) HasActiveVehicleInOrder(ctx context.Context, id uint) (bool, error) {
+	query := `
+		SELECT EXISTS(
+			SELECT 1 FROM orders 
+			WHERE idvehicle = $1
+			AND status IN ('asignada', 'en camino')
+		)
+	`
+
+	var exists bool
+	err := r.db.QueryRowContext(ctx, query, id).Scan(&exists)
+	return exists, err
+}
+
 func (r *VehicleRepositoryPostgres) DeleteVehicle(id uint) error {
 	query := `DELETE FROM vehicles WHERE id = $1`
 
@@ -106,7 +120,8 @@ func (r *VehicleRepositoryPostgres) ListVehicles(limit int, offset int, PlateBra
             v.id, 
             v.plate, 
             v.brand, 
-            v.model, 
+            v.model,
+			v.color,
             v.vehicletype,
             u.name AS driver_name,
             u.lastname AS driver_last_name
@@ -139,7 +154,7 @@ func (r *VehicleRepositoryPostgres) ListVehicles(limit int, offset int, PlateBra
 	var driverLastName sql.NullString
 	for rows.Next() {
 		var vehicle entities.Vehicle
-		if err := rows.Scan(&vehicle.ID, &vehicle.Plate, &vehicle.Brand, &vehicle.Model, &vehicle.VehicleType, &driverName, &driverLastName); err != nil {
+		if err := rows.Scan(&vehicle.ID, &vehicle.Plate, &vehicle.Brand, &vehicle.Model, &vehicle.Color, &vehicle.VehicleType, &driverName, &driverLastName); err != nil {
 			return nil, fmt.Errorf("error scanning vehicle row: %w", err)
 		}
 		if driverName.Valid {

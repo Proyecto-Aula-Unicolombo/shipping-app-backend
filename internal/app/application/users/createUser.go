@@ -20,10 +20,11 @@ type CreateUserInput struct {
 }
 
 var (
-	ErrInvalidInput     = errors.New("invalid input")
-	ErrPasswordTooShort = errors.New("password must be at least 8 characters")
-	ErrInvalidEmail     = errors.New("invalid email format")
-	ErrInvalidRole      = errors.New("invalid role")
+	ErrInvalidInput      = errors.New("invalid input")
+	ErrPasswordTooShort  = errors.New("password must be at least 8 characters")
+	ErrInvalidEmail      = errors.New("invalid email format")
+	ErrInvalidRole       = errors.New("invalid role")
+	ErrUserAlreadyExists = errors.New("user already exists")
 )
 
 type CreateUserUseCase struct {
@@ -40,6 +41,12 @@ func (us *CreateUserUseCase) Execute(ctx context.Context, input CreateUserInput)
 	if err := validateInput(input); err != nil {
 		return err
 	}
+	userAlreadyExiste, _ := us.userRepo.GetUserByEmail(input.Email)
+
+	if userAlreadyExiste != nil {
+		return ErrUserAlreadyExists
+	}
+
 	passwordHashed, err := utils.HashPassword(input.Password)
 	if err != nil {
 		return errors.New("error hashing password")

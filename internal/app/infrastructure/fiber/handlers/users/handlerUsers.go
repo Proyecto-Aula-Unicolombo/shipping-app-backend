@@ -4,7 +4,6 @@ import (
 	"errors"
 	"shipping-app/internal/app/application/users"
 	"shipping-app/internal/app/application/users/drivers"
-	"shipping-app/internal/app/infrastructure/adapters"
 	"shipping-app/internal/utils"
 	"strconv"
 
@@ -267,7 +266,7 @@ func (h *HandlerUser) handleError(ctx fiber.Ctx, err error) error {
 			Error:   "invalid_role",
 			Message: err.Error(),
 		})
-	case errors.Is(err, adapters.ErrUserAlreadyExists):
+	case errors.Is(err, users.ErrUserAlreadyExists):
 		return ctx.Status(fiber.StatusConflict).JSON(ErrorResponse{
 			Error:   "user_already_exists",
 			Message: "A user with this email already exists",

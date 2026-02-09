@@ -8,6 +8,7 @@ import (
 type VehicleRepository interface {
 	CreateVehicleTx(vehicle *entities.Vehicle) error
 	GetByID(ctx context.Context, id uint) (*entities.Vehicle, error)
+	HasActiveVehicleInOrder(ctx context.Context, id uint) (bool, error)
 	DeleteVehicle(id uint) error
 	UpdateVehicle(vehicle *entities.Vehicle) error
 	ListVehicles(limit, offset int, PlateOrBrand string) ([]*entities.Vehicle, error)
