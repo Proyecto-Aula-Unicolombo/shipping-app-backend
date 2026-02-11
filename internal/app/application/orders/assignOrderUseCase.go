@@ -2,7 +2,6 @@ package orders
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 
@@ -85,7 +84,7 @@ func (uc *AssignOrderUseCase) Execute(ctx context.Context, input AssignOrderInpu
 	if err := uc.assignNewDriver(input.DriverID); err != nil {
 		return fmt.Errorf("assign new driver: %w", err)
 	}
-	if err := uc.updateOrderAssignment(ctx, tx, order, input); err != nil {
+	if err := uc.updateOrderAssignment(ctx, input); err != nil {
 		return fmt.Errorf("update order assignment: %w", err)
 	}
 
@@ -149,7 +148,7 @@ func (uc *AssignOrderUseCase) assignNewDriver(newDriverID uint) error {
 
 // updateOrderAssignment actualiza la orden con el nuevo conductor y vehículo.
 // El método AssignDriverAndVehicle ya actualiza el estado a "asignada" automáticamente.
-func (uc *AssignOrderUseCase) updateOrderAssignment(ctx context.Context, tx *sql.Tx, order *entities.Order, input AssignOrderInput) error {
+func (uc *AssignOrderUseCase) updateOrderAssignment(ctx context.Context, input AssignOrderInput) error {
 	// Actualizar conductor y vehículo (esto también actualiza el estado a "asignada")
 	if err := uc.orderRepo.AssignDriverAndVehicle(ctx, input.OrderID, input.DriverID, input.VehicleID); err != nil {
 		return fmt.Errorf("assign driver and vehicle: %w", err)
