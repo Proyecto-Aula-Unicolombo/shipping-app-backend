@@ -4,13 +4,14 @@ import (
 	"database/sql"
 
 	deliveryApp "shipping-app/internal/app/application/delivery"
+	"shipping-app/internal/app/domain/services"
 	"shipping-app/internal/app/infrastructure/adapters"
 	deliveryHandler "shipping-app/internal/app/infrastructure/fiber/handlers/delivery"
 
 	"github.com/gofiber/fiber/v3"
 )
 
-func SetDeliveryRouter(apiv1 fiber.Router, db *sql.DB) {
+func SetDeliveryRouter(apiv1 fiber.Router, db *sql.DB, generateReportSvc *services.GenerateReportService) {
 	// Repositorios
 	infoDeliveryRepo := adapters.NewInformationDeliveryRepositoryPostgres(db)
 	packageRepo := adapters.NewPackageRepositoryPostgres(db)
@@ -21,12 +22,14 @@ func SetDeliveryRouter(apiv1 fiber.Router, db *sql.DB) {
 		infoDeliveryRepo,
 		packageRepo,
 		txProvider,
+		generateReportSvc,
 	)
 
 	reportIncidentUC := deliveryApp.NewReportIncidentUseCase(
 		infoDeliveryRepo,
 		packageRepo,
 		txProvider,
+		generateReportSvc,
 	)
 
 	getPackageReportUC := deliveryApp.NewGetPackageReportUseCase(

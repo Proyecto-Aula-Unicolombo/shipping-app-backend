@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; }
+    .wrapper { max-width: 640px; margin: 32px auto; }
+    .header {
+      background: linear-gradient(135deg, #c0392b, #e74c3c);
+      padding: 36px 40px; border-radius: 12px 12px 0 0; text-align: center;
+    }
+    .header .icon { font-size: 48px; }
+    .header h1 { color: #fff; font-size: 26px; margin-top: 12px; }
+    .header p  { color: rgba(255,255,255,0.85); font-size: 13px; margin-top: 4px; }
+    .badge {
+      display: inline-block; padding: 4px 14px; border-radius: 20px;
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; margin-top: 14px;
+      background: rgba(255,255,255,0.2); color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.6);
+    }
+    .body { background: #fff; padding: 36px 40px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+    .info-card { background: #f8f9fa; border-radius: 8px; padding: 16px; border-left: 3px solid #e74c3c; }
+    .info-card .label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
+    .info-card .value { font-size: 15px; color: #2d3436; font-weight: 600; margin-top: 4px; }
+    .description-box {
+      background: #fff8f8; border: 1px solid #ffd6d6;
+      border-radius: 8px; padding: 20px; margin-bottom: 28px;
+    }
+    .description-box h3 { color: #c0392b; font-size: 13px; text-transform: uppercase; margin-bottom: 10px; }
+    .description-box p  { color: #555; line-height: 1.7; font-size: 14px; }
+    .footer {
+      background: #2d3436; padding: 24px 40px;
+      border-radius: 0 0 12px 12px; text-align: center;
+    }
+    .footer p { color: #b2bec3; font-size: 12px; line-height: 1.8; }
+    .footer strong { color: #fff; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div class="icon">🚨</div>
+    <h1>Reporte de Incidente</h1>
+    <p>Generado el {{.OccurredAt.Format "02/01/2006 15:04:05"}}</p>
+    <span class="badge">{{.Status}}</span>
+  </div>
+
+  <div class="body">
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="label">Número de paquete</div>
+        <div class="value">#{{.NumPackage}}</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Remitente</div>
+        <div class="value">{{.SenderName}}</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Origen</div>
+        <div class="value">📍 {{.Origin}}</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Destino</div>
+        <div class="value">🏁 {{.Destination}}</div>
+      </div>
+    </div>
+
+    {{if .ReasonCancellation}}
+    <div class="description-box">
+      <h3>⚠️ Razón del incidente</h3>
+      <p>{{.ReasonCancellation}}</p>
+    </div>
+    {{end}}
+
+    {{if .Observation}}
+    <div class="description-box">
+      <h3>📋 Observaciones</h3>
+      <p>{{.Observation}}</p>
+    </div>
+    {{end}}
+
+    {{if .PhotoDelivery}}
+    <div style="text-align:center; margin-bottom:24px;">
+      <img src="{{.PhotoDelivery}}" alt="Evidencia"
+           style="max-width:100%; border-radius:8px; border:2px solid #ffd6d6;"/>
+    </div>
+    {{end}}
+  </div>
+
+  <div class="footer">
+    <p><strong>Sistema de Gestión de Reportes</strong><br/>
+    Este es un mensaje automático, por favor no responder.<br/>
+    © 2025 Logisti Express. Todos los derechos reservados.</p>
+  </div>
+</div>
+</body>
+</html>

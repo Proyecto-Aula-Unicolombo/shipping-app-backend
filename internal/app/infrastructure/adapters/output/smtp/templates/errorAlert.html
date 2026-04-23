@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:#f0f2f5; }
+    .wrapper { max-width:640px; margin:32px auto; }
+    .header {
+      background:linear-gradient(135deg,#e17055,#fdcb6e);
+      padding:30px 40px; border-radius:12px 12px 0 0; text-align:center;
+    }
+    .header h1 { color:#fff; font-size:22px; font-weight:700; }
+    .header p  { color:rgba(255,255,255,.85); font-size:13px; margin-top:6px; }
+    .body { background:#fff; padding:32px 40px; }
+    .error-box {
+      background:#fff3e0; border:1px solid #ffcc80;
+      border-radius:8px; padding:18px 20px; margin-bottom:20px;
+    }
+    .error-box .error-label { font-size:11px; color:#e17055; font-weight:700; text-transform:uppercase; margin-bottom:8px; }
+    .error-box .error-msg   { font-size:14px; color:#555; line-height:1.6; }
+    .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .info-card { background:#fafafa; border-radius:8px; padding:12px 14px; border-left:3px solid #e17055; }
+    .info-card .label { font-size:10px; color:#999; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+    .info-card .value { font-size:14px; color:#2d3436; font-weight:600; }
+    .footer { background:#2d3436; padding:20px 40px; border-radius:0 0 12px 12px; text-align:center; }
+    .footer p { color:#b2bec3; font-size:12px; line-height:1.8; }
+    .footer strong { color:#fff; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <h1>⚠️ Error en Reporte</h1>
+    <p>{{.OccurredAt.Format "02/01/2006 15:04:05"}}</p>
+  </div>
+  <div class="body">
+    <div class="error-box">
+      <div class="error-label">⛔ Razón del error</div>
+      <div class="error-msg">{{.Reason}}</div>
+    </div>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="label">ID del paquete</div>
+        <div class="value">#{{.PackageID}}</div>
+      </div>
+      {{if .NumPackage}}
+      <div class="info-card">
+        <div class="label">Número de paquete</div>
+        <div class="value">{{.NumPackage}}</div>
+      </div>
+      {{end}}
+    </div>
+  </div>
+  <div class="footer">
+    <p><strong>Sistema de Gestión de Envíos</strong><br/>Requiere atención manual del coordinador.</p>
+  </div>
+</div>
+</body>
+</html>

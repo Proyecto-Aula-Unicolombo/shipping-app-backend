@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:#f0f2f5; }
+    .wrapper { max-width:640px; margin:32px auto; }
+    .header {
+      background:linear-gradient(135deg,#6c5ce7,#a29bfe);
+      padding:30px 40px; border-radius:12px 12px 0 0; text-align:center;
+    }
+    .header h1 { color:#fff; font-size:22px; font-weight:700; }
+    .header p  { color:rgba(255,255,255,.8); font-size:13px; margin-top:6px; }
+    .body { background:#fff; padding:32px 40px; }
+    .tag {
+      display:inline-block; padding:4px 14px; border-radius:20px;
+      font-size:11px; font-weight:700; text-transform:uppercase;
+      background:#f3f0ff; color:#6c5ce7; border:1px solid #d6caff;
+      margin-bottom:20px;
+    }
+    .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px; }
+    .info-card { background:#fafafa; border-radius:8px; padding:14px 16px; border-left:3px solid #6c5ce7; }
+    .info-card .label { font-size:10px; color:#999; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+    .info-card .value { font-size:14px; color:#2d3436; font-weight:600; }
+    .note { background:#f3f0ff; border:1px solid #d6caff; border-radius:8px; padding:14px 16px; font-size:13px; color:#555; line-height:1.6; margin-bottom:10px; }
+    .footer { background:#2d3436; padding:20px 40px; border-radius:0 0 12px 12px; text-align:center; }
+    .footer p { color:#b2bec3; font-size:12px; line-height:1.8; }
+    .footer strong { color:#fff; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <h1>📋 Copia para Coordinador</h1>
+    <p>{{.OccurredAt.Format "02/01/2006 15:04:05"}}</p>
+  </div>
+  <div class="body">
+    <span class="tag">{{.EventType}}</span>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="label">Número de paquete</div>
+        <div class="value">#{{.NumPackage}}</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Estado</div>
+        <div class="value">{{.Status}}</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Remitente</div>
+        <div class="value">{{.SenderName}}</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Email remitente</div>
+        <div class="value">{{.SenderEmail}}</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Origen</div>
+        <div class="value">{{.Origin}}</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Destino</div>
+        <div class="value">{{.Destination}}</div>
+      </div>
+    </div>
+    {{if .ReasonCancellation}}
+    <div class="note"><strong>Razón:</strong> {{.ReasonCancellation}}</div>
+    {{end}}
+    {{if .Observation}}
+    <div class="note"><strong>Observación:</strong> {{.Observation}}</div>
+    {{end}}
+  </div>
+  <div class="footer">
+    <p><strong>Sistema de Gestión de Envíos</strong><br/>Notificación automática para coordinación interna.</p>
+  </div>
+</div>
+</body>
+</html>
