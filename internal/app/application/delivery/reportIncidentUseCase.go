@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"shipping-app/internal/app/domain/entities"
+	"shipping-app/internal/app/domain/ports"
 	"shipping-app/internal/app/domain/ports/repository"
 )
 
@@ -30,20 +32,24 @@ var (
 )
 
 type ReportIncidentUseCase struct {
-	infoDeliveryRepo repository.InformationDeliveryRepository
-	packageRepo      repository.PackageRepository
-	txProvider       repository.TxProvider
+	infoDeliveryRepo  repository.InformationDeliveryRepository
+	packageRepo       repository.PackageRepository
+	txProvider        repository.TxProvider
+	generateReportSvc ports.GenerateReportUseCasePort
 }
 
 func NewReportIncidentUseCase(
 	infoDeliveryRepo repository.InformationDeliveryRepository,
 	packageRepo repository.PackageRepository,
 	txProvider repository.TxProvider,
+	generateReportSvc ports.GenerateReportUseCasePort,
+
 ) *ReportIncidentUseCase {
 	return &ReportIncidentUseCase{
-		infoDeliveryRepo: infoDeliveryRepo,
-		packageRepo:      packageRepo,
-		txProvider:       txProvider,
+		infoDeliveryRepo:  infoDeliveryRepo,
+		packageRepo:       packageRepo,
+		txProvider:        txProvider,
+		generateReportSvc: generateReportSvc,
 	}
 }
 
@@ -140,6 +146,12 @@ func (uc *ReportIncidentUseCase) Execute(ctx context.Context, input ReportIncide
 		PackageID: pkg.ID,
 		CreatedAt: time.Now(),
 	}
+
+	go func() {
+		if err := uc.generateReportSvc.Execute(pkg.ID); err != nil {
+			log.Printf("[USE CASE] error is generating  report pkg#%d: %v", pkg.ID, err)
+		}
+	}()
 
 	return output, nil
 }

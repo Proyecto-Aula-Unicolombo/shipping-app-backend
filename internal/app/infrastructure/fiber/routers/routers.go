@@ -3,6 +3,7 @@ package routers
 import (
 	"database/sql"
 	"os"
+	internalServices "shipping-app/internal/app/domain/services"
 	"shipping-app/internal/app/infrastructure/adapters/ws"
 	"shipping-app/internal/externalServices/auth"
 	"shipping-app/internal/externalServices/services"
@@ -12,7 +13,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/cors"
 )
 
-func SetupRouters(app *fiber.App, db *sql.DB) {
+func SetupRouters(app *fiber.App, db *sql.DB, generateReportSvc *internalServices.GenerateReportService) {
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:8000"},
@@ -77,6 +78,6 @@ func SetupRouters(app *fiber.App, db *sql.DB) {
 	SetVehicleRouter(protected, db)
 	SetOrderRouter(protected, db)
 	SetDriverRouter(protected, db)
-	SetDeliveryRouter(protected, db)
+	SetDeliveryRouter(protected, db, generateReportSvc)
 	SetTrackingRouter(protected, db)
 }

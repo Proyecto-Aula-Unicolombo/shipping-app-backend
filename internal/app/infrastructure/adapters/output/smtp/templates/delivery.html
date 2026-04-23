@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; }
+    .wrapper { max-width: 640px; margin: 32px auto; }
+    .header {
+      background: linear-gradient(135deg, #00b894, #00cec9);
+      padding: 36px 40px;
+      border-radius: 12px 12px 0 0;
+      text-align: center;
+    }
+    .header .icon { font-size: 48px; }
+    .header h1 { color: #fff; font-size: 26px; margin-top: 12px; }
+    .header p  { color: rgba(255,255,255,0.85); font-size: 13px; margin-top: 4px; }
+    .status-pill {
+      display: inline-block; padding: 6px 20px;
+      border-radius: 20px; font-size: 13px; font-weight: 700;
+      margin-top: 14px; background: #fff; color: #00b894;
+    }
+    .body { background: #fff; padding: 36px 40px; }
+    .tracking-bar {
+      background: linear-gradient(90deg, #00b894, #00cec9);
+      border-radius: 8px; padding: 18px 24px;
+      margin-bottom: 28px; display: flex;
+      justify-content: space-between; align-items: center;
+    }
+    .tracking-bar .label { color: rgba(255,255,255,0.8); font-size: 12px; }
+    .tracking-bar .code  { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 2px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+    .info-card { background: #f8f9fa; border-radius: 8px; padding: 16px; border-left: 3px solid #00b894; }
+    .info-card .label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
+    .info-card .value { font-size: 15px; color: #2d3436; font-weight: 600; margin-top: 4px; }
+    .route-box {
+      background: #f0fffe; border: 1px solid #b2f5ea;
+      border-radius: 8px; padding: 20px; margin-bottom: 28px;
+      display: flex; align-items: center; gap: 16px; justify-content: center;
+    }
+    .route-box .city { font-weight: 700; color: #2d3436; font-size: 15px; }
+    .route-box .arrow { color: #00b894; font-size: 24px; }
+    .obs-box {
+      background: #f0fffe; border: 1px solid #b2f5ea;
+      border-radius: 8px; padding: 16px; margin-bottom: 28px;
+    }
+    .obs-box .label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
+    .obs-box .value { font-size: 14px; color: #2d3436; margin-top: 6px; line-height: 1.6; }
+    .footer { background: #2d3436; padding: 24px 40px; border-radius: 0 0 12px 12px; text-align: center; }
+    .footer p { color: #b2bec3; font-size: 12px; line-height: 1.8; }
+    .footer strong { color: #fff; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div class="icon">📦</div>
+    <h1>Reporte de Entrega</h1>
+    <p>Actualización para {{.SenderName}}</p>
+    <span class="status-pill">✅ {{.Status}}</span>
+  </div>
+
+  <div class="body">
+    <div class="tracking-bar">
+      <div>
+        <div class="label">Número de paquete</div>
+        <div class="code">{{.NumPackage}}</div>
+      </div>
+      <div style="color:rgba(255,255,255,0.7); font-size:28px;">📍</div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="label">Remitente</div>
+        <div class="value">👤 {{.SenderName}}</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Fecha de entrega</div>
+        <div class="value">📅 {{.OccurredAt.Format "02/01/2006 15:04"}}</div>
+      </div>
+    </div>
+
+    <div class="route-box">
+      <div class="city">🏭 {{.Origin}}</div>
+      <div class="arrow">━━━━▶</div>
+      <div class="city">🏠 {{.Destination}}</div>
+    </div>
+
+    {{if .Observation}}
+    <div class="obs-box">
+      <div class="label">Observaciones</div>
+      <div class="value">{{.Observation}}</div>
+    </div>
+    {{end}}
+
+    {{if .SignatureReceived}}
+    <div class="obs-box">
+      <div class="label">Firma recibida</div>
+      <div class="value">✍️ {{.SignatureReceived}}</div>
+    </div>
+    {{end}}
+  </div>
+
+  <div class="footer">
+    <p><strong>Sistema de Gestión de Entregas</strong><br/>
+    Este es un mensaje automático, por favor no responder.<br/>
+    © 2025 Logisti Express. Todos los derechos reservados.</p>
+  </div>
+</div>
+</body>
+</html>
