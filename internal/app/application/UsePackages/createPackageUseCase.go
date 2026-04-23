@@ -20,8 +20,8 @@ type CreatePackageInput struct {
 	AddressPackage       *related.AdressPackageInput
 	StatusDelivery       *related.StatusDeliveryInput
 	ComercialInformation *related.ComercialInformationInput
-	Sender               *related.SenderInput
 	Receiver             *related.ReceiverInput
+	SenderDocument       string 
 }
 
 type CreatePackageOutput struct {

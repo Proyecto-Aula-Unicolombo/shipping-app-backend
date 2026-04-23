@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	related "shipping-app/internal/app/application/UsePackages/related"
 	"shipping-app/internal/app/domain/entities"
@@ -60,23 +59,11 @@ func CreateOrFetchRelatedEntitiesFromDTOs(
 		return nil, nil, nil, nil, fmt.Errorf("create comercialinformation: %w", err)
 	}
 
-	// Sender - Buscar por email o document
-	if input.Sender == nil {
-		return nil, nil, nil, nil, fmt.Errorf("%w: sender", ErrMissingRelatedInput)
-	}
-
-	senderEntity, err := senderRepo.FindByEmailOrDocument(ctx, input.Sender.Email, input.Sender.Document)
+	senderEntity, err := senderRepo.FindByEmailOrDocument(ctx, "", input.SenderDocument)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, nil, nil, nil, fmt.Errorf("find sender: %w", err)
 	}
 
-	if senderEntity == nil {
-		log.Println("Sender not found, creating new one")
-		senderEntity = mapSenderInputToEntity(input.Sender)
-		if err := senderRepo.Create(ctx, tx, senderEntity); err != nil {
-			return nil, nil, nil, nil, fmt.Errorf("create sender: %w", err)
-		}
-	}
 	// Receiver - Buscar por email
 	if input.Receiver == nil {
 		return nil, nil, nil, nil, fmt.Errorf("%w: receiver", ErrMissingRelatedInput)

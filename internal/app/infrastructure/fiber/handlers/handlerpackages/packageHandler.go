@@ -79,8 +79,8 @@ func (h *PackageHandler) createSinglePackage(ctx fiber.Ctx, req CreatePackageReq
 		AddressPackage:       req.AddressPackage,
 		StatusDelivery:       req.StatusDelivery,
 		ComercialInformation: req.ComercialInformation,
-		Sender:               req.Sender,
-		Receiver:             req.Receiver,
+		Receiver:       req.Receiver,
+		SenderDocument: ctx.Locals("sender_document").(string), 
 	}
 
 	output, err := h.createUC.Execute(ctx.Context(), input)
@@ -109,8 +109,8 @@ func (h *PackageHandler) createMultiplePackages(ctx fiber.Ctx, requests []Create
 			AddressPackage:       req.AddressPackage,
 			StatusDelivery:       req.StatusDelivery,
 			ComercialInformation: req.ComercialInformation,
-			Sender:               req.Sender,
-			Receiver:             req.Receiver,
+			SenderDocument: ctx.Locals("sender_document").(string), // Obtener documento del sender desde el contexto
+			Receiver:       req.Receiver,
 		}
 	}
 

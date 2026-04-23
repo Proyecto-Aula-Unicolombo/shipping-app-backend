@@ -54,25 +54,6 @@ func ValidateCreateInput(input CreatePackageInput) error {
 		}
 	}
 
-	if input.Sender == nil {
-		fields["sender"] = "sender is required"
-	} else {
-		if input.Sender.Name == "" {
-			fields["sender.name"] = "name is required"
-		}
-		if input.Sender.Document == "" {
-			fields["sender.document"] = "document is required"
-		}
-		if input.Sender.Address == "" {
-			fields["sender.address"] = "address is required"
-		}
-		if input.Sender.PhoneNumber == "" {
-			fields["sender.phone_number"] = "phone_number is required"
-		}
-		if input.Sender.Email == "" {
-			fields["sender.email"] = "email is required"
-		}
-	}
 
 	if input.Receiver == nil {
 		fields["receiver"] = "receiver is required"
