@@ -24,6 +24,7 @@ type LocationInfo struct {
 type TrackPackageResponse struct {
 	PackageID       uint           `json:"package_id"`
 	NumPackage      string         `json:"num_package"`
+	OrderId         *uint          `json:"order_id,omitempty"`
 	Status          string         `json:"status"`
 	Origin          string         `json:"origin"`
 	Destination     string         `json:"destination"`
@@ -88,6 +89,7 @@ func (uc *TrackPackageUseCase) Execute(ctx context.Context, input TrackPackageIn
 		Status:     pkg.Status,
 		IsFragile:  pkg.IsFragile,
 		Weight:     pkg.Weight,
+		OrderId:    pkg.OrderID,
 	}
 
 	// Obtener información de dirección
