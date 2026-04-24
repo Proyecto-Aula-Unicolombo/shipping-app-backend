@@ -42,7 +42,7 @@ func (uc *ListActiveOrdersUseCase) Execute(ctx context.Context) ([]OrderLocation
 
 	for _, order := range orders {
 		// Solo incluir órdenes "En camino" o "Pendiente"
-		if order.Status != "En camino" && order.Status != "Pendiente" {
+		if order.Status != "en camino" && order.Status != "pendiente" {
 			continue
 		}
 

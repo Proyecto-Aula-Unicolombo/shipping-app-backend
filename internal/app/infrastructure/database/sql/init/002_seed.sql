@@ -95,16 +95,16 @@ INSERT INTO addresspackages (origin, destination, delivery_instructions) VALUES
 
 -- Insert Orders
 INSERT INTO orders (create_at, assigned_at, observation, status, typeservice, iddriver, idvehicle) VALUES
-('2025-11-16 08:00:00', '2025-11-16 08:30:00', 'Entrega urgente', 'En camino', 'express delivery', 1, 1),
-('2025-11-16 09:00:00', '2025-11-16 09:15:00', 'Frágil, manejar con cuidado', 'En camino', 'standard delivery', 2, 2),
-('2025-11-15 10:00:00', '2025-11-15 10:20:00', 'Entrega exitosa', 'Entregado', 'standard delivery', 3, 3),
-('2025-11-16 07:30:00', '2025-11-16 08:00:00', 'Cliente solicitó entrega en la mañana', 'En camino', 'express delivery', 4, 4),
-('2025-11-14 11:00:00', '2025-11-14 11:15:00', 'Sin novedades', 'Entregado', 'standard delivery', 5, 5),
+('2025-11-16 08:00:00', '2025-11-16 08:30:00', 'Entrega urgente', 'en camino', 'express delivery', 1, 1),
+('2025-11-16 09:00:00', '2025-11-16 09:15:00', 'Frágil, manejar con cuidado', 'en camino', 'standard delivery', 2, 2),
+('2025-11-15 10:00:00', '2025-11-15 10:20:00', 'Entrega exitosa', 'entregado', 'standard delivery', 3, 3),
+('2025-11-16 07:30:00', '2025-11-16 08:00:00', 'Cliente solicitó entrega en la mañana', 'en camino', 'express delivery', 4, 4),
+('2025-11-14 11:00:00', '2025-11-14 11:15:00', 'Sin novedades', 'entregado', 'standard delivery', 5, 5),
 ('2025-11-16 12:00:00', NULL, 'Pendiente de asignación', 'Pendiente', 'standard delivery', 1, 1),
-('2025-11-15 14:00:00', '2025-11-15 14:30:00', 'Entregado correctamente', 'Entregado', 'standard delivery', 2, 2),
-('2025-11-16 10:00:00', '2025-11-16 10:45:00', 'Ruta con múltiples paradas', 'En camino', 'standard delivery', 3, 3),
-('2025-11-13 09:00:00', '2025-11-13 09:30:00', 'Cliente no disponible, cancelado', 'Cancelado', 'express delivery', 4, 4),
-('2025-11-14 13:00:00', '2025-11-14 13:20:00', 'Entregado en tiempo récord', 'Entregado', 'express delivery', 5, 5);
+('2025-11-15 14:00:00', '2025-11-15 14:30:00', 'Entregado correctamente', 'entregado', 'standard delivery', 2, 2),
+('2025-11-16 10:00:00', '2025-11-16 10:45:00', 'Ruta con múltiples paradas', 'en camino', 'standard delivery', 3, 3),
+('2025-11-13 09:00:00', '2025-11-13 09:30:00', 'Cliente no disponible, cancelado', 'cancelado', 'express delivery', 4, 4),
+('2025-11-14 13:00:00', '2025-11-14 13:20:00', 'Entregado en tiempo récord', 'entregado', 'express delivery', 5, 5);
 
 -- Insert Packages
 INSERT INTO packages (numpackage, status, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile, idaddresspackage, idcomercialinformation, idsender, idreceivers, idorder) VALUES
