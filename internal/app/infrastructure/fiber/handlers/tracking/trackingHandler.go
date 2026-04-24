@@ -44,7 +44,7 @@ func NewTrackingHandler(
 
 // TrackPackageByNumber - Para uso público del destinatario
 func (h *TrackingHandler) TrackPackageByNumber(ctx fiber.Ctx) error {
-	numPackage := ctx.Query("num_package")
+	numPackage := ctx.Params("num_package")
 	if numPackage == "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error":   "missing_parameter",
@@ -52,20 +52,8 @@ func (h *TrackingHandler) TrackPackageByNumber(ctx fiber.Ctx) error {
 		})
 	}
 
-	// ReceiverID opcional desde query o token (si está autenticado)
-	var receiverID *uint
-	receiverIDStr := ctx.Query("receiver_id")
-	if receiverIDStr != "" {
-		id, err := strconv.ParseUint(receiverIDStr, 10, 32)
-		if err == nil {
-			receiverIDUint := uint(id)
-			receiverID = &receiverIDUint
-		}
-	}
-
 	input := tracking.TrackPackageInput{
 		NumPackage: &numPackage,
-		ReceiverID: receiverID,
 	}
 
 	response, err := h.trackPackageUC.Execute(ctx.Context(), input)
