@@ -89,7 +89,7 @@ func (r *PackageRepositoryPostgres) Create(ctx context.Context, tx *sql.Tx, pkg 
 func (r *PackageRepositoryPostgres) GetByNumPackage(ctx context.Context, numPackage string) (*entities.Package, error) {
 	query := `
 		SELECT id, numpackage, status, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile,
-		       idaddresspackage, idcomercialinformation, idsender, idreceivers, created_at, updated_at
+		idorder, idaddresspackage, idcomercialinformation, idsender, idreceivers, created_at, updated_at
 		FROM packages
 		WHERE numpackage = $1
 	`
@@ -107,6 +107,7 @@ func (r *PackageRepositoryPostgres) GetByNumPackage(ctx context.Context, numPack
 		&pkg.DeclaredValue,
 		&pkg.TypePackage,
 		&pkg.IsFragile,
+		&pkg.OrderID,
 		&pkg.AddressPackageID,
 		&pkg.ComercialInformationID,
 		&pkg.SenderID,

@@ -13,7 +13,6 @@ import (
 type TrackPackageInput struct {
 	NumPackage *string
 	PackageID  *uint
-	ReceiverID *uint // Para validar que el destinatario tiene acceso
 }
 
 type LocationInfo struct {
@@ -45,17 +44,23 @@ type TrackPackageUseCase struct {
 	packageRepo repository.PackageRepository
 	trackRepo   repository.TrackRepository
 	orderRepo   repository.OrderRepository
+	addressRepo repository.AddressPackageRepository
+	reciverRepo repository.ReceiverRepository
 }
 
 func NewTrackPackageUseCase(
 	packageRepo repository.PackageRepository,
 	trackRepo repository.TrackRepository,
 	orderRepo repository.OrderRepository,
+	addressRepo repository.AddressPackageRepository,
+	reciverRepo repository.ReceiverRepository,
 ) *TrackPackageUseCase {
 	return &TrackPackageUseCase{
 		packageRepo: packageRepo,
 		trackRepo:   trackRepo,
 		orderRepo:   orderRepo,
+		addressRepo: addressRepo,
+		reciverRepo: reciverRepo,
 	}
 }
 
@@ -76,11 +81,6 @@ func (uc *TrackPackageUseCase) Execute(ctx context.Context, input TrackPackageIn
 		return nil, fmt.Errorf("get package: %w", err)
 	}
 
-	// Validar acceso del destinatario (si se proporciona ReceiverID)
-	if input.ReceiverID != nil && pkg.ReceiverID != *input.ReceiverID {
-		return nil, ErrUnauthorizedAccess
-	}
-
 	// Construir respuesta base
 	response := &TrackPackageResponse{
 		PackageID:  pkg.ID,
@@ -91,15 +91,20 @@ func (uc *TrackPackageUseCase) Execute(ctx context.Context, input TrackPackageIn
 	}
 
 	// Obtener información de dirección
-	if pkg.AddressPackage != nil {
-		response.Origin = pkg.AddressPackage.Origin
-		response.Destination = pkg.AddressPackage.Destination
+	if pkg.AddressPackageID != 0 {
+		address, err := uc.addressRepo.GetByID(ctx, pkg.AddressPackageID)
+		if err == nil {
+			response.Origin = address.Origin
+			response.Destination = address.Destination
+		}
 	}
 
 	// Obtener información del destinatario
-	if pkg.Receiver != nil {
-		response.ReceiverName = pkg.Receiver.Name + " " + pkg.Receiver.LastName
-		response.ReceiverPhone = pkg.Receiver.PhoneNumber
+	if pkg.ReceiverID != 0 {
+		receiver, err := uc.reciverRepo.GetByID(ctx, pkg.ReceiverID)
+		if err == nil {
+			response.ReceiverName = receiver.Name + " " + receiver.LastName
+		}
 	}
 
 	// Si el paquete tiene una orden asignada, obtener tracking

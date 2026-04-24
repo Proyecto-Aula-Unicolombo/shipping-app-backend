@@ -17,12 +17,16 @@ func SetTrackingRouter(apiv1 fiber.Router, db *sql.DB) {
 	orderRepo := adapters.NewOrderRepositoryPostgres(db)
 	stopRepo := adapters.NewDeliveryStopRepositoryPostgres(db)
 	txProvider := adapters.NewSQLTxProvider(db)
+	addressRepo := adapters.NewAddressPackageRepositoryPostgres(db)
+	reciverRepo := adapters.NewReceiverRepositoryPostgres(db)
 
 	// Casos de uso
 	trackPackageUC := trackingApp.NewTrackPackageUseCase(
 		packageRepo,
 		trackRepo,
 		orderRepo,
+		addressRepo,
+		reciverRepo,
 	)
 
 	registerStopUC := trackingApp.NewRegisterStopUseCase(
@@ -50,11 +54,8 @@ func SetTrackingRouter(apiv1 fiber.Router, db *sql.DB) {
 		listActiveOrdersUC,
 	)
 
-	// Rutas públicas de tracking (para destinatarios)
 	tracking := apiv1.Group("/tracking")
 	{
-		// Rastrear paquete por número (público para destinatario)
-		tracking.Get("/package", handler.TrackPackageByNumber)
 
 		// Rastrear paquete por ID (interno)
 		tracking.Get("/package/:packageId", handler.TrackPackageByID)
