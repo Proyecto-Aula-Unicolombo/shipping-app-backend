@@ -173,8 +173,8 @@ func (r *UserRepositoryPostgres) DeleteUser(tx *sql.Tx, id uint) error {
 func (r *UserRepositoryPostgres) UpdateUser(tx *sql.Tx, user *entities.User) error {
 	query := `
 		UPDATE users 
-		SET name = $1, lastname = $2, email = $3, role = $4
-		WHERE id = $5
+		SET name = $1, lastname = $2, email = $3, role = $4, password = $5
+		WHERE id = $6
 	`
 
 	res, err := tx.Exec(
@@ -183,6 +183,7 @@ func (r *UserRepositoryPostgres) UpdateUser(tx *sql.Tx, user *entities.User) err
 		user.LastName,
 		user.Email,
 		user.Role,
+		user.Password,
 		user.ID,
 	)
 	if err != nil {

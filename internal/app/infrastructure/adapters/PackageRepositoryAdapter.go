@@ -308,7 +308,7 @@ func (r *PackageRepositoryPostgres) ListPackagestoCreateOrder(ctx context.Contex
 		FROM packages p
 		LEFT JOIN informationdeliveries ind ON p.id = ind.idpackage
 		WHERE ind.idpackage IS NULL 
-		AND p.status NOT IN ('entregado', 'incidente', 'asignado')
+		AND p.status NOT IN ('entregado', 'incidente', 'asignado', 'en camino')
 		ORDER BY p.created_at DESC
 		LIMIT $1 OFFSET $2
 	`
