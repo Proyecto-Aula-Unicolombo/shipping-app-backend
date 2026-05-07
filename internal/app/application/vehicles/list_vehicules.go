@@ -9,6 +9,7 @@ type ListVehiclesInput struct {
 	Offset int
 
 	PlateBrandOrModel string
+	VehicleType       string
 }
 
 type ListVehiclesOutput struct {
@@ -31,12 +32,12 @@ func NewListVehicles(repo repository.VehicleRepository) *ListVehicles {
 }
 
 func (uc *ListVehicles) Execute(input ListVehiclesInput) ([]*ListVehiclesOutput, int64, error) {
-	count, err := uc.repo.CountVehicles(input.PlateBrandOrModel)
+	count, err := uc.repo.CountVehicles(input.PlateBrandOrModel, input.VehicleType)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	vehicles, err := uc.repo.ListVehicles(input.Limit, input.Offset, input.PlateBrandOrModel)
+	vehicles, err := uc.repo.ListVehicles(input.Limit, input.Offset, input.PlateBrandOrModel, input.VehicleType)
 	if err != nil {
 		return nil, 0, err
 	}

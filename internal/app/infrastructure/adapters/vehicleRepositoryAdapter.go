@@ -114,9 +114,9 @@ func (r *VehicleRepositoryPostgres) DeleteVehicle(id uint) error {
 	return nil
 }
 
-func (r *VehicleRepositoryPostgres) ListVehicles(limit int, offset int, PlateBrandOrModel string) ([]*entities.Vehicle, error) {
+func (r *VehicleRepositoryPostgres) ListVehicles(limit int, offset int, PlateBrandOrModel, vehicleType string) ([]*entities.Vehicle, error) {
 	query := `
-		SELECT 
+		SELECT  DISTINCT ON (v.id)
             v.id, 
             v.plate, 
             v.brand, 
@@ -140,7 +140,13 @@ func (r *VehicleRepositoryPostgres) ListVehicles(limit int, offset int, PlateBra
 		argPosition++
 	}
 
-	query += " ORDER BY id LIMIT $" + fmt.Sprint(argPosition) + " OFFSET $" + fmt.Sprint(argPosition+1)
+	if vehicleType != "" {
+		query += fmt.Sprintf(" AND vehicletype = $%d", argPosition)
+		args = append(args, vehicleType)
+		argPosition++
+	}
+
+	query += " ORDER BY v.id, o.id LIMIT $" + fmt.Sprint(argPosition) + " OFFSET $" + fmt.Sprint(argPosition+1)
 	args = append(args, limit, offset)
 
 	rows, err := r.db.Query(query, args...)
@@ -168,10 +174,25 @@ func (r *VehicleRepositoryPostgres) ListVehicles(limit int, offset int, PlateBra
 	return vehicles, nil
 }
 
-func (r *VehicleRepositoryPostgres) CountVehicles(PlateBrandOrModel string) (int64, error) {
-	query := `SELECT COUNT(*) FROM vehicles WHERE (plate ILIKE $1 OR brand ILIKE $1 OR model ILIKE $1)`
+func (r *VehicleRepositoryPostgres) CountVehicles(PlateBrandOrModel, vehicleType string) (int64, error) {
+	query := `SELECT COUNT(*) FROM vehicles WHERE 1=1`
+	args := []interface{}{}
+	argPosition := 1
+
+	if PlateBrandOrModel != "" {
+		query += fmt.Sprintf(" AND (plate ILIKE $%d OR brand ILIKE $%d OR model ILIKE $%d)", argPosition, argPosition, argPosition)
+		args = append(args, "%"+PlateBrandOrModel+"%")
+		argPosition++
+	}
+
+	if vehicleType != "" {
+		query += fmt.Sprintf(" AND vehicletype = $%d", argPosition)
+		args = append(args, vehicleType)
+		argPosition++
+	}
+
 	var count int64
-	err := r.db.QueryRow(query, "%"+PlateBrandOrModel+"%").Scan(&count)
+	err := r.db.QueryRow(query, args...).Scan(&count)
 	if err != nil {
 		return 0, fmt.Errorf("error counting vehicles: %w", err)
 	}

@@ -130,11 +130,13 @@ func (h *HandlerVehicle) DeleteVehicle(ctx fiber.Ctx) error {
 func (h *HandlerVehicle) ListVehiclesSimple(ctx fiber.Ctx) error {
 	params := utils.GetPaginationParams(ctx)
 	plateBrandOrModel := ctx.Query("plate_brand_or_model")
+	vehicleType := ctx.Query("vehicle_type")
 
 	input := vehicles.ListVehiclesInput{
 		Limit:             params.Limit,
 		Offset:            params.Offset,
 		PlateBrandOrModel: plateBrandOrModel,
+		VehicleType:       vehicleType,
 	}
 	vehiclesOutputs, total, err := h.listVehiclesUseCase.Execute(input)
 	if err != nil {
@@ -148,7 +150,7 @@ func (h *HandlerVehicle) ListVehiclesSimple(ctx fiber.Ctx) error {
 		vehiclesOutputs = []*vehicles.ListVehiclesOutput{}
 	}
 
-	reponse := utils.NewPaginationResponse(vehiclesOutputs, int(total), params.Limit, params.Offset)
+	reponse := utils.NewPaginationResponse(vehiclesOutputs, int(total), params.Page, params.Limit)
 
 	return ctx.Status(fiber.StatusOK).JSON(reponse)
 }
