@@ -216,6 +216,11 @@ func (h *TrackingHandler) handleError(ctx fiber.Ctx, err error) error {
 			"error":   "not_found",
 			"message": err.Error(),
 		})
+	case tracking.ErrOrderNotInProgress:
+		return ctx.Status(fiber.StatusConflict).JSON(fiber.Map{
+			"error":   "conflict",
+			"message": err.Error(),
+		})
 	default:
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error":   "internal_error",
