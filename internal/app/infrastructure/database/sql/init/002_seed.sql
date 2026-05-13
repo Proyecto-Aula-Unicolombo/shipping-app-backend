@@ -99,12 +99,7 @@ INSERT INTO orders (create_at, assigned_at, observation, status, typeservice, id
 ('2025-11-16 09:00:00', '2025-11-16 09:15:00', 'Frágil, manejar con cuidado', 'en camino', 'standard delivery', 2, 2),
 ('2025-11-15 10:00:00', '2025-11-15 10:20:00', 'Entrega exitosa', 'entregado', 'standard delivery', 3, 3),
 ('2025-11-16 07:30:00', '2025-11-16 08:00:00', 'Cliente solicitó entrega en la mañana', 'en camino', 'express delivery', 4, 4),
-('2025-11-14 11:00:00', '2025-11-14 11:15:00', 'Sin novedades', 'entregado', 'standard delivery', 5, 5),
-('2025-11-16 12:00:00', NULL, 'Pendiente de asignación', 'Pendiente', 'standard delivery', 1, 1),
-('2025-11-15 14:00:00', '2025-11-15 14:30:00', 'Entregado correctamente', 'entregado', 'standard delivery', 2, 2),
-('2025-11-16 10:00:00', '2025-11-16 10:45:00', 'Ruta con múltiples paradas', 'en camino', 'standard delivery', 3, 3),
-('2025-11-13 09:00:00', '2025-11-13 09:30:00', 'Cliente no disponible, cancelado', 'cancelado', 'express delivery', 4, 4),
-('2025-11-14 13:00:00', '2025-11-14 13:20:00', 'Entregado en tiempo récord', 'entregado', 'express delivery', 5, 5);
+('2025-11-14 11:00:00', '2025-11-14 11:15:00', 'Sin novedades', 'entregado', 'standard delivery', 5, 5);
 
 -- Insert Packages
 INSERT INTO packages (numpackage, status, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile, idaddresspackage, idcomercialinformation, idsender, idreceivers, idorder) VALUES
@@ -113,24 +108,11 @@ INSERT INTO packages (numpackage, status, descriptioncontent, weight, dimension,
 ('PKG-2025-003', 'entregado', 'Ropa y textiles', 3.50, '40x30x20 cm', 250000.00, 'Textiles', false, 3, 3, 3, 3, 3),
 ('PKG-2025-004', 'asignaddo', 'Libros educativos', 8.00, '35x25x30 cm', 180000.00, 'Libros', false, 4, 4, 4, 4, 4),
 ('PKG-2025-005', 'en camino', 'Equipos electrónicos', 5.50, '45x35x25 cm', 1200000.00, 'Electrónicos', true, 5, 5, 5, 5, 5),
-('PKG-2025-006', 'entregado', 'Productos de belleza', 2.00, '25x20x15 cm', 150000.00, 'Cosméticos', false, 6, 6, 6, 6, 6),
-('PKG-2025-007', 'asignaddo', 'Repuestos automotrices', 12.00, '50x40x30 cm', 450000.00, 'Repuestos', false, 7, 7, 7, 7, 7),
-('PKG-2025-008', 'en camino', 'Artículos deportivos', 6.50, '55x35x25 cm', 320000.00, 'Deportes', false, 8, 12, 1, 2, 8),
-('PKG-2025-009', 'cancelado', 'Muebles desmontados', 25.00, '120x80x15 cm', 680000.00, 'Muebles', false, 9, 9, 2, 3, 9),
-('PKG-2025-010', 'entregado', 'Instrumentos musicales', 4.50, '90x30x20 cm', 950000.00, 'Instrumentos', true, 10, 10, 4, 10, 10),
-('PKG-2025-011', 'asignaddo', 'Alimentos no perecederos', 10.00, '40x35x30 cm', 120000.00, 'Alimentos', false, 11, 11, 3, 6, 6),
-('PKG-2025-012', 'en camino', 'Piezas de computadora', 3.00, '35x30x20 cm', 780000.00, 'Electrónicos', true, 12, 12, 4, 7, 8),
-('PKG-2025-013', 'entregado', 'Juguetes infantiles', 4.00, '45x40x35 cm', 220000.00, 'Juguetes', false, 13, 13, 1, 3, 7),
-('PKG-2025-014', 'asignaddo', 'Herramientas de trabajo', 18.00, '60x45x35 cm', 540000.00, 'Herramientas', false, 14, 14, 2, 4, 6),
 ('PKG-2025-015', 'en camino', 'Accesorios de oficina', 5.00, '40x35x25 cm', 190000.00, 'Oficina', false, 15, 15, 5, 5, 1);
 
 -- Insert Information Deliveries (only for delivered and cancelled packages)
 INSERT INTO informationdeliveries (observations, signature_received, photo_delivery, reason_cancellation, idpackage) VALUES
-('Entrega exitosa, cliente satisfecho', 'data:signature/base64...', 'https://storage.example.com/delivery/pkg003.jpg', NULL, 3),
-('Paquete entregado en perfecto estado', 'data:signature/base64...', 'https://storage.example.com/delivery/pkg006.jpg', NULL, 6),
-('Cliente canceló por cambio de dirección', NULL, NULL, 'Cliente solicitó cambio de dirección y canceló orden', 9),
-('Entrega sin novedades', 'data:signature/base64...', 'https://storage.example.com/delivery/pkg010.jpg', NULL, 10),
-('Recibido por portero del edificio', 'data:signature/base64...', 'https://storage.example.com/delivery/pkg013.jpg', NULL, 13);
+('Entrega exitosa, cliente satisfecho', 'data:signature/base64...', 'https://storage.example.com/delivery/pkg003.jpg', NULL, 3);
 
 -- Insert Tracks (GPS tracking for active orders)
 INSERT INTO tracks (timestamp, location, idorder) VALUES
@@ -147,10 +129,10 @@ INSERT INTO tracks (timestamp, location, idorder) VALUES
 ('2025-11-16 08:05:00', ST_SetSRID(ST_MakePoint(-75.1794, 6.2518), 4326), 4),
 ('2025-11-16 08:40:00', ST_SetSRID(ST_MakePoint(-75.1850, 6.2580), 4326), 4),
 ('2025-11-16 09:20:00', ST_SetSRID(ST_MakePoint(-75.1910, 6.2640), 4326), 4),
--- Order 8 (Driver 3)
-('2025-11-16 10:50:00', ST_SetSRID(ST_MakePoint(-75.5640, 6.2400), 4326), 8),
-('2025-11-16 11:30:00', ST_SetSRID(ST_MakePoint(-75.5580, 6.2450), 4326), 8),
-('2025-11-16 12:00:00', ST_SetSRID(ST_MakePoint(-75.5520, 6.2500), 4326), 8);
+-- Order 3 (Driver 3)
+('2025-11-16 10:50:00', ST_SetSRID(ST_MakePoint(-75.5640, 6.2400), 4326), 3),
+('2025-11-16 11:30:00', ST_SetSRID(ST_MakePoint(-75.5580, 6.2450), 4326), 3),
+('2025-11-16 12:00:00', ST_SetSRID(ST_MakePoint(-75.5520, 6.2500), 4326), 3);
 
 -- Insert Delivery Stops (incidents and stops during delivery)
 INSERT INTO deliverystops (stoplocation, typestop, timestamp, description, evidence, idorder) VALUES
@@ -164,9 +146,9 @@ INSERT INTO deliverystops (stoplocation, typestop, timestamp, description, evide
 (ST_SetSRID(ST_MakePoint(-75.1880, 6.2600), 4326), 'Parada', '2025-11-16 09:00:00', 'Parada para combustible', NULL, 4),
 -- Order 5 (delivered)
 (ST_SetSRID(ST_MakePoint(-75.5200, 6.2200), 4326), 'Entrega', '2025-11-14 13:10:00', 'Paquete entregado correctamente', 'https://storage.example.com/delivery/order005.jpg', 5),
--- Order 8
-(ST_SetSRID(ST_MakePoint(-75.5600, 6.2430), 4326), 'Incidente', '2025-11-16 11:15:00', 'Vía cerrada, tomando ruta alterna', 'https://storage.example.com/incidents/road002.jpg', 8),
--- Order 9 (cancelled)
-(ST_SetSRID(ST_MakePoint(-75.5350, 6.2350), 4326), 'Incidente', '2025-11-13 10:00:00', 'Cliente no disponible después de múltiples intentos', NULL, 9),
--- Order 10 (delivered)
-(ST_SetSRID(ST_MakePoint(-75.5100, 6.2100), 4326), 'Entrega', '2025-11-14 15:50:00', 'Entrega rápida y eficiente', 'https://storage.example.com/delivery/order010.jpg', 10);
+-- Order 2
+(ST_SetSRID(ST_MakePoint(-75.5600, 6.2430), 4326), 'Incidente', '2025-11-16 11:15:00', 'Vía cerrada, tomando ruta alterna', 'https://storage.example.com/incidents/road002.jpg', 2),
+-- Order 3 (delivered)
+(ST_SetSRID(ST_MakePoint(-75.5350, 6.2350), 4326), 'Incidente', '2025-11-13 10:00:00', 'Cliente no disponible después de múltiples intentos', NULL, 3),
+-- Order 5 (delivered)
+(ST_SetSRID(ST_MakePoint(-75.5100, 6.2100), 4326), 'Entrega', '2025-11-14 15:50:00', 'Entrega rápida y eficiente', 'https://storage.example.com/delivery/order010.jpg', 5);

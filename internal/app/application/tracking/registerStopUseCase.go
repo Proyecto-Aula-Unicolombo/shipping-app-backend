@@ -29,9 +29,10 @@ type RegisterStopOutput struct {
 }
 
 var (
-	ErrInvalidStopInput = errors.New("invalid stop input")
-	ErrInvalidStopType  = errors.New("invalid stop type: must be Parada, Incidente, Recogida, or Entrega")
-	ErrOrderNotFound    = errors.New("order not found or not in progress")
+	ErrInvalidStopInput   = errors.New("invalid stop input")
+	ErrInvalidStopType    = errors.New("invalid stop type: must be Parada, Incidente, Recogida, or Entrega")
+	ErrOrderNotFound      = errors.New("order not found or not in progress")
+	ErrOrderNotInProgress = errors.New("order is not in progress")
 )
 
 type RegisterStopUseCase struct {
@@ -83,7 +84,7 @@ func (uc *RegisterStopUseCase) Execute(ctx context.Context, input RegisterStopIn
 	}
 
 	if order.Status != "en camino" && order.Status != "pendiente" {
-		return nil, fmt.Errorf("order status must be 'en camino' or 'pendiente', got: %s", order.Status)
+		return nil, ErrOrderNotInProgress
 	}
 
 	// Iniciar transacción
