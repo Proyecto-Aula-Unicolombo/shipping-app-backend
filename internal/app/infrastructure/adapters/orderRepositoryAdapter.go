@@ -428,3 +428,16 @@ func (r *OrderRepositoryPostgres) ListOrderUnassigned(ctx context.Context, limit
 
 	return orders, nil
 }
+
+func (r *OrderRepositoryPostgres) CountOrdersUnassigned(ctx context.Context) (int64, error) {
+	query := `
+		SELECT COUNT(*) FROM orders WHERE status = 'pendiente'
+	`
+	var count int64
+	err := r.db.QueryRowContext(ctx, query).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("count orders: %w", err)
+	}
+
+	return count, nil
+}

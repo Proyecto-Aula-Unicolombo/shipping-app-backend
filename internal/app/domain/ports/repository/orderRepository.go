@@ -24,4 +24,5 @@ type OrderRepository interface {
 	Count(ctx context.Context, typeService, status string) (int64, error)
 	CountByDriver(ctx context.Context, driverID uint) (int64, error)
 	ListOrderUnassigned(ctx context.Context, limit, offset int, id uint) ([]*entities.Order, error)
+	CountOrdersUnassigned(ctx context.Context) (int64, error)
 }

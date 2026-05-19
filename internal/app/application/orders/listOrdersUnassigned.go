@@ -29,7 +29,7 @@ func (uc *ListOrdersUnassignedUseCase) Execute(ctx context.Context, input ListOr
 	if err != nil {
 		return nil, 0, err
 	}
-	total, err := uc.orderRepository.Count(ctx, "", "")
+	total, err := uc.orderRepository.CountOrdersUnassigned(ctx)
 	if err != nil {
 		return nil, 0, err
 	}
