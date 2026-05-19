@@ -241,7 +241,8 @@ BEGIN
 
             UPDATE orders
             SET status = estado_final,
-                idvehicle = NULL
+                idvehicle = NULL,
+                iddriver = NULL
             WHERE id = NEW.idorder;
             
 			IF id_conductor IS NOT NULL THEN
