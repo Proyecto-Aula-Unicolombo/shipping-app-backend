@@ -16,8 +16,8 @@ import (
 func SetupRouters(app *fiber.App, db *sql.DB, generateReportSvc *internalServices.GenerateReportService) {
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:8000"},
-		AllowCredentials: true,
+		AllowOrigins:     []string{"*"},
+		AllowCredentials: false,
 		AllowHeaders: []string{
 			"Origin",
 			"Content-Type",
