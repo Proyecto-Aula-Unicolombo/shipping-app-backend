@@ -97,16 +97,16 @@ INSERT INTO addresspackages (origin, destination, delivery_instructions) VALUES
 INSERT INTO orders (create_at, assigned_at, observation, status, typeservice, iddriver, idvehicle) VALUES
 ('2025-11-16 08:00:00', '2025-11-16 08:30:00', 'Entrega urgente', 'en camino', 'express delivery', 1, 1),
 ('2025-11-16 09:00:00', '2025-11-16 09:15:00', 'Frágil, manejar con cuidado', 'en camino', 'standard delivery', 2, 2),
-('2025-11-15 10:00:00', '2025-11-15 10:20:00', 'Entrega exitosa', 'entregado', 'standard delivery', 3, 3),
+('2025-11-15 10:00:00', '2025-11-15 10:20:00', 'Entrega exitosa', 'completada', 'standard delivery', 3, 3),
 ('2025-11-16 07:30:00', '2025-11-16 08:00:00', 'Cliente solicitó entrega en la mañana', 'en camino', 'express delivery', 4, 4),
-('2025-11-14 11:00:00', '2025-11-14 11:15:00', 'Sin novedades', 'entregado', 'standard delivery', 5, 5);
+('2025-11-14 11:00:00', '2025-11-14 11:15:00', 'Sin novedades', 'completada', 'standard delivery', 5, 5);
 
 -- Insert Packages
 INSERT INTO packages (numpackage, status, descriptioncontent, weight, dimension, declared_value, type_package, is_fragile, idaddresspackage, idcomercialinformation, idsender, idreceivers, idorder) VALUES
 ('PKG-2025-001', 'en camino', 'Documentos legales', 0.50, '30x20x5 cm', 100000.00, 'Documentos', false, 1, 1, 1, 1, 1),
 ('PKG-2025-002', 'en camino', 'Electrodomésticos', 15.00, '60x50x40 cm', 850000.00, 'Electrodomésticos', true, 2, 2, 2, 2, 2),
 ('PKG-2025-003', 'entregado', 'Ropa y textiles', 3.50, '40x30x20 cm', 250000.00, 'Textiles', false, 3, 3, 3, 3, 3),
-('PKG-2025-004', 'asignado', 'Libros educativos', 8.00, '35x25x30 cm', 180000.00, 'Libros', false, 4, 4, 4, 4, 4),
+('PKG-2025-004', 'en camino', 'Libros educativos', 8.00, '35x25x30 cm', 180000.00, 'Libros', false, 4, 4, 4, 4, 4),
 ('PKG-2025-005', 'en camino', 'Equipos electrónicos', 5.50, '45x35x25 cm', 1200000.00, 'Electrónicos', true, 5, 5, 5, 5, 5),
 ('PKG-2025-015', 'en camino', 'Accesorios de oficina', 5.00, '40x35x25 cm', 190000.00, 'Oficina', false, 15, 15, 5, 5, 1);
 
