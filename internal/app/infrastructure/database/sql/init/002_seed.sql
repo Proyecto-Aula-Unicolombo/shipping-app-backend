@@ -106,7 +106,7 @@ INSERT INTO packages (numpackage, status, descriptioncontent, weight, dimension,
 ('PKG-2025-001', 'en camino', 'Documentos legales', 0.50, '30x20x5 cm', 100000.00, 'Documentos', false, 1, 1, 1, 1, 1),
 ('PKG-2025-002', 'en camino', 'Electrodomésticos', 15.00, '60x50x40 cm', 850000.00, 'Electrodomésticos', true, 2, 2, 2, 2, 2),
 ('PKG-2025-003', 'entregado', 'Ropa y textiles', 3.50, '40x30x20 cm', 250000.00, 'Textiles', false, 3, 3, 3, 3, 3),
-('PKG-2025-004', 'asignaddo', 'Libros educativos', 8.00, '35x25x30 cm', 180000.00, 'Libros', false, 4, 4, 4, 4, 4),
+('PKG-2025-004', 'asignado', 'Libros educativos', 8.00, '35x25x30 cm', 180000.00, 'Libros', false, 4, 4, 4, 4, 4),
 ('PKG-2025-005', 'en camino', 'Equipos electrónicos', 5.50, '45x35x25 cm', 1200000.00, 'Electrónicos', true, 5, 5, 5, 5, 5),
 ('PKG-2025-015', 'en camino', 'Accesorios de oficina', 5.00, '40x35x25 cm', 190000.00, 'Oficina', false, 15, 15, 5, 5, 1);
 

@@ -19,6 +19,14 @@ resource "aws_security_group" "proaula_security_G" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+   ingress {
+    description = "Allow Mail in dev"
+    from_port   = 8025
+    to_port     = 8025
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
